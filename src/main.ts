@@ -1,7 +1,5 @@
 import './styles/app.css'; 
 import { supabase } from './supabaseClient';
-
-// ✅ Forma correta do Lucide (vanilla)
 import { createIcons, icons } from 'lucide';
 
 // Importação das páginas
@@ -13,6 +11,7 @@ import { montarNotificacoes } from './pages/notificacoes';
 import { montarDetalhes } from './pages/detalhes';
 import { montarCalendario } from './pages/calendario';
 import { montarConfiguracoes } from './pages/configuracoes';
+import { montarCategorias } from './pages/categorias'; // ✅ Nova Importação
 
 // --- INICIALIZAÇÃO ---
 async function inicializar() {
@@ -123,7 +122,10 @@ function montarLayoutEstrutural() {
     });
 
     renderizarNavegacao();
-    irPara('dash'); 
+    
+    // Suporte básico a hash para não perder a página no refresh
+    const rotaInicial = window.location.hash.replace('#', '') || 'dash';
+    irPara(rotaInicial); 
 }
 
 // --- NAVEGAÇÃO ---
@@ -134,7 +136,6 @@ function renderizarNavegacao() {
     nav.innerHTML = `
         <div class="nav-bottom-container">
             <div class="tab-bar-scrollable">
-
                 <button class="nav-item" data-route="dash" onclick="window.navegar('dash')">
                     <i data-lucide="layout-dashboard"></i>
                     <span>Início</span>
@@ -143,11 +144,6 @@ function renderizarNavegacao() {
                 <button class="nav-item" data-route="list" onclick="window.navegar('list')">
                     <i data-lucide="users"></i>
                     <span>Elenco</span>
-                </button>
-
-                <button class="nav-item" data-route="detalhes" onclick="window.navegar('detalhes')">
-                    <i data-lucide="user"></i>
-                    <span>Perfil</span>
                 </button>
 
                 <div class="fab-item-wrapper">
@@ -161,22 +157,22 @@ function renderizarNavegacao() {
                     <span>Agenda</span>
                 </button>
 
-                <button class="nav-item" data-route="notificacoes" onclick="window.navegar('notificacoes')">
-                    <i data-lucide="bell"></i>
-                    <span>Avisos</span>
-                </button>
-
                 <button class="nav-item" data-route="config" onclick="window.navegar('config')">
                     <i data-lucide="settings"></i>
                     <span>Ajustes</span>
                 </button>
-
             </div>
         </div>
     `;
 
     // @ts-ignore
     window.navegar = (t, p) => irPara(t, p);
+
+    // Escuta mudanças de hash para navegação interna (como no select de categorias)
+    window.addEventListener('hashchange', () => {
+        const rota = window.location.hash.replace('#', '');
+        if (rota) irPara(rota);
+    });
 
     recarregarIcones();
 }
@@ -186,12 +182,16 @@ export async function irPara(tela: string, params?: any) {
     const container = document.getElementById('main-content');
     if (!container) return;
 
+    // Atualiza estado visual dos botões
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`[data-route="${tela}"]`)?.classList.add('active');
 
     container.innerHTML = `<div class="loading">Carregando tática...</div>`;
 
-    switch (tela) {
+    // Normaliza a rota (ex: se vier de links #categorias)
+    const rotaLimpa = tela.split('?')[0];
+
+    switch (rotaLimpa) {
         case 'dash': await montarDashboard(container); break;
         case 'list': await montarLista(container); break;
         case 'form': await montarCadastro(container, params); break;
@@ -199,13 +199,13 @@ export async function irPara(tela: string, params?: any) {
         case 'detalhes': await montarDetalhes(container, params); break;
         case 'calendario': await montarCalendario(container); break;
         case 'config': await montarConfiguracoes(container); break;
+        case 'categorias': await montarCategorias(container); break; // ✅ Rota Adicionada
         default: await montarDashboard(container);
     }
 
     recarregarIcones();
 }
 
-// ✅ Função correta e simples
 function recarregarIcones() {
     createIcons({ icons });
 }

@@ -1,4 +1,4 @@
-import './categorias.css';
+import '../styles/categorias.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { createIcons, icons } from 'lucide';
 

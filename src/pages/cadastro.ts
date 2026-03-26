@@ -1,17 +1,7 @@
 import '../styles/cadastro.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
-import { createIcons, icons } from 'lucide';
-
-const ICON_CATEGORIES: Record<string, string[]> = {
-    "Populares": ["User", "Heart", "Star", "Bell", "CheckCircle", "Smile", "Flag", "Flame"],
-    "Esportes": ["Trophy", "Bike", "Dumbbell", "Medal", "Target", "Timer", "Footprints"],
-    "Trabalho": ["Briefcase", "FileText", "Building", "Laptop", "HardHat", "Keyboard"],
-    "Lazer": ["Music", "Camera", "Gamepad2", "Coffee", "Beer", "Utensils", "Plane", "Tent"],
-    "Família": ["Home", "Baby", "Users", "Church", "Gift", "Cake", "HeartHandshake"]
-};
-
-const ALL_LUCIDE_KEYS = Object.keys(icons).sort();
+import { createIcons, icons } from 'lucide'; // ✅ Importação corrigida para 'lucide'
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
     container.innerHTML = `<div class="loading">Preparando convocação...</div>`;
@@ -22,18 +12,20 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             idEdicao ? aniversarioService.listarTodos() : Promise.resolve([])
         ]);
 
+        // ✅ Garantindo a detecção firme da edição
         const dadosEdicao = idEdicao ? todos.find(t => t.id === idEdicao) || null : null;
+        const ehEdicao = !!(idEdicao && dadosEdicao);
 
         container.innerHTML = `
             <div class="form-container modern-style">
                 <div class="form-header-dark">
                     <div class="header-title">
-                        <i data-lucide="${idEdicao ? 'user-cog' : 'user-plus'}"></i>
-                        <span>${idEdicao ? 'Editar Convocado' : 'Nova Escalação'}</span>
+                        <i data-lucide="${ehEdicao ? 'user-cog' : 'user-plus'}"></i>
+                        <span>${ehEdicao ? 'Editar Convocado' : 'Nova Escalação'}</span>
                     </div>
                 </div>
 
-                <form id="formAniversario" class="form-body">
+                <form id="formAniversario" class="form-body" style="padding: 24px;">
                     <div class="form-group">
                         <label class="label-mini">Nome Completo *</label>
                         <input type="text" id="nome" class="modern-input" required 
@@ -49,15 +41,17 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                         <div class="form-group">
                             <label class="label-mini">WhatsApp</label>
                             <input type="tel" id="telefone" class="modern-input" 
-                            value="${dadosEdicao?.telefone || ''}" placeholder="(85)...">
+                            value="${dadosEdicao?.telefone || ''}" placeholder="(85) 9...">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="label-mini">Categoria / Círculo (Clique direito ou Segure para editar)</label>
+                        <label class="label-mini">Categoria / Círculo *</label>
                         <select id="categoria_id" class="modern-input" required>
-                            <option value="">Selecione uma categoria</option>
-                            <option value="new" style="font-weight: bold; color: var(--azul-fortaleza);">+ Adicionar Nova Categoria...</option>
+                            <option value="">Selecione uma categoria...</option>
+                            <option value="GO_CATEGORIAS" style="font-weight: 800; color: var(--vermelho-fortaleza);">
+                                ➕ GERENCIAR CATEGORIAS...
+                            </option>
                             ${categorias.map(cat => `
                                 <option value="${cat.id}" ${dadosEdicao?.categoria_id === cat.id ? 'selected' : ''}>
                                     ${cat.nome}
@@ -66,232 +60,97 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                         </select>
                     </div>
 
-                    <div class="floating-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button type="button" class="btn-cancelar" id="btnCancelar" style="flex: 1;">Cancelar</button>
-                        <button type="submit" class="btn-salvar btn-action-round confirm" id="btnSubmit" style="flex: 2; width: auto;">
-                            <span>${idEdicao ? 'Salvar' : 'Cadastrar'}</span>
+                    <div class="floating-actions" style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="button" class="btn-cancelar" id="btnSecondaryAction" style="flex: 1; height: 56px;">
+                            ${ehEdicao ? 'Voltar' : 'Cancelar'}
+                        </button>
+                        
+                        <button type="submit" class="btn-salvar btn-action-round confirm" id="btnSubmit" style="flex: 2; width: auto; gap: 10px;">
+                            <i data-lucide="${ehEdicao ? 'save' : 'check'}"></i>
+                            <span>${ehEdicao ? 'Salvar' : 'Cadastrar'}</span>
                         </button>
                     </div>
                 </form>
             </div>
-
-            <div id="modalCategoria" class="modal-overlay" style="display: none;">
-                <div class="modern-card">
-                    <div class="form-header-dark">
-                        <div class="header-title">
-                            <i data-lucide="tag"></i>
-                            <span id="tituloModalCat">Nova Categoria</span>
-                        </div>
-                        <button type="button" id="fecharModal" class="btn-close-circle">
-                            <i data-lucide="x"></i>
-                        </button>
-                    </div>
-
-                    <div class="modal-body-scroll">
-                        <input type="hidden" id="idCategoriaEdicao">
-                        <label class="label-mini">Nome da Categoria</label>
-                        <input type="text" id="novoNomeCategoria" class="modern-input" placeholder="Ex: Academia">
-                        
-                        <label class="label-mini">Cor Identificadora</label>
-                        <input type="color" id="novaCorCategoria" class="modern-input" value="#1e3a8a">
-                        
-                        <label class="label-mini">Escolha um Ícone</label>
-                        <div class="icon-selector-section">
-                            <div class="search-wrapper">
-                                <i data-lucide="search" class="search-icon-inside"></i>
-                                <input type="text" id="buscaIcone" class="search-input" placeholder="Pesquisar ícones...">
-                            </div>
-
-                            <div id="categoryChips" class="category-chips-row">
-                                <button type="button" class="chip active" data-cat="Populares">Populares</button>
-                                <button type="button" class="chip" data-cat="Esportes">Esportes</button>
-                                <button type="button" class="chip" data-cat="Trabalho">Trabalho</button>
-                                <button type="button" class="chip" data-cat="Lazer">Lazer</button>
-                                <button type="button" class="chip" data-cat="Família">Família</button>
-                                <button type="button" class="chip" data-cat="all">Todos</button>
-                            </div>
-
-                            <div id="gridIcones" class="modern-icon-grid"></div>
-                        </div>
-                        <input type="hidden" id="novoIconeCategoria" value="user">
-                    </div>
-
-                    <div class="floating-actions-modal">
-                        <button type="button" id="btnExcluirCategoria" class="btn-action-round" style="background: #fee2e2; color: #ef4444; display: none; width: 56px;">
-                            <i data-lucide="trash-2"></i>
-                        </button>
-                        <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
-                            <i data-lucide="check"></i> <span>Salvar</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
         `;
 
-        // Seletores
         const form = document.getElementById('formAniversario') as HTMLFormElement;
-        const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
-        const modal = document.getElementById('modalCategoria') as HTMLElement;
-        const gridIcones = document.getElementById('gridIcones') as HTMLElement;
-        const hiddenIconInput = document.getElementById('novoIconeCategoria') as HTMLInputElement;
-        const inputBusca = document.getElementById('buscaIcone') as HTMLInputElement;
+        const selectCat = document.getElementById('categoria_id') as HTMLSelectElement;
+        const btnSecondary = document.getElementById('btnSecondaryAction') as HTMLButtonElement;
 
-        const atualizarIconesNaTela = () => {
-            createIcons({ icons, attrs: { strokeWidth: 2, width: 24, height: 24 } });
-        };
-
-        const renderizarGrid = (filtro: string = '') => {
-            const categoriaAtiva = document.querySelector('.chip.active')?.getAttribute('data-cat') || 'Populares';
-            let chaves: string[] = [];
-
-            if (filtro.trim()) {
-                chaves = ALL_LUCIDE_KEYS.filter(k => k.toLowerCase().includes(filtro.toLowerCase())).slice(0, 50);
-            } else if (categoriaAtiva === 'all') {
-                chaves = ALL_LUCIDE_KEYS.slice(0, 50);
+        // ✅ LÓGICA DO BOTÃO VOLTAR / CANCELAR
+        btnSecondary.addEventListener('click', () => {
+            if (ehEdicao) {
+                // Se for edição, navega explicitamente via window.navegar (ou hash)
+                if (window.hasOwnProperty('navegar')) {
+                    (window as any).navegar('detalhes', idEdicao);
+                } else {
+                    window.location.hash = `#detalhes?id=${idEdicao}`;
+                }
             } else {
-                chaves = ICON_CATEGORIES[categoriaAtiva] || [];
-            }
-
-            gridIcones.innerHTML = chaves.map(key => {
-                const kebabName = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-                const isSelected = hiddenIconInput.value === kebabName;
-                return `
-                    <div class="icon-card ${isSelected ? 'selected' : ''}" data-icon="${kebabName}">
-                        <i data-lucide="${kebabName}"></i>
-                    </div>
-                `;
-            }).join('');
-
-            atualizarIconesNaTela();
-
-            gridIcones.querySelectorAll('.icon-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    gridIcones.querySelectorAll('.icon-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    hiddenIconInput.value = (card as HTMLElement).dataset.icon || 'user';
-                });
-            });
-        };
-
-        const abrirEdicaoCategoria = (id: string) => {
-            const cat = categorias.find(c => c.id === id);
-            if (!cat) return;
-
-            (document.getElementById('tituloModalCat') as HTMLElement).innerText = "Editar Categoria";
-            (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value = cat.id;
-            (document.getElementById('novoNomeCategoria') as HTMLInputElement).value = cat.nome;
-            (document.getElementById('novaCorCategoria') as HTMLInputElement).value = cat.cor || '#1e3a8a';
-            hiddenIconInput.value = cat.icone || 'user';
-            (document.getElementById('btnExcluirCategoria') as HTMLElement).style.display = 'flex';
-            
-            modal.style.display = 'flex';
-            renderizarGrid();
-        };
-
-        // --- Lógica Híbrida de Edição no Select ---
-        let timerLongPress: any;
-        selectCategoria.addEventListener('contextmenu', (e) => {
-            if (selectCategoria.value && selectCategoria.value !== 'new') {
-                e.preventDefault();
-                abrirEdicaoCategoria(selectCategoria.value);
+                form.reset();
             }
         });
 
-        selectCategoria.addEventListener('touchstart', () => {
-            timerLongPress = setTimeout(() => {
-                if (selectCategoria.value && selectCategoria.value !== 'new') {
-                    abrirEdicaoCategoria(selectCategoria.value);
+        // Lógica de categorias
+        selectCat.addEventListener('change', () => {
+            if (selectCat.value === 'GO_CATEGORIAS') {
+                // 1. Voltamos o select para o estado inicial (para não ficar com o texto de erro)
+                selectCat.value = ""; 
+
+                // 2. Chamamos a navegação global definida no main.ts
+                if (typeof (window as any).navegar === 'function') {
+                    (window as any).navegar('categorias');
+                } else {
+                    // Plano B: Força o hash e dispara o evento manualmente se o roteador falhar
+                    window.location.hash = '#categorias';
+                    window.dispatchEvent(new HashChangeEvent('hashchange'));
                 }
-            }, 800);
-        }, { passive: true });
+            }
+        });
 
-        selectCategoria.addEventListener('touchend', () => clearTimeout(timerLongPress));
-
-        // --- Eventos do Formulário Principal ---
+        // ✅ LÓGICA DE SALVAMENTO
         form.onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btnSubmit') as HTMLButtonElement;
-            btn.disabled = true;
+            const btnSubmit = document.getElementById('btnSubmit') as HTMLButtonElement;
+            btnSubmit.disabled = true;
 
             const dados = {
                 nome: (document.getElementById('nome') as HTMLInputElement).value,
                 data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                 telefone: (document.getElementById('telefone') as HTMLInputElement).value,
-                categoria_id: selectCategoria.value
+                categoria_id: selectCat.value
             };
 
+            if (dados.categoria_id === 'GO_CATEGORIAS') return (btnSubmit.disabled = false);
+
             try {
-                if (idEdicao) {
+                if (ehEdicao && idEdicao) {
+                    // ATUALIZAÇÃO
                     await aniversarioService.atualizar(idEdicao, dados);
+                    form.reset();
+                    // ✅ Navegação forçada após salvar na edição
+                    if (window.hasOwnProperty('navegar')) {
+                        (window as any).navegar('detalhes', idEdicao);
+                    } else {
+                        window.location.hash = `#detalhes?id=${idEdicao}`;
+                    }
                 } else {
+                    // NOVO CADASTRO
                     await aniversarioService.adicionar(dados);
+                    form.reset();
+                    alert("Cadastrado com sucesso!");
                 }
-                window.location.hash = '#elenco';
             } catch (err) {
-                alert("Erro ao salvar.");
+                alert("Erro na operação.");
             } finally {
-                btn.disabled = false;
+                btnSubmit.disabled = false;
+                createIcons({ icons });
             }
         };
 
-        // --- Eventos da Categoria ---
-        document.getElementById('btnSalvarCategoria')?.addEventListener('click', async () => {
-            const id = (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value;
-            const payload = {
-                nome: (document.getElementById('novoNomeCategoria') as HTMLInputElement).value,
-                cor: (document.getElementById('novaCorCategoria') as HTMLInputElement).value,
-                icone: hiddenIconInput.value
-            };
-
-            try {
-                if (id) {
-                    await aniversarioService.atualizarCategoria(id, payload);
-                } else {
-                    await aniversarioService.adicionarCategoria(payload);
-                }
-                modal.style.display = 'none';
-                montarCadastro(container, idEdicao); 
-            } catch (err) { alert("Erro ao salvar categoria."); }
-        });
-
-        document.getElementById('btnExcluirCategoria')?.addEventListener('click', async () => {
-            const id = (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value;
-            if (id && confirm("Excluir esta categoria? Todos os registros nela ficarão sem categoria.")) {
-                await aniversarioService.excluirCategoria(id);
-                modal.style.display = 'none';
-                montarCadastro(container, idEdicao);
-            }
-        });
-
-        // --- Auxiliares e Filtros ---
-        inputBusca.addEventListener('input', (e) => renderizarGrid((e.target as HTMLInputElement).value));
-
-        container.querySelectorAll('.chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-                inputBusca.value = '';
-                renderizarGrid();
-            });
-        });
-
-        selectCategoria.addEventListener('change', () => {
-            if (selectCategoria.value === 'new') {
-                (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value = '';
-                (document.getElementById('tituloModalCat') as HTMLElement).innerText = "Nova Categoria";
-                (document.getElementById('btnExcluirCategoria') as HTMLElement).style.display = 'none';
-                modal.style.display = 'flex';
-                renderizarGrid();
-            }
-        });
-
-        document.getElementById('fecharModal')?.addEventListener('click', () => modal.style.display = 'none');
-        document.getElementById('btnCancelar')?.addEventListener('click', () => window.history.back());
-
-        atualizarIconesNaTela();
-
+        createIcons({ icons });
     } catch (error) {
-        console.error(error);
-        container.innerHTML = `<div class="error-msg">Erro ao carregar formulário.</div>`;
+        container.innerHTML = `Erro ao carregar formulário.`;
     }
 }
