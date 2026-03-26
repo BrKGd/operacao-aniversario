@@ -53,7 +53,7 @@ export async function montarLista(container: HTMLElement) {
                         <div class="textos-contato">
                             <span class="nome-contato">${c.nome}</span>
                             <span class="subtexto-contato">${c.info.dataFormatada} • Faz ${c.info.idade} anos</span>
-                            <span class="categoria-tag">${c.categoria || 'Geral'}</span>
+                            <span class="categoria-tag">${c.categorias?.nome || 'Geral'}</span>
                         </div>
                     </div>
                     

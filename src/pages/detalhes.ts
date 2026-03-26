@@ -46,7 +46,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                 <div class="perfil-card">
                     <div class="perfil-avatar">🦁</div>
                     <h1 class="perfil-nome">${pessoa.nome.toUpperCase()}</h1>
-                    <span class="perfil-badge">${pessoa.categoria || 'Geral'}</span>
+                    <span class="perfil-badge">${pessoa.categorias?.nome || 'Geral'}</span>
                 </div>
 
                 <div class="info-grid">

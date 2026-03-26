@@ -47,7 +47,7 @@ export async function montarNotificacoes(container: HTMLElement) {
                                     <div class="notif-desc">
                                         ${ehHoje ? '<strong>Faz aniversário hoje!</strong>' : `Aniversário em ${d.getDate()}/${d.getMonth() + 1}`}
                                     </div>
-                                    <div class="notif-categoria-tag">${p.categoria || 'Geral'}</div>
+                                    <div class="notif-categoria-tag">${p.categorias?.nome || 'Geral'}</div>
                                 </div>
                                 <a href="${gerarLinkWhatsapp(p.nome, p.telefone || '')}" 
                                    target="_blank" class="btn-notif-action">

@@ -9,7 +9,7 @@ export async function montarConfiguracoes(container: HTMLElement) {
         
         // Agrupando por categorias para o resumo
         const categorias = todos.reduce((acc: any, curr) => {
-            const cat = curr.categoria || 'Geral';
+            const cat = curr.categorias?.nome || 'Geral';
             acc[cat] = (acc[cat] || 0) + 1;
             return acc;
         }, {});
