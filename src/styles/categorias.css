@@ -1,0 +1,72 @@
+/* --- TELA DE GESTÃO DE CATEGORIAS --- */
+.categorias-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.cat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.cat-header h2 {
+    color: var(--azul-fortaleza);
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+.cat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cat-item {
+    background: white;
+    padding: 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 2px solid transparent;
+    transition: 0.2s;
+}
+
+.cat-item:hover {
+    border-color: var(--cinza-borda);
+    transform: translateY(-2px);
+}
+
+.cat-info {
+    flex-grow: 1;
+}
+
+.cat-info span {
+    display: block;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.cat-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-mini-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-edit { background: #eff6ff; color: var(--azul-fortaleza); }
+.btn-del { background: #fef2f2; color: var(--vermelho-fortaleza); }
