@@ -293,11 +293,13 @@
 .avatar-drawer {
     position: fixed;
     bottom: -100%;
-    left: 0;
-    width: 100%;
-    background: #001a4d; /* Azul profundo para o fundo do drawer */
+    left: 50%; /* Centraliza horizontalmente */
+    transform: translateX(-50%); /* Ajuste fino da centralização */
+    width: 95%;
+    max-width: 100%; /* Garante que não fique largo demais em telas grandes */
+    background: #001a4d;
     border-top: 3px solid var(--fec-vermelho-vibrante);
-    border-radius: 30px 30px 0 0;
+    border-radius: 30px 30px 0 0; /* Arredonda superior esquerdo e direito */
     padding: 20px;
     z-index: 1100;
     transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -350,7 +352,6 @@
     scroll-snap-type: x mandatory;
 }
 
-/* Esconder scrollbar mantendo funcionalidade */
 .avatar-grid-scroll::-webkit-scrollbar {
     display: none;
 }
