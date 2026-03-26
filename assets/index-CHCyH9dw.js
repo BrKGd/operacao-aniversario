@@ -141,69 +141,79 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     ${r()}
                 </div>
             </div>
-        `;let i=()=>{document.querySelectorAll(`.btn-mini.edit`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=e.getAttribute(`data-id`);window.navegar(`form`,n)})}),document.querySelectorAll(`.btn-mini.del`).forEach(t=>{t.addEventListener(`click`,async n=>{n.stopPropagation();let r=t.getAttribute(`data-id`);r&&confirm(`Remover do elenco?`)&&(await $.excluir(r),KF(e))})})};document.getElementById(`inputBusca`)?.addEventListener(`input`,e=>{let t=e.target.value,n=document.getElementById(`listaContatos`);n&&(n.innerHTML=r(t),i(),window.lucide&&window.lucide.createIcons())}),i(),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar lista.</div>`}}async function qF(e,t){e.innerHTML=`<div class="loading">Preparando convocação...</div>`;try{let[n,r]=await Promise.all([$.listarCategorias(),t?$.listarTodos():Promise.resolve([])]),i=t&&r.find(e=>e.id===t)||null,a=!!(t&&i);e.innerHTML=`
-            <div class="form-container modern-style">
-                <div class="form-header-dark">
-                    <div class="header-title">
-                        <i data-lucide="${a?`user-cog`:`user-plus`}"></i>
-                        <span>${a?`Editar Convocado`:`Nova Escalação`}</span>
-                    </div>
+        `;let i=()=>{document.querySelectorAll(`.btn-mini.edit`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=e.getAttribute(`data-id`);window.navegar(`form`,n)})}),document.querySelectorAll(`.btn-mini.del`).forEach(t=>{t.addEventListener(`click`,async n=>{n.stopPropagation();let r=t.getAttribute(`data-id`);r&&confirm(`Remover do elenco?`)&&(await $.excluir(r),KF(e))})})};document.getElementById(`inputBusca`)?.addEventListener(`input`,e=>{let t=e.target.value,n=document.getElementById(`listaContatos`);n&&(n.innerHTML=r(t),i(),window.lucide&&window.lucide.createIcons())}),i(),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar lista.</div>`}}async function qF(e,t){e.innerHTML=`<div class="fec-center-wrapper"><div class="fec-loader-minimal">CONVOCANDO LEÃO...</div></div>`;try{let[n,r]=await Promise.all([$.listarCategorias(),t?$.listarTodos():Promise.resolve([])]),i=t&&r.find(e=>e.id===t)||null,a=!!(t&&i);e.innerHTML=`
+            <div class="fec-center-wrapper">
+                <div class="fec-form-wrapper">
+                    <button class="fec-btn-close" id="btnFecharForm" title="Voltar">
+                        <i data-lucide="x"></i>
+                    </button>
+
+                    <header class="fec-form-header">
+                        <div class="avatar-edit-container">
+                            <div class="avatar-squircle-fec">
+                                <i data-lucide="user" class="avatar-icon-fec"></i>
+                            </div>
+                            <div class="avatar-action-btns">
+                                <button type="button" class="btn-fec-outline-sm">ESCUDO</button>
+                                <button type="button" class="btn-fec-outline-sm">FOTO</button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <form id="formAniversario" class="fec-form-main">
+                        <div class="fec-input-group-line">
+                            <i data-lucide="user"></i>
+                            <input type="text" id="nome" placeholder="Nome do Convocado" required 
+                                   value="${i?.nome||``}">
+                        </div>
+
+                        <div class="fec-input-group-line">
+                             <i data-lucide="megaphone"></i>
+                             <input type="text" id="frase_exibicao" placeholder="Grito / Apelido" 
+                                    value="${i?.frase_exibicao||``}">
+                        </div>
+
+                        <div class="fec-input-group-line fec-date-row">
+                            <div class="fec-date-content">
+                                <i data-lucide="cake"></i>
+                                <div class="fec-column-input">
+                                    <label class="fec-mini-label">Aniversário</label>
+                                    <input type="date" id="data_nascimento" required 
+                                           value="${i?.data_nascimento||``}">
+                                </div>
+                            </div>
+                            <div class="fec-toggle-inline">
+                                <span>ANO</span>
+                                <label class="fec-switch-ui">
+                                    <input type="checkbox" checked>
+                                    <span class="fec-slider-ui"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="fec-input-group-line">
+                             <i data-lucide="layers"></i>
+                             <select id="categoria_id" required>
+                                <option value="" disabled ${i?``:`selected`}>Círculo / Categoria</option>
+                                <option value="GO_CATEGORIAS" class="opt-manage-fec">⚙️ GERENCIAR CATEGORIAS</option>
+                                ${n.map(e=>`
+                                    <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>
+                                        ${e.nome}
+                                    </option>
+                                `).join(``)}
+                             </select>
+                        </div>
+
+                        <div class="fec-action-footer">
+                            <button type="submit" class="btn-fec-submit">
+                                ${a?`ATUALIZAR DADOS`:`CONFIRMAR ESCALAÇÃO`}
+                            </button>
+                            <button type="button" class="btn-fec-cancel" id="btnCancelar">CANCELAR</button>
+                        </div>
+                    </form>
                 </div>
-
-                <form id="formAniversario" class="form-body" style="padding: 24px;">
-                    <div class="form-group">
-                        <label class="label-mini">Nome Completo *</label>
-                        <input type="text" id="nome" class="modern-input" required 
-                               value="${i?.nome||``}" placeholder="Ex: Marcelo Boeck">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="label-mini">Frase de Exibição (Apelido ou Mensagem)</label>
-                        <input type="text" id="frase_exibicao" class="modern-input" 
-                               value="${i?.frase_exibicao||``}" placeholder="Ex: Paredão do Leão 🦁">
-                    </div>
-
-                    <div class="form-row-group">
-                        <div class="form-group">
-                            <label class="label-mini">Data de Nascimento *</label>
-                            <input type="date" id="data_nascimento" class="modern-input" required
-                                   value="${i?.data_nascimento||``}">
-                        </div>
-                        <div class="form-group">
-                            <label class="label-mini">WhatsApp</label>
-                            <input type="tel" id="telefone" class="modern-input" 
-                            value="${i?.telefone||``}" placeholder="(85) 9...">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="label-mini">Categoria / Círculo *</label>
-                        <select id="categoria_id" class="modern-input" required>
-                            <option value="">Selecione uma categoria...</option>
-                            <option value="GO_CATEGORIAS" style="font-weight: 800; color: var(--vermelho-fortaleza);">
-                                ➕ GERENCIAR CATEGORIAS...
-                            </option>
-                            ${n.map(e=>`
-                                <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>
-                                    ${e.nome}
-                                </option>
-                            `).join(``)}
-                        </select>
-                    </div>
-
-                    <div class="floating-actions" style="display: flex; gap: 12px; margin-top: 24px;">
-                        <button type="button" class="btn-cancelar" id="btnSecondaryAction" style="flex: 1; height: 56px;">
-                            ${a?`Voltar`:`Cancelar`}
-                        </button>
-                        
-                        <button type="submit" class="btn-salvar btn-action-round confirm" id="btnSubmit" style="flex: 2; width: auto; gap: 10px;">
-                            <i data-lucide="${a?`save`:`check`}"></i>
-                            <span>${a?`Salvar`:`Cadastrar`}</span>
-                        </button>
-                    </div>
-                </form>
             </div>
-        `;let o=document.getElementById(`formAniversario`),s=document.getElementById(`categoria_id`);document.getElementById(`btnSecondaryAction`).addEventListener(`click`,()=>{a?typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`:o.reset()}),s.addEventListener(`change`,()=>{s.value===`GO_CATEGORIAS`&&(s.value=``,typeof window.navegar==`function`?window.navegar(`categorias`):(window.location.hash=`#categorias`,window.dispatchEvent(new HashChangeEvent(`hashchange`))))}),o.onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;let r={nome:document.getElementById(`nome`).value,frase_exibicao:document.getElementById(`frase_exibicao`).value,data_nascimento:document.getElementById(`data_nascimento`).value,telefone:document.getElementById(`telefone`).value,categoria_id:s.value};if(r.categoria_id===`GO_CATEGORIAS`||!r.categoria_id){alert(`Selecione uma categoria válida.`),n.disabled=!1;return}try{a&&t?(await $.atualizar(t,r),o.reset(),typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`):(await $.adicionar(r),o.reset(),alert(`Cadastrado com sucesso!`))}catch(e){console.error(e),alert(`Erro ao salvar os dados.`)}finally{n.disabled=!1,HF({icons:VF})}},HF({icons:VF})}catch(t){console.error(t),e.innerHTML=`<div class="error-msg">Erro ao carregar formulário.</div>`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
+        `;let o=document.getElementById(`formAniversario`),s=document.getElementById(`categoria_id`),c=document.getElementById(`btnFecharForm`),l=document.getElementById(`btnCancelar`),u=()=>window.history.back();c?.addEventListener(`click`,u),l?.addEventListener(`click`,u),s.addEventListener(`change`,()=>{s.value===`GO_CATEGORIAS`&&(window.navegar?window.navegar(`categorias`):window.location.hash=`#categorias`)}),o.onsubmit=async e=>{e.preventDefault();let n=document.querySelector(`.btn-fec-submit`);n.innerText=`SALVANDO...`,n.disabled=!0;let r={nome:document.getElementById(`nome`).value,frase_exibicao:document.getElementById(`frase_exibicao`).value,data_nascimento:document.getElementById(`data_nascimento`).value,categoria_id:s.value};try{a&&t?(await $.atualizar(t,r),window.location.hash=`#detalhes?id=${t}`):(await $.adicionar(r),o.reset(),alert(`✅ Convocação realizada!`))}catch{alert(`❌ Erro ao salvar.`)}finally{n.innerText=a?`ATUALIZAR DADOS`:`CONFIRMAR ESCALAÇÃO`,n.disabled=!1,HF({icons:VF})}},HF({icons:VF})}catch{e.innerHTML=`<div class="fec-center-wrapper"><div class="fec-loader-minimal">ERRO NA CONVOCAÇÃO</div></div>`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
                     <h2><i data-lucide="bell"></i> Central de Alertas</h2>
