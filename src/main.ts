@@ -11,10 +11,13 @@ import { montarNotificacoes } from './pages/notificacoes';
 import { montarDetalhes } from './pages/detalhes';
 import { montarCalendario } from './pages/calendario';
 import { montarConfiguracoes } from './pages/configuracoes';
-import { montarCategorias } from './pages/categorias'; // ✅ Nova Importação
+import { montarCategorias } from './pages/categorias';
 
 // --- INICIALIZAÇÃO ---
 async function inicializar() {
+    // Define a cor de fundo padrão imediatamente para evitar a tela branca
+    document.body.style.backgroundColor = "#fcfcfd"; 
+    
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
@@ -24,87 +27,110 @@ async function inicializar() {
     }
 }
 
-// --- TELA DE LOGIN ---
+// --- TELA DE ACESSO (CONVITE DE GALA - TELA CHEIA) ---
 function configurarLogin() {
+    // Injetamos o HTML com opacidade 0 para uma transição suave após o carregamento
     document.body.innerHTML = `
-        <div class="auth-container">
+        <div class="auth-container" id="auth-viewport" style="opacity: 0; transition: opacity 0.3s ease-in-out;">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="./escudo-fec.png" alt="Fortaleza EC" class="auth-logo">
-                    <h1>Operação Aniversário</h1>
-                    <p>Acesso restrito à convocação</p>
+                    <div class="auth-icon-wrapper">
+                        <i data-lucide="sparkles" class="icon-gold-lg"></i>
+                    </div>
+                    <h1>Aniversários</h1>
+                    <p>Sua curadoria exclusiva de celebrações</p>
                 </div>
 
                 <div class="auth-form">
                     <div class="input-group">
                         <i data-lucide="mail"></i>
-                        <input type="email" id="email" placeholder="E-mail oficial">
+                        <input type="email" id="email" placeholder="E-mail de acesso" autocomplete="email">
                     </div>
                     
                     <div class="input-group">
-                        <i data-lucide="lock"></i>
-                        <input type="password" id="password" placeholder="Sua senha">
+                        <i data-lucide="fingerprint"></i>
+                        <input type="password" id="password" placeholder="Sua chave pessoal" autocomplete="current-password">
                     </div>
                     
                     <button id="btnAuthAction" class="btn-login-main">
-                        <span>Entrar no Campo</span>
-                        <i data-lucide="chevron-right"></i>
+                        <span>Entrar</span>
+                        <i data-lucide="arrow-right"></i>
                     </button>
                     
                     <div id="auth-error" class="error-msg" style="display:none;"></div>
 
-                    <div class="auth-footer" style="margin-top: 20px; font-size: 0.9rem;">
-                        <p>Novo integrante? <a href="#" id="linkIrParaRegistro" style="color: var(--fec-blue); font-weight: bold;">Solicitar Acesso</a></p>
+                    <div class="auth-footer">
+                        <p>Ainda não é membro? <a href="#" id="linkIrParaRegistro">Cadastre-se</a></p>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
+    // Renderiza ícones e torna a tela visível instantaneamente
     recarregarIcones();
+    requestAnimationFrame(() => {
+        const viewport = document.getElementById('auth-viewport');
+        if (viewport) viewport.style.opacity = '1';
+    });
+
+    const emailEl = document.getElementById('email') as HTMLInputElement;
+    const passEl = document.getElementById('password') as HTMLInputElement;
+    const btn = document.getElementById('btnAuthAction') as HTMLButtonElement;
+
+    // --- LÓGICA DE LOGIN ---
+    const executarLogin = async () => {
+        if (btn.disabled) return;
+        
+        const email = emailEl.value.trim();
+        const password = passEl.value;
+
+        if (!email || !password) return;
+
+        btn.disabled = true;
+        btn.innerHTML = `<span>Preparando o salão...</span>`;
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            const errEl = document.getElementById('auth-error');
+            if (errEl) {
+                errEl.innerText = "Credenciais não reconhecidas.";
+                errEl.style.display = 'block';
+            }
+            btn.disabled = false;
+            btn.innerHTML = `<span>Entrar</span><i data-lucide="arrow-right"></i>`;
+            recarregarIcones();
+        } else {
+            window.location.reload();
+        }
+    };
+
+    // Evento de Clique
+    btn.addEventListener('click', executarLogin);
+
+    // Evento de Tecla Enter no campo de senha
+    passEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') executarLogin();
+    });
 
     document.getElementById('linkIrParaRegistro')?.addEventListener('click', (e) => {
         e.preventDefault();
         montarTelaRegistro();
     });
-
-    document.getElementById('btnAuthAction')?.addEventListener('click', async () => {
-        const emailEl = document.getElementById('email') as HTMLInputElement;
-        const passEl = document.getElementById('password') as HTMLInputElement;
-        const btn = document.getElementById('btnAuthAction') as HTMLButtonElement;
-        
-        btn.disabled = true;
-        btn.innerHTML = `<span>Entrando...</span>`;
-
-        const { error } = await supabase.auth.signInWithPassword({ 
-            email: emailEl.value, 
-            password: passEl.value 
-        });
-
-        if (error) {
-            const errEl = document.getElementById('auth-error');
-            if (errEl) {
-                errEl.innerText = "Credenciais inválidas.";
-                errEl.style.display = 'block';
-            }
-            btn.disabled = false;
-            btn.innerHTML = `<span>Entrar no Campo</span><i data-lucide="chevron-right"></i>`;
-            recarregarIcones();
-        } else {
-            window.location.reload();
-        }
-    });
 }
 
-// --- LAYOUT ---
+// --- LAYOUT ESTRUTURAL (AMBIENTE SOFISTICADO) ---
 function montarLayoutEstrutural() {
     document.body.innerHTML = `
         <div id="app-container">
             <header id="app-header">
                 <div class="header-content">
-                    <img src="./assets/favicon.ico" class="mini-logo">
-                    <span class="app-title-header">Leão Festivo</span>
-                    <button id="btnLogoutTop" class="btn-logout-minimal" title="Sair">
+                    <div class="header-branding">
+                        <i data-lucide="gift" class="header-icon-gold"></i>
+                        <span class="app-title-header">Leão Festivo</span>
+                    </div>
+                    <button id="btnLogoutTop" class="btn-logout-minimal" title="Encerrar Sessão">
                         <i data-lucide="log-out"></i>
                     </button>
                 </div>
@@ -123,7 +149,6 @@ function montarLayoutEstrutural() {
 
     renderizarNavegacao();
     
-    // Suporte básico a hash para não perder a página no refresh
     const rotaInicial = window.location.hash.replace('#', '') || 'dash';
     irPara(rotaInicial); 
 }
@@ -134,41 +159,42 @@ function renderizarNavegacao() {
     if (!nav) return;
 
     nav.innerHTML = `
-        <div class="nav-bottom-container">
-            <div class="tab-bar-scrollable">
-                <button class="nav-item" data-route="dash" onclick="window.navegar('dash')">
-                    <i data-lucide="layout-dashboard"></i>
-                    <span>Início</span>
-                </button>
-                
-                <button class="nav-item" data-route="list" onclick="window.navegar('list')">
-                    <i data-lucide="users"></i>
-                    <span>Elenco</span>
-                </button>
+        <div class="tab-bar-scrollable">
+            <button class="nav-item" data-route="dash" id="nav-dash">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Painel</span>
+            </button>
+            
+            <button class="nav-item" data-route="list" id="nav-list">
+                <i data-lucide="party-popper"></i>
+                <span>Celebrantes</span>
+            </button>
 
-                <div class="fab-item-wrapper">
-                    <button class="fab-button" onclick="window.navegar('form')">
-                        <i data-lucide="plus"></i>
-                    </button>
-                </div>
-
-                <button class="nav-item" data-route="calendario" onclick="window.navegar('calendario')">
-                    <i data-lucide="calendar-days"></i>
-                    <span>Agenda</span>
-                </button>
-
-                <button class="nav-item" data-route="config" onclick="window.navegar('config')">
-                    <i data-lucide="settings"></i>
-                    <span>Ajustes</span>
+            <div class="fab-item-wrapper">
+                <button class="fab-button" id="nav-form" title="Novo Homenageado">
+                    <i data-lucide="plus-circle"></i>
                 </button>
             </div>
+
+            <button class="nav-item" data-route="calendario" id="nav-calendario">
+                <i data-lucide="calendar-days"></i>
+                <span>Agenda</span>
+            </button>
+
+            <button class="nav-item" data-route="config" id="nav-config">
+                <i data-lucide="settings"></i>
+                <span>Ajustes</span>
+            </button>
         </div>
     `;
 
-    // @ts-ignore
-    window.navegar = (t, p) => irPara(t, p);
+    // Listeners de navegação modernos
+    document.getElementById('nav-dash')?.addEventListener('click', () => irPara('dash'));
+    document.getElementById('nav-list')?.addEventListener('click', () => irPara('list'));
+    document.getElementById('nav-form')?.addEventListener('click', () => irPara('form'));
+    document.getElementById('nav-calendario')?.addEventListener('click', () => irPara('calendario'));
+    document.getElementById('nav-config')?.addEventListener('click', () => irPara('config'));
 
-    // Escuta mudanças de hash para navegação interna (como no select de categorias)
     window.addEventListener('hashchange', () => {
         const rota = window.location.hash.replace('#', '');
         if (rota) irPara(rota);
@@ -177,18 +203,22 @@ function renderizarNavegacao() {
     recarregarIcones();
 }
 
-// --- ROTAS ---
+// --- GESTOR DE FLUXO ---
 export async function irPara(tela: string, params?: any) {
     const container = document.getElementById('main-content');
     if (!container) return;
 
-    // Atualiza estado visual dos botões
+    window.location.hash = tela;
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`[data-route="${tela}"]`)?.classList.add('active');
 
-    container.innerHTML = `<div class="loading">Carregando tática...</div>`;
+    container.innerHTML = `
+        <div class="loading">
+            <div class="loader-elegant"></div>
+            <span>Organizando sua agenda...</span>
+        </div>
+    `;
 
-    // Normaliza a rota (ex: se vier de links #categorias)
     const rotaLimpa = tela.split('?')[0];
 
     switch (rotaLimpa) {
@@ -199,7 +229,7 @@ export async function irPara(tela: string, params?: any) {
         case 'detalhes': await montarDetalhes(container, params); break;
         case 'calendario': await montarCalendario(container); break;
         case 'config': await montarConfiguracoes(container); break;
-        case 'categorias': await montarCategorias(container); break; // ✅ Rota Adicionada
+        case 'categorias': await montarCategorias(container); break;
         default: await montarDashboard(container);
     }
 
