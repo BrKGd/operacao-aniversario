@@ -1,6 +1,7 @@
 import '../styles/cadastro.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
+// ✅ Importação correta para Vanilla
 import { createIcons, icons } from 'lucide';
 
 const ICON_CATEGORIES: Record<string, string[]> = {
@@ -11,6 +12,7 @@ const ICON_CATEGORIES: Record<string, string[]> = {
     "Família": ["Home", "Baby", "Users", "Church", "Gift", "Cake", "HeartHandshake"]
 };
 
+// Pega todos os nomes de ícones disponíveis no objeto 'icons'
 const ALL_LUCIDE_KEYS = Object.keys(icons).sort();
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
@@ -34,6 +36,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 </div>
 
                 <form id="formAniversario" class="form-body">
+                    <!-- ... campos de nome, data e telefone (mantidos iguais) ... -->
                     <div class="form-group">
                         <label class="label-mini">Nome Completo *</label>
                         <input type="text" id="nome" class="modern-input" required 
@@ -54,7 +57,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     </div>
 
                     <div class="form-group">
-                        <label class="label-mini">Categoria / Círculo (Clique direito/Segure para editar)</label>
+                        <label class="label-mini">Categoria / Círculo</label>
                         <select id="categoria_id" class="modern-input" required>
                             <option value="">Selecione uma categoria</option>
                             <option value="new" style="font-weight: bold; color: #4361ee;">+ Adicionar Nova Categoria...</option>
@@ -69,36 +72,54 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     <div class="floating-actions">
                         <button type="button" class="btn-cancelar" id="btnCancelar">Cancelar</button>
                         <button type="submit" class="btn-salvar" id="btnSubmit">
-                            <span>${idEdicao ? 'Salvar Alterações' : 'Cadastrar'}</span>
+                            <span>${idEdicao ? 'Salvar' : 'Cadastrar'}</span>
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- Modal de Categoria (Mantido igual) -->
             <div id="modalCategoria" class="modal-overlay" style="display: none;">
                 <div class="modern-card">
                     <div class="form-header-dark">
                         <div class="header-title">
                             <i data-lucide="tag"></i>
-                            <span id="tituloModalCat">Nova Categoria</span>
+                            <span>Nova Categoria</span>
                         </div>
-                        <button type="button" id="fecharModal" class="btn-close-circle"><i data-lucide="x"></i></button>
+                        <button type="button" id="fecharModal" class="btn-close-circle">
+                            <i data-lucide="x"></i>
+                        </button>
                     </div>
+
                     <div class="modal-body-scroll">
-                        <input type="hidden" id="idCategoriaEdicao">
-                        <label class="label-mini">Nome</label>
-                        <input type="text" id="novoNomeCategoria" class="modern-input">
-                        <label class="label-mini">Cor</label>
+                        <label class="label-mini">Nome da Categoria</label>
+                        <input type="text" id="novoNomeCategoria" class="modern-input" placeholder="Ex: Academia">
+                        
+                        <label class="label-mini">Cor Identificadora</label>
                         <input type="color" id="novaCorCategoria" class="modern-input" value="#4361ee">
-                        <div id="gridIcones" class="modern-icon-grid"></div>
+                        
+                        <label class="label-mini">Escolha um Ícone</label>
+                        <div class="icon-selector-section">
+                            <div class="search-wrapper">
+                                <i data-lucide="search" class="search-icon-inside"></i>
+                                <input type="text" id="buscaIcone" class="search-input" placeholder="Pesquisar ícones...">
+                            </div>
+
+                            <div id="categoryChips" class="category-chips-row">
+                                <button type="button" class="chip active" data-cat="Populares">Populares</button>
+                                <button type="button" class="chip" data-cat="Esportes">Esportes</button>
+                                <button type="button" class="chip" data-cat="Trabalho">Trabalho</button>
+                                <button type="button" class="chip" data-cat="Lazer">Lazer</button>
+                                <button type="button" class="chip" data-cat="Família">Família</button>
+                                <button type="button" class="chip" data-cat="all">Todos</button>
+                            </div>
+
+                            <div id="gridIcones" class="modern-icon-grid"></div>
+                        </div>
                         <input type="hidden" id="novoIconeCategoria" value="user">
                     </div>
+
                     <div class="floating-actions-modal">
-                        <button type="button" id="btnExcluirCategoria" class="btn-action-round" style="display: none; background: #fee2e2; color: #ef4444;">
-                            <i data-lucide="trash-2"></i>
-                        </button>
-                        <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
+                         <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
                             <i data-lucide="check"></i>
                         </button>
                     </div>
@@ -106,132 +127,90 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             </div>
         `;
 
-        const form = document.getElementById('formAniversario') as HTMLFormElement;
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
         const modal = document.getElementById('modalCategoria') as HTMLElement;
-        const btnCancelar = document.getElementById('btnCancelar') as HTMLButtonElement;
+        const gridIcones = document.getElementById('gridIcones') as HTMLElement;
+        const hiddenIconInput = document.getElementById('novoIconeCategoria') as HTMLInputElement;
+        const inputBusca = document.getElementById('buscaIcone') as HTMLInputElement;
 
-        // --- Lógica de Navegação/Ações ---
-
-        const voltarParaDetalhes = () => {
-            if (idEdicao) {
-                window.location.hash = `#detalhes?id=${idEdicao}`;
-            }
-        };
-
-        const limparCampos = () => {
-            form.reset();
-            // Garante que o select volte ao estado vazio se for novo cadastro
-            if (!idEdicao) selectCategoria.value = "";
-        };
-
-        btnCancelar.addEventListener('click', () => {
-            if (idEdicao) {
-                voltarParaDetalhes();
-            } else {
-                limparCampos();
-            }
-        });
-
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const btnSubmit = document.getElementById('btnSubmit') as HTMLButtonElement;
-            btnSubmit.disabled = true;
-
-            const dados: Omit<Aniversario, 'id'> = {
-                nome: (document.getElementById('nome') as HTMLInputElement).value,
-                data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
-                telefone: (document.getElementById('telefone') as HTMLInputElement).value,
-                categoria_id: selectCategoria.value
-            };
-
-            try {
-                if (idEdicao) {
-                    await aniversarioService.atualizar(idEdicao, dados);
-                    voltarParaDetalhes();
-                } else {
-                    await aniversarioService.adicionar(dados);
-                    alert("Cadastrado com sucesso!");
-                    limparCampos();
+        // Função principal que "ativa" os ícones do Lucide
+        const atualizarIconesNaTela = () => {
+            createIcons({
+                icons, // Passa o objeto de ícones importado
+                attrs: {
+                    strokeWidth: 2,
+                    width: 24,
+                    height: 24
                 }
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao processar requisição.");
-            } finally {
-                btnSubmit.disabled = false;
-            }
-        };
-
-        // --- Funções de Ícones e Modal (Mantidas e Otimizadas) ---
-
-        const atualizarIconesNaTela = () => createIcons({ icons, attrs: { strokeWidth: 2, width: 24, height: 24 } });
-
-        const abrirEdicaoCategoria = (id: string) => {
-            const cat = categorias.find(c => c.id === id);
-            if (!cat) return;
-            (document.getElementById('tituloModalCat') as HTMLElement).innerText = "Editar Categoria";
-            (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value = cat.id;
-            (document.getElementById('novoNomeCategoria') as HTMLInputElement).value = cat.nome;
-            (document.getElementById('novaCorCategoria') as HTMLInputElement).value = cat.cor || '#4361ee';
-            (document.getElementById('novoIconeCategoria') as HTMLInputElement).value = cat.icone || 'user';
-            (document.getElementById('btnExcluirCategoria') as HTMLElement).style.display = 'flex';
-            modal.style.display = 'flex';
-            // Renderizar grid após abrir modal
-            renderizarGrid();
-        };
-
-        // Eventos Híbridos (PC: Direito | Mobile: Segurar)
-        let timer: any;
-        selectCategoria.oncontextmenu = (e) => {
-            e.preventDefault();
-            if (selectCategoria.value && selectCategoria.value !== 'new') abrirEdicaoCategoria(selectCategoria.value);
-        };
-        selectCategoria.ontouchstart = () => {
-            timer = setTimeout(() => {
-                if (selectCategoria.value && selectCategoria.value !== 'new') abrirEdicaoCategoria(selectCategoria.value);
-            }, 700);
-        };
-        selectCategoria.ontouchend = () => clearTimeout(timer);
-
-        // Renderização do Grid de Ícones (Simplificada para o exemplo)
-        const renderizarGrid = () => {
-            const grid = document.getElementById('gridIcones') as HTMLElement;
-            const hiddenIcon = document.getElementById('novoIconeCategoria') as HTMLInputElement;
-            const iconsToShow = ICON_CATEGORIES["Populares"]; // Exemplo simplificado
-
-            grid.innerHTML = iconsToShow.map(icon => {
-                const kebab = icon.toLowerCase();
-                return `<div class="icon-card ${hiddenIcon.value === kebab ? 'selected' : ''}" data-icon="${kebab}">
-                            <i data-lucide="${kebab}"></i>
-                        </div>`;
-            }).join('');
-            
-            atualizarIconesNaTela();
-
-            grid.querySelectorAll('.icon-card').forEach(card => {
-                card.onclick = () => {
-                    grid.querySelectorAll('.icon-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    hiddenIcon.value = (card as HTMLElement).dataset.icon || 'user';
-                };
             });
         };
 
+        const renderizarGrid = (filtro: string = '') => {
+            let chaves: string[] = [];
+            const categoriaAtiva = document.querySelector('.chip.active')?.getAttribute('data-cat') || 'Populares';
+
+            if (filtro.trim()) {
+                chaves = ALL_LUCIDE_KEYS.filter(k => k.toLowerCase().includes(filtro.toLowerCase())).slice(0, 50);
+            } else if (categoriaAtiva === 'all') {
+                chaves = ALL_LUCIDE_KEYS.slice(0, 50);
+            } else {
+                chaves = ICON_CATEGORIES[categoriaAtiva] || [];
+            }
+
+            gridIcones.innerHTML = chaves.map(key => {
+                // O Lucide Vanilla espera o nome do ícone em kebab-case ou como definido no data-lucide
+                // Como as chaves de 'icons' geralmente são PascalCase, formatamos:
+                const kebabName = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+                const isSelected = hiddenIconInput.value === kebabName;
+                
+                return `
+                    <div class="icon-card ${isSelected ? 'selected' : ''}" data-icon="${kebabName}">
+                        <i data-lucide="${kebabName}"></i>
+                    </div>
+                `;
+            }).join('');
+
+            // CRÍTICO: Registra o clique e RE-RENDERIZA o Lucide para as novas tags <i>
+            atualizarIconesNaTela();
+
+            gridIcones.querySelectorAll('.icon-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    gridIcones.querySelectorAll('.icon-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    hiddenIconInput.value = card.getAttribute('data-icon') || 'user';
+                });
+            });
+        };
+
+        // --- Eventos ---
+        inputBusca.addEventListener('input', (e) => {
+            renderizarGrid((e.target as HTMLInputElement).value);
+        });
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                inputBusca.value = '';
+                renderizarGrid();
+            });
+        });
+
         selectCategoria.addEventListener('change', () => {
             if (selectCategoria.value === 'new') {
-                (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value = '';
-                (document.getElementById('tituloModalCat') as HTMLElement).innerText = "Nova Categoria";
-                (document.getElementById('btnExcluirCategoria') as HTMLElement).style.display = 'none';
                 modal.style.display = 'flex';
+                selectCategoria.value = '';
                 renderizarGrid();
             }
         });
 
         document.getElementById('fecharModal')?.addEventListener('click', () => modal.style.display = 'none');
-        
+
+        // Renderização inicial (ícones do formulário principal)
         atualizarIconesNaTela();
 
     } catch (error) {
+        console.error(error);
         container.innerHTML = `<div class="error-msg">Erro ao carregar formulário.</div>`;
     }
 }

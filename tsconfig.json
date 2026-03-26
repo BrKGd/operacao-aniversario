@@ -5,8 +5,8 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
+    "ignoreDeprecations": "5.0",
 
-    /* Modo Bundler (Otimizado para Vite) */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -14,14 +14,12 @@
     "noEmit": true,
     "jsx": "preserve",
 
-    /* Rigor de Tipagem (Segurança Fullstack) */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true, 
+    "noUncheckedIndexedAccess": true,
 
-    /* Caminhos e Tipos */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
