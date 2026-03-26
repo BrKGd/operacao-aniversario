@@ -16,12 +16,15 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const ehEdicao = !!(idEdicao && dadosEdicao);
         let imagemSelecionada = (dadosEdicao as any)?.imagem_url || '';
 
-        const avataresSementes = ['Leo', 'Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
+        const avataresSementes = ['Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
 
         container.innerHTML = `
             <div class="fec-center-wrapper">
                 <div class="fec-form-wrapper">
-                    <button class="fec-btn-close" id="btnFecharForm"><i data-lucide="x"></i></button>
+                    <!-- BOTÃO VOLTAR COM ESTILO MELHORADO -->
+                    <button class="fec-btn-back-nav" id="btnVoltarForm" title="Voltar">
+                        <i data-lucide="chevron-left"></i>
+                    </button>
 
                     <header class="fec-form-header">
                         <div class="avatar-squircle-fec" id="avatarPreview">
@@ -51,6 +54,12 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                         <div class="fec-input-group-line">
                             <i data-lucide="smile"></i>
                             <input type="text" id="apelido" placeholder="Apelido" value="${(dadosEdicao as any)?.apelido || ''}">
+                        </div>
+
+                        <!-- CAMPO WHATSAPP MAPEADO PARA A COLUNA TELEFONE -->
+                        <div class="fec-input-group-line">
+                            <i data-lucide="phone"></i>
+                            <input type="tel" id="telefone" placeholder="WhatsApp (DDD + Número)" value="${(dadosEdicao as any)?.telefone || ''}">
                         </div>
 
                         <div class="fec-input-group-line">
@@ -116,7 +125,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             }
         });
 
-        // --- RESTANTE DA LÓGICA (AVATARES E UPLOAD) ---
+        // --- LÓGICA DE AVATARES E UPLOAD ---
         const drawer = document.getElementById('avatarDrawer') as HTMLElement;
         const overlay = document.getElementById('drawerOverlay') as HTMLElement;
         const preview = document.getElementById('avatarPreview') as HTMLElement;
@@ -160,7 +169,12 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             else window.location.hash = `#detalhes?id=${idEdicao}`;
         };
 
-        document.getElementById('btnFecharForm')?.addEventListener('click', () => window.history.back());
+        // LÓGICA DO BOTÃO VOLTAR
+        document.getElementById('btnVoltarForm')?.addEventListener('click', () => {
+            if (ehEdicao) irParaDetalhes();
+            else window.history.back();
+        });
+
         document.getElementById('btnSecondaryAction')?.addEventListener('click', () => {
             if (ehEdicao) irParaDetalhes(); else (document.getElementById('formAniversario') as HTMLFormElement).reset();
         });
@@ -173,6 +187,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 const dados = {
                     nome: (document.getElementById('nome') as HTMLInputElement).value,
                     apelido: (document.getElementById('apelido') as HTMLInputElement).value,
+                    telefone: (document.getElementById('telefone') as HTMLInputElement).value, // Coluna correta
                     frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                     imagem_url: inputHidden.value,
@@ -190,9 +205,13 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     irParaDetalhes();
                 } else {
                     await aniversarioService.adicionar(dados);
-                    window.location.hash = '#listagem';
+                    if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
+                    else window.location.hash = '#listagem';
                 }
-            } catch (err) { alert("Erro ao salvar."); }
+            } catch (err) { 
+                console.error(err);
+                alert("Erro ao salvar. Verifique se a coluna 'telefone' existe no banco."); 
+            }
             finally { btn.disabled = false; }
         };
 

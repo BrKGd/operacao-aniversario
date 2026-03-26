@@ -12,6 +12,7 @@
     --fec-border: rgba(255, 255, 255, 0.2);
     --fec-bg-overlay: rgba(0, 5, 20, 0.95);
     --fec-shadow: rgba(0, 51, 153, 0.4);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* --- ESTRUTURA BASE --- */
@@ -32,6 +33,32 @@
     width: 100%;
     max-width: 450px;
     background: transparent;
+}
+
+/* --- NOVO: BOTÃO VOLTAR/SAIR MINIMALISTA --- */
+.btn-logout-minimal {
+    background: transparent !important;
+    border: none !important;
+    color: var(--fec-azul-vibrante); /* Azul conforme solicitado */
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 20;
+}
+
+.btn-logout-minimal:hover {
+    background: rgba(0, 51, 153, 0.1) !important;
+    transform: translateX(-3px); /* Efeito visual de "voltar" */
+}
+
+.btn-logout-minimal i {
+    width: 24px !important;
+    height: 24px !important;
 }
 
 /* --- HEADER E SELEÇÃO DE MÍDIA --- */
@@ -76,7 +103,7 @@
     justify-content: center;
     box-shadow: 0 12px 25px var(--fec-shadow);
     border: 3px solid var(--fec-branco);
-    overflow: hidden; /* Para a foto preencher o squircle */
+    overflow: hidden; 
 }
 
 .avatar-icon-fec { color: white; width: 60px; height: 60px; }
@@ -90,16 +117,16 @@
 /* Container dos botões */
 .avatar-action-btns {
     display: flex;
-    gap: 10px;          /* Espaço entre os botões */
+    gap: 10px;          
     justify-content: center;
-    width: 100%;        /* Garante que o container use a largura disponível */
+    width: 100%;        
     margin-top: 15px;
 }
 
 /* Ajuste nos botões individuais */
 .btn-fec-outline-sm {
-    flex: 1;            /* Força ambos a terem a mesma largura proporcional */
-    max-width: 125px;   /* Largura mínima para não esmagar o texto */
+    flex: 1;            
+    max-width: 125px;   
     height: 30px; 
     display: flex;
     align-items: center;
@@ -108,14 +135,13 @@
     border-radius: 20px;
     border: none;
     background-color: #ffffff;
-    color: #003399;     /* Azul do Fortaleza */
+    color: #003399;     
     font-weight: bold;
     font-size: 12px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Garante que o ícone não desalinhe o texto */
 .btn-fec-outline-sm i {
     width: 15px;
     height: 15px;
@@ -309,20 +335,32 @@
 
 /* --- NOVO: DRAWER DE AVATARES (ESTILO BOTTOM SHEET) --- */
 
+/* --- AJUSTE: DRAWER DE AVATARES (FULL WIDTH + ALTURA REDUZIDA) --- */
+
 .avatar-drawer {
     position: fixed;
     bottom: -100%;
-    left: 50%; /* Centraliza horizontalmente */
-    transform: translateX(-50%); /* Ajuste fino da centralização */
-    width: 95%;
-    max-width: 100%; /* Garante que não fique largo demais em telas grandes */
+    left: 0; /* Alinhado à esquerda */
+    transform: none; /* Removemos o translateX para ocupar o eixo X corretamente */
+    width: 100%; /* Ocupa a largura total da tela */
+    max-width: 100%; 
     background: #001a4d;
+    
+    /* BORDAS: Para que o border-radius seja visível em 100% de largura, 
+       ele precisa estar apenas no topo. */
     border-top: 3px solid var(--fec-vermelho-vibrante);
-    border-radius: 30px 30px 0 0; /* Arredonda superior esquerdo e direito */
-    padding: 20px;
-    z-index: 1100;
+    border-radius: 25px 25px 0 0; 
+    
+    /* ALTURA: Diminuída para ser mais discreta */
+    padding: 15px 20px 10px; 
+    height: auto; 
+    max-height: 220px; /* Limita a altura para não subir muito na tela */
+    
+    z-index: 9999;
     transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
 }
 
 .avatar-drawer.active {
@@ -333,7 +371,7 @@
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.7);
-    z-index: 1050;
+    z-index: 9998; /* Logo abaixo do drawer */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -367,7 +405,7 @@
     display: flex;
     overflow-x: auto;
     gap: 15px;
-    padding: 10px 5px 30px;
+    padding: 5px 5px 20px; /* Reduzi o padding interno */
     scroll-snap-type: x mandatory;
 }
 
@@ -380,20 +418,36 @@
     height: 70px;
     min-width: 70px;
     border-radius: 50%;
-    background: var(--fec-azul-vibrante);
+    background: var(--fec-azul-vibrante)!important;
     border: 3px solid var(--fec-border);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--fec-branco);
     scroll-snap-align: center;
     object-fit: cover;
+    padding: 0;
 }
 
 .avatar-circle-option:hover {
     transform: scale(1.1);
     border-color: var(--fec-vermelho-vibrante);
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+}
+
+/* Seleciona o ícone (SVG) dentro da opção de avatar */
+.avatar-circle-option i, 
+.avatar-circle-option svg {
+    display: block;             /* Remove espaços de linha de texto */
+    width: 38px !important;     /* Tamanho do ícone */
+    height: 38px !important;
+    margin: 0 auto !important;  /* Garante que não haja margens laterais */
+    flex-shrink: 0;             /* Impede que o flexbox "esmague" o ícone */
+}
+
+/* Efeito opcional: o ícone cresce um pouco mais no hover */
+.avatar-circle-option:hover i {
+    transform: scale(1.1);
 }
