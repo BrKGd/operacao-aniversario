@@ -47,23 +47,21 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                 </div>
             </div>
         </div>
-    `,document.getElementById(`btnVoltarLogin`)?.addEventListener(`click`,e=>{e.preventDefault(),window.location.reload()}),document.getElementById(`btnFinalizarRegistro`)?.addEventListener(`click`,async()=>{let e=document.getElementById(`reg-email`).value,t=document.getElementById(`reg-password`).value,n=document.getElementById(`reg-password-confirm`).value,r=document.getElementById(`reg-error`);if(t!==n){r&&(r.innerText=`As senhas não conferem!`,r.style.display=`block`);return}try{let{error:n}=await Q.auth.signUp({email:e,password:t});if(n)throw n;alert(`Cadastro realizado! Verifique sua caixa de entrada para confirmar o e-mail.`),window.location.reload()}catch(e){r&&(r.innerText=e.message,r.style.display=`block`)}})}var $={async listarPorMes(e){let{data:t,error:n}=await Q.from(`aniversarios`).select(`
-        *,
+    `,document.getElementById(`btnVoltarLogin`)?.addEventListener(`click`,e=>{e.preventDefault(),window.location.reload()}),document.getElementById(`btnFinalizarRegistro`)?.addEventListener(`click`,async()=>{let e=document.getElementById(`reg-email`).value,t=document.getElementById(`reg-password`).value,n=document.getElementById(`reg-password-confirm`).value,r=document.getElementById(`reg-error`);if(t!==n){r&&(r.innerText=`As senhas não conferem!`,r.style.display=`block`);return}try{let{error:n}=await Q.auth.signUp({email:e,password:t});if(n)throw n;alert(`Cadastro realizado! Verifique sua caixa de entrada para confirmar o e-mail.`),window.location.reload()}catch(e){r&&(r.innerText=e.message,r.style.display=`block`)}})}var $={async listarPorMes(e){let{data:t,error:n}=await Q.from(`aniversarios`).select(`         *,
         categorias (
           id,
           nome,
           icone,
           cor
         )
-      `).filter(`data_nascimento`,`raw`,`extract(month from data_nascimento) = ${e+1}`).order(`nome`,{ascending:!0});return n?(console.error(`Erro ao buscar dados por mês:`,n.message),[]):t||[]},async listarTodos(){let{data:e,error:t}=await Q.from(`aniversarios`).select(`
-        *,
+      `).filter(`data_nascimento`,`raw`,`extract(month from data_nascimento) = ${e+1}`).order(`nome`,{ascending:!0});return n?(console.error(`Erro ao buscar dados por mês:`,n.message),[]):t||[]},async listarTodos(){let{data:e,error:t}=await Q.from(`aniversarios`).select(`         *,
         categorias (
           id,
           nome,
           icone,
           cor
         )
-      `).order(`nome`,{ascending:!0});return t?(console.error(`Erro ao buscar todos os aniversariantes:`,t.message),[]):e||[]},async listarCategorias(){let{data:e,error:t}=await Q.from(`categorias`).select(`*`).order(`nome`,{ascending:!0});return t?(console.error(`Erro ao buscar categorias:`,t.message),[]):e},async adicionarCategoria(e){let{data:t,error:n}=await Q.from(`categorias`).insert([e]).select().single();if(n)throw console.error(`Erro ao criar categoria:`,n.message),n;return t},async adicionar(e){let{data:t,error:n}=await Q.from(`aniversarios`).insert([e]).select().single();if(n)throw console.error(`Erro ao escalar novo aniversariante:`,n.message),n;return t},async atualizar(e,t){let{categorias:n,...r}=t,{data:i,error:a}=await Q.from(`aniversarios`).update(r).eq(`id`,e).select().single();if(a)throw console.error(`Erro ao atualizar registro:`,a.message),a;return i},async excluir(e){let{error:t}=await Q.from(`aniversarios`).delete().eq(`id`,e);if(t)throw console.error(`Erro ao remover registro:`,t.message),t}},WF=(e,t)=>{let n=[`Parabéns, ${e}! Que seu dia seja repleto de alegrias e muitas conquistas. 🎂`,`Fala, ${e}! Passando para desejar um feliz aniversário e muita saúde! 🎉`,`Hoje é o seu dia, ${e}! Tudo de bom hoje e sempre. Grande abraço! 🎈`,`Parabéns pelo seu dia, ${e}! Muita paz, saúde e felicidades! 🎊`],r=n[Math.floor(Math.random()*n.length)]??``,i=encodeURIComponent(r);return`https://wa.me/${t?t.replace(/\D/g,``):``}?text=${i}`};async function GF(e){e.innerHTML=`<div class="loading">Convocando dados...</div>`;try{let t=new Date,n=t.getMonth(),r=await $.listarTodos(),i=r.filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`);return n.getDate()===t.getDate()&&n.getMonth()===t.getMonth()}),a=r.map(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate());r<t&&(t.getDate()!==n.getDate()||t.getMonth()!==n.getMonth())&&r.setFullYear(t.getFullYear()+1);let i=r.getTime()-t.getTime(),a=Math.ceil(i/(1e3*60*60*24));return{...e,diffDays:a,dataObj:n}}).filter(e=>e.diffDays>0&&e.diffDays<=7).sort((e,t)=>e.diffDays-t.diffDays),o=i.length>0?i[0]:null;e.innerHTML=`
+      `).order(`nome`,{ascending:!0});return t?(console.error(`Erro ao buscar todos:`,t.message),[]):e||[]},async adicionar(e){let{data:t,error:n}=await Q.from(`aniversarios`).insert([e]).select().single();if(n)throw console.error(`Erro ao adicionar:`,n.message),n;return t},async atualizar(e,t){let{categorias:n,...r}=t,{data:i,error:a}=await Q.from(`aniversarios`).update(r).eq(`id`,e).select().single();if(a)throw console.error(`Erro ao atualizar:`,a.message),a;return i},async excluir(e){let{error:t}=await Q.from(`aniversarios`).delete().eq(`id`,e);if(t)throw console.error(`Erro ao excluir:`,t.message),t},async listarCategorias(){let{data:e,error:t}=await Q.from(`categorias`).select(`*`).order(`nome`,{ascending:!0});return t?(console.error(`Erro ao listar categorias:`,t.message),[]):e},async adicionarCategoria(e){let{data:t,error:n}=await Q.from(`categorias`).insert([e]).select().single();if(n)throw console.error(`Erro ao criar categoria:`,n.message),n;return t},async atualizarCategoria(e,t){let{data:n,error:r}=await Q.from(`categorias`).update(t).eq(`id`,e).select().single();if(r)throw console.error(`Erro ao atualizar categoria:`,r.message),r;return n},async excluirCategoria(e){let{error:t}=await Q.from(`categorias`).delete().eq(`id`,e);if(t)throw console.error(`Erro ao excluir categoria:`,t.message),t}},WF=(e,t)=>{let n=[`Parabéns, ${e}! Que seu dia seja repleto de alegrias e muitas conquistas. 🎂`,`Fala, ${e}! Passando para desejar um feliz aniversário e muita saúde! 🎉`,`Hoje é o seu dia, ${e}! Tudo de bom hoje e sempre. Grande abraço! 🎈`,`Parabéns pelo seu dia, ${e}! Muita paz, saúde e felicidades! 🎊`],r=n[Math.floor(Math.random()*n.length)]??``,i=encodeURIComponent(r);return`https://wa.me/${t?t.replace(/\D/g,``):``}?text=${i}`};async function GF(e){e.innerHTML=`<div class="loading">Convocando dados...</div>`;try{let t=new Date,n=t.getMonth(),r=await $.listarTodos(),i=r.filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`);return n.getDate()===t.getDate()&&n.getMonth()===t.getMonth()}),a=r.map(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate());r<t&&(t.getDate()!==n.getDate()||t.getMonth()!==n.getMonth())&&r.setFullYear(t.getFullYear()+1);let i=r.getTime()-t.getTime(),a=Math.ceil(i/(1e3*60*60*24));return{...e,diffDays:a,dataObj:n}}).filter(e=>e.diffDays>0&&e.diffDays<=7).sort((e,t)=>e.diffDays-t.diffDays),o=i.length>0?i[0]:null;e.innerHTML=`
             <div class="dash-container">
                 <!-- CARD DESTAQUE (HERO) -->
                 <section class="hero-card">
@@ -157,113 +155,73 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     ${r()}
                 </div>
             </div>
-        `;let i=()=>{document.querySelectorAll(`.btn-mini.edit`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=e.getAttribute(`data-id`);window.navegar(`form`,n)})}),document.querySelectorAll(`.btn-mini.del`).forEach(t=>{t.addEventListener(`click`,async n=>{n.stopPropagation();let r=t.getAttribute(`data-id`);r&&confirm(`Remover do elenco?`)&&(await $.excluir(r),KF(e))})})};document.getElementById(`inputBusca`)?.addEventListener(`input`,e=>{let t=e.target.value,n=document.getElementById(`listaContatos`);n&&(n.innerHTML=r(t),i(),window.lucide&&window.lucide.createIcons())}),i(),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar lista.</div>`}}var qF={Populares:[`User`,`Heart`,`Star`,`Bell`,`CheckCircle`,`Smile`,`Flag`,`Flame`],Esportes:[`Trophy`,`Bike`,`Dumbbell`,`Medal`,`Target`,`Timer`,`Footprints`],Trabalho:[`Briefcase`,`FileText`,`Building`,`Laptop`,`HardHat`,`Keyboard`],Lazer:[`Music`,`Camera`,`Gamepad2`,`Coffee`,`Beer`,`Utensils`,`Plane`,`Tent`],Família:[`Home`,`Baby`,`Users`,`Church`,`Gift`,`Cake`,`HeartHandshake`]},JF=Object.keys(VF).sort();async function YF(e,t){e.innerHTML=`<div class="loading">Preparando convocação...</div>`;try{let[n,r]=await Promise.all([$.listarCategorias(),t?$.listarTodos():Promise.resolve([])]),i=t&&r.find(e=>e.id===t)||null;e.innerHTML=`
-            <div class="form-container modern-style">
-                <div class="form-header-dark">
-                    <div class="header-title">
-                        <i data-lucide="${t?`user-cog`:`user-plus`}"></i>
-                        <span>${t?`Editar Convocado`:`Nova Escalação`}</span>
-                    </div>
-                </div>
+        `;let i=()=>{document.querySelectorAll(`.btn-mini.edit`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=e.getAttribute(`data-id`);window.navegar(`form`,n)})}),document.querySelectorAll(`.btn-mini.del`).forEach(t=>{t.addEventListener(`click`,async n=>{n.stopPropagation();let r=t.getAttribute(`data-id`);r&&confirm(`Remover do elenco?`)&&(await $.excluir(r),KF(e))})})};document.getElementById(`inputBusca`)?.addEventListener(`input`,e=>{let t=e.target.value,n=document.getElementById(`listaContatos`);n&&(n.innerHTML=r(t),i(),window.lucide&&window.lucide.createIcons())}),i(),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar lista.</div>`}}Object.keys(VF).sort();async function qF(e,t){e.innerHTML=`<div class="loading">Preparando convocação...</div>`;try{let[n,r]=await Promise.all([$.listarCategorias(),t?$.listarTodos():Promise.resolve([])]),i=t&&r.find(e=>e.id===t)||null;e.innerHTML=`
+    <div class="form-container modern-style">
+        <div class="form-header-dark">
+            <div class="header-title">
+                <i data-lucide="${t?`user-cog`:`user-plus`}"></i>
+                <span>${t?`Editar Convocado`:`Nova Escalação`}</span>
+            </div>
+        </div>
 
-                <form id="formAniversario" class="form-body">
-                    <div class="form-group">
-                        <label class="label-mini">Nome Completo *</label>
-                        <input type="text" id="nome" class="modern-input" required 
-                               value="${i?.nome||``}" placeholder="Ex: Marcelo Boeck">
-                    </div>
-
-                    <div class="form-row-group">
-                        <div class="form-group">
-                            <label class="label-mini">Data de Nascimento *</label>
-                            <input type="date" id="data_nascimento" class="modern-input" required
-                                   value="${i?.data_nascimento||``}">
-                        </div>
-                        <div class="form-group">
-                            <label class="label-mini">WhatsApp</label>
-                            <input type="tel" id="telefone" class="modern-input" 
-                            value="${i?.telefone||``}" placeholder="(85)...">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="label-mini">Categoria / Círculo (Clique direito ou Segure para editar)</label>
-                        <select id="categoria_id" class="modern-input" required>
-                            <option value="">Selecione uma categoria</option>
-                            <option value="new" style="font-weight: bold; color: #4361ee;">+ Adicionar Nova Categoria...</option>
-                            ${n.map(e=>`
-                                <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>
-                                    ${e.nome}
-                                </option>
-                            `).join(``)}
-                        </select>
-                    </div>
-
-                    <div class="floating-actions">
-                        <button type="button" class="btn-cancelar" id="btnCancelar">Cancelar</button>
-                        <button type="submit" class="btn-salvar" id="btnSubmit">
-                            <span>${t?`Salvar`:`Cadastrar`}</span>
-                        </button>
-                    </div>
-                </form>
+        <form id="formAniversario" class="form-body">
+            <div class="form-group">
+                <label class="label-mini">Nome Completo *</label>
+                <input type="text" id="nome" class="modern-input" required 
+                    value="${i?.nome||``}">
             </div>
 
-            <div id="modalCategoria" class="modal-overlay" style="display: none;">
-                <div class="modern-card">
-                    <div class="form-header-dark">
-                        <div class="header-title">
-                            <i data-lucide="tag"></i>
-                            <span id="tituloModalCat">Nova Categoria</span>
-                        </div>
-                        <button type="button" id="fecharModal" class="btn-close-circle">
-                            <i data-lucide="x"></i>
-                        </button>
-                    </div>
-
-                    <div class="modal-body-scroll">
-                        <input type="hidden" id="idCategoriaEdicao">
-                        <label class="label-mini">Nome da Categoria</label>
-                        <input type="text" id="novoNomeCategoria" class="modern-input" placeholder="Ex: Academia">
-                        
-                        <label class="label-mini">Cor Identificadora</label>
-                        <input type="color" id="novaCorCategoria" class="modern-input" value="#4361ee">
-                        
-                        <label class="label-mini">Escolha um Ícone</label>
-                        <div class="icon-selector-section">
-                            <div class="search-wrapper">
-                                <i data-lucide="search" class="search-icon-inside"></i>
-                                <input type="text" id="buscaIcone" class="search-input" placeholder="Pesquisar ícones...">
-                            </div>
-
-                            <div id="categoryChips" class="category-chips-row">
-                                <button type="button" class="chip active" data-cat="Populares">Populares</button>
-                                <button type="button" class="chip" data-cat="Esportes">Esportes</button>
-                                <button type="button" class="chip" data-cat="Trabalho">Trabalho</button>
-                                <button type="button" class="chip" data-cat="Lazer">Lazer</button>
-                                <button type="button" class="chip" data-cat="Família">Família</button>
-                                <button type="button" class="chip" data-cat="all">Todos</button>
-                            </div>
-
-                            <div id="gridIcones" class="modern-icon-grid"></div>
-                        </div>
-                        <input type="hidden" id="novoIconeCategoria" value="user">
-                    </div>
-
-                    <div class="floating-actions-modal">
-                        <button type="button" id="btnExcluirCategoria" class="btn-action-round" style="background: #fee2e2; color: #ef4444; display: none;">
-                            <i data-lucide="trash-2"></i>
-                        </button>
-                        <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
-                            <i data-lucide="check"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="form-row-group">
+                <input type="date" id="data_nascimento" required
+                    value="${i?.data_nascimento||``}">
+                <input type="tel" id="telefone"
+                    value="${i?.telefone||``}">
             </div>
-        `;let a=document.getElementById(`formAniversario`),o=document.getElementById(`categoria_id`),s=document.getElementById(`modalCategoria`),c=document.getElementById(`gridIcones`),l=document.getElementById(`novoIconeCategoria`),u=document.getElementById(`buscaIcone`),d=()=>{HF({icons:VF,attrs:{strokeWidth:2,width:24,height:24}})},f=(e=``)=>{let t=[],n=document.querySelector(`.chip.active`)?.getAttribute(`data-cat`)||`Populares`;t=e.trim()?JF.filter(t=>t.toLowerCase().includes(e.toLowerCase())).slice(0,50):n===`all`?JF.slice(0,50):qF[n]||[],c.innerHTML=t.map(e=>{let t=e.replace(/([a-z0-9])([A-Z])/g,`$1-$2`).toLowerCase();return`
-                    <div class="icon-card ${l.value===t?`selected`:``}" data-icon="${t}">
-                        <i data-lucide="${t}"></i>
-                    </div>
-                `}).join(``),d(),c.querySelectorAll(`.icon-card`).forEach(e=>{e.addEventListener(`click`,()=>{c.querySelectorAll(`.icon-card`).forEach(e=>e.classList.remove(`selected`)),e.classList.add(`selected`),l.value=e.dataset.icon||`user`})})},p=e=>{let t=n.find(t=>t.id===e);t&&(document.getElementById(`tituloModalCat`).innerText=`Editar Categoria`,document.getElementById(`idCategoriaEdicao`).value=t.id,document.getElementById(`novoNomeCategoria`).value=t.nome,document.getElementById(`novaCorCategoria`).value=t.cor||`#4361ee`,l.value=t.icone||`user`,document.getElementById(`btnExcluirCategoria`).style.display=`flex`,s.style.display=`flex`,f())},m;o.addEventListener(`contextmenu`,e=>{e.preventDefault(),o.value&&o.value!==`new`&&p(o.value)}),o.addEventListener(`touchstart`,()=>{m=setTimeout(()=>{o.value&&o.value!==`new`&&p(o.value)},800)}),o.addEventListener(`touchend`,()=>clearTimeout(m)),a.onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;let r={nome:document.getElementById(`nome`).value,data_nascimento:document.getElementById(`data_nascimento`).value,telefone:document.getElementById(`telefone`).value,categoria_id:o.value};try{t?(await $.atualizar(t,r),window.location.hash=`#detalhes?id=${t}`):(await $.adicionar(r),window.location.hash=`#elenco`),a.reset()}catch{alert(`Erro ao salvar.`)}finally{n.disabled=!1}},document.getElementById(`btnSalvarCategoria`)?.addEventListener(`click`,async()=>{let n=document.getElementById(`idCategoriaEdicao`).value,r={nome:document.getElementById(`novoNomeCategoria`).value,cor:document.getElementById(`novaCorCategoria`).value,icone:l.value};try{n?await $.atualizarCategoria(n,r):await $.adicionarCategoria(r),s.style.display=`none`,YF(e,t)}catch{alert(`Erro ao salvar categoria.`)}}),document.getElementById(`btnExcluirCategoria`)?.addEventListener(`click`,async()=>{let n=document.getElementById(`idCategoriaEdicao`).value;n&&confirm(`Excluir esta categoria?`)&&(await $.excluirCategoria(n),s.style.display=`none`,YF(e,t))}),u.addEventListener(`input`,e=>f(e.target.value)),e.querySelectorAll(`.chip`).forEach(t=>{t.addEventListener(`click`,()=>{e.querySelectorAll(`.chip`).forEach(e=>e.classList.remove(`active`)),t.classList.add(`active`),u.value=``,f()})}),o.addEventListener(`change`,()=>{o.value===`new`&&(document.getElementById(`idCategoriaEdicao`).value=``,document.getElementById(`tituloModalCat`).innerText=`Nova Categoria`,document.getElementById(`btnExcluirCategoria`).style.display=`none`,s.style.display=`flex`,f())}),document.getElementById(`fecharModal`)?.addEventListener(`click`,()=>s.style.display=`none`),document.getElementById(`btnCancelar`)?.addEventListener(`click`,()=>{window.history.back()}),d()}catch(t){console.error(t),e.innerHTML=`<div class="error-msg">Erro ao carregar formulário.</div>`}}async function XF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
+
+            <select id="categoria_id" required>
+                <option value="">Selecione</option>
+                <option value="new">+ Nova Categoria</option>
+                ${n.map(e=>`
+                    <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>
+                        ${e.nome}
+                    </option>
+                `).join(``)}
+            </select>
+
+            <div class="floating-actions">
+                <button type="button" id="btnCancelar">Cancelar</button>
+                <button type="submit" id="btnSubmit">
+                    ${t?`Salvar`:`Cadastrar`}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal Categoria -->
+    <div id="modalCategoria" class="modal-overlay" style="display:none;">
+        <div class="modern-card">
+            <h3 id="tituloModalCat">Nova Categoria</h3>
+            <input type="hidden" id="idCategoriaEdicao">
+            <input type="text" id="novoNomeCategoria">
+            <input type="color" id="novaCorCategoria" value="#4361ee">
+            <div id="gridIcones"></div>
+            <input type="hidden" id="novoIconeCategoria" value="user">
+
+            <button id="btnSalvarCategoria">Salvar</button>
+            <button id="btnExcluirCategoria" style="display:none;">Excluir</button>
+            <button id="fecharModal">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Modal Ações -->
+    <div id="modalAcoesCategoria" class="modal-overlay" style="display:none;">
+        <div class="modern-card">
+            <button id="btnEditarCategoria">Editar</button>
+            <button id="btnExcluirCategoriaAcao">Excluir</button>
+            <button id="btnCancelarAcao">Cancelar</button>
+        </div>
+    </div>
+    `;let a=document.getElementById(`formAniversario`),o=document.getElementById(`categoria_id`),s=document.getElementById(`modalCategoria`),c=document.getElementById(`modalAcoesCategoria`),l=document.getElementById(`novoIconeCategoria`),u=null,d=()=>{HF({icons:VF})},f=e=>{let t=n.find(t=>t.id===e);t&&(document.getElementById(`idCategoriaEdicao`).value=t.id,document.getElementById(`novoNomeCategoria`).value=t.nome,document.getElementById(`novaCorCategoria`).value=t.cor||`#4361ee`,l.value=t.icone||`user`,s.style.display=`flex`)},p=e=>{u=e,c.style.display=`flex`};document.getElementById(`btnCancelar`)?.addEventListener(`click`,()=>{t?window.location.hash=`#detalhes?id=${t}`:a.reset()}),a.onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0,n.innerText=`Salvando...`;let r={nome:document.getElementById(`nome`).value,data_nascimento:document.getElementById(`data_nascimento`).value,telefone:document.getElementById(`telefone`).value,categoria_id:o.value};try{t?(await $.atualizar(t,r),window.location.hash=`#detalhes?id=${t}`):(await $.adicionar(r),window.location.hash=`#list`)}catch{alert(`Erro ao salvar.`)}finally{n.disabled=!1,n.innerText=t?`Salvar`:`Cadastrar`}},o.addEventListener(`change`,()=>{o.value===`new`&&(s.style.display=`flex`)}),o.addEventListener(`contextmenu`,e=>{e.preventDefault(),o.value&&o.value!==`new`&&p(o.value)}),document.getElementById(`btnEditarCategoria`)?.addEventListener(`click`,()=>{c.style.display=`none`,u&&f(u)}),document.getElementById(`btnExcluirCategoriaAcao`)?.addEventListener(`click`,async()=>{u&&confirm(`Excluir categoria?`)&&(await $.excluirCategoria(u),qF(e,t))}),document.getElementById(`btnCancelarAcao`)?.addEventListener(`click`,()=>{c.style.display=`none`}),document.getElementById(`fecharModal`)?.addEventListener(`click`,()=>s.style.display=`none`),d()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar formulário.</div>`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
                     <h2><i data-lucide="bell"></i> Central de Alertas</h2>
@@ -296,7 +254,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     `}
                 </div>
             </div>
-        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error(`Erro em Notificações:`,t),e.innerHTML=`<div class="error-msg">Erro ao carregar notificações.</div>`}}async function ZF(e,t){if(!t){e.innerHTML=`<div class="error-msg">ID do integrante não fornecido.</div>`;return}e.innerHTML=`<div class="loading">Buscando ficha técnica...</div>`;try{let n=(await $.listarTodos()).find(e=>e.id===t);if(!n){e.innerHTML=`<div class="error-msg">Integrante não encontrado.</div>`;return}let r=new Date(n.data_nascimento+`T00:00:00`),i=new Date,a=i.getFullYear()-r.getFullYear(),o=i.getMonth()-r.getMonth();(o<0||o===0&&i.getDate()<r.getDate())&&a--,e.innerHTML=`
+        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error(`Erro em Notificações:`,t),e.innerHTML=`<div class="error-msg">Erro ao carregar notificações.</div>`}}async function YF(e,t){if(!t){e.innerHTML=`<div class="error-msg">ID do integrante não fornecido.</div>`;return}e.innerHTML=`<div class="loading">Buscando ficha técnica...</div>`;try{let n=(await $.listarTodos()).find(e=>e.id===t);if(!n){e.innerHTML=`<div class="error-msg">Integrante não encontrado.</div>`;return}let r=new Date(n.data_nascimento+`T00:00:00`),i=new Date,a=i.getFullYear()-r.getFullYear(),o=i.getMonth()-r.getMonth();(o<0||o===0&&i.getDate()<r.getDate())&&a--,e.innerHTML=`
             <div class="detalhes-container">
                 <div class="detalhes-header">
                     <button class="btn-voltar" onclick="window.navegar('list')">
@@ -341,7 +299,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     </button>
                 </div>
             </div>
-        `,document.getElementById(`btnExcluirFicha`)?.addEventListener(`click`,async()=>{confirm(`Tem certeza que deseja remover ${n.nome} permanentemente?`)&&(await $.excluir(n.id),window.navegar(`list`))}),window.lucide&&window.lucide.createIcons()}catch(t){console.error(`Erro ao carregar detalhes:`,t),e.innerHTML=`<div class="error-msg">Falha ao carregar perfil.</div>`}}async function QF(e){e.innerHTML=`<div class="loading">Organizando calendário...</div>`;try{let t=new Date,n=await $.listarTodos(),r=t.getMonth(),i=t.getFullYear(),a=()=>{let o=new Date(i,r,1).getDay(),s=new Date(i,r+1,0).getDate(),c=new Date(i,r).toLocaleString(`pt-BR`,{month:`long`}),l=n.filter(e=>new Date(e.data_nascimento+`T00:00:00`).getMonth()===r),u=``;for(let e=0;e<o;e++)u+=`<div class="dia-vazio"></div>`;for(let e=1;e<=s;e++){let n=l.filter(t=>new Date(t.data_nascimento+`T00:00:00`).getDate()===e),a=e===t.getDate()&&r===t.getMonth()&&i===t.getFullYear();u+=`
+        `,document.getElementById(`btnExcluirFicha`)?.addEventListener(`click`,async()=>{confirm(`Tem certeza que deseja remover ${n.nome} permanentemente?`)&&(await $.excluir(n.id),window.navegar(`list`))}),window.lucide&&window.lucide.createIcons()}catch(t){console.error(`Erro ao carregar detalhes:`,t),e.innerHTML=`<div class="error-msg">Falha ao carregar perfil.</div>`}}async function XF(e){e.innerHTML=`<div class="loading">Organizando calendário...</div>`;try{let t=new Date,n=await $.listarTodos(),r=t.getMonth(),i=t.getFullYear(),a=()=>{let o=new Date(i,r,1).getDay(),s=new Date(i,r+1,0).getDate(),c=new Date(i,r).toLocaleString(`pt-BR`,{month:`long`}),l=n.filter(e=>new Date(e.data_nascimento+`T00:00:00`).getMonth()===r),u=``;for(let e=0;e<o;e++)u+=`<div class="dia-vazio"></div>`;for(let e=1;e<=s;e++){let n=l.filter(t=>new Date(t.data_nascimento+`T00:00:00`).getDate()===e),a=e===t.getDate()&&r===t.getMonth()&&i===t.getFullYear();u+=`
                     <div class="dia-card ${a?`hoje`:``} ${n.length>0?`tem-evento`:``}">
                         <span class="num-dia">${e}</span>
                         <div class="eventos-dia">
@@ -375,7 +333,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                         `).join(``):`<p>Ninguém faz aniversário este mês.</p>`}
                     </div>
                 </div>
-            `,document.getElementById(`prevMes`)?.addEventListener(`click`,()=>{r--,r<0&&(r=11,i--),a()}),document.getElementById(`nextMes`)?.addEventListener(`click`,()=>{r++,r>11&&(r=0,i++),a()}),window.lucide&&window.lucide.createIcons()};a()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar calendário.</div>`}}async function $F(e){e.innerHTML=`<div class="loading">Carregando painel de controle...</div>`;try{let t=await $.listarTodos(),n=t.reduce((e,t)=>{let n=t.categorias?.nome||`Geral`;return e[n]=(e[n]||0)+1,e},{});e.innerHTML=`
+            `,document.getElementById(`prevMes`)?.addEventListener(`click`,()=>{r--,r<0&&(r=11,i--),a()}),document.getElementById(`nextMes`)?.addEventListener(`click`,()=>{r++,r>11&&(r=0,i++),a()}),window.lucide&&window.lucide.createIcons()};a()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar calendário.</div>`}}async function ZF(e){e.innerHTML=`<div class="loading">Carregando painel de controle...</div>`;try{let t=await $.listarTodos(),n=t.reduce((e,t)=>{let n=t.categorias?.nome||`Geral`;return e[n]=(e[n]||0)+1,e},{});e.innerHTML=`
             <div class="config-container">
                 <header class="config-header">
                     <h1>Configurações</h1>
@@ -433,7 +391,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     🦁 App Aniversariantes v1.0.0
                 </div>
             </div>
-        `,document.getElementById(`btnExportar`)?.addEventListener(`click`,()=>{let e=`data:text/json;charset=utf-8,`+encodeURIComponent(JSON.stringify(t)),n=document.createElement(`a`);n.setAttribute(`href`,e),n.setAttribute(`download`,`elenco_aniversariantes.json`),document.body.appendChild(n),n.click(),n.remove()}),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar ajustes.</div>`}}async function eI(){let{data:{session:e}}=await Q.auth.getSession();e?nI():tI()}function tI(){document.body.innerHTML=`
+        `,document.getElementById(`btnExportar`)?.addEventListener(`click`,()=>{let e=`data:text/json;charset=utf-8,`+encodeURIComponent(JSON.stringify(t)),n=document.createElement(`a`);n.setAttribute(`href`,e),n.setAttribute(`download`,`elenco_aniversariantes.json`),document.body.appendChild(n),n.click(),n.remove()}),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar ajustes.</div>`}}async function QF(){let{data:{session:e}}=await Q.auth.getSession();e?eI():$F()}function $F(){document.body.innerHTML=`
         <div class="auth-container">
             <div class="auth-card">
                 <div class="auth-header">
@@ -466,7 +424,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                 </div>
             </div>
         </div>
-    `,aI(),document.getElementById(`linkIrParaRegistro`)?.addEventListener(`click`,e=>{e.preventDefault(),UF()}),document.getElementById(`btnAuthAction`)?.addEventListener(`click`,async()=>{let e=document.getElementById(`email`),t=document.getElementById(`password`),n=document.getElementById(`btnAuthAction`);n.disabled=!0,n.innerHTML=`<span>Entrando...</span>`;let{error:r}=await Q.auth.signInWithPassword({email:e.value,password:t.value});if(r){let e=document.getElementById(`auth-error`);e&&(e.innerText=`Credenciais inválidas.`,e.style.display=`block`),n.disabled=!1,n.innerHTML=`<span>Entrar no Campo</span><i data-lucide="chevron-right"></i>`,aI()}else window.location.reload()})}function nI(){document.body.innerHTML=`
+    `,rI(),document.getElementById(`linkIrParaRegistro`)?.addEventListener(`click`,e=>{e.preventDefault(),UF()}),document.getElementById(`btnAuthAction`)?.addEventListener(`click`,async()=>{let e=document.getElementById(`email`),t=document.getElementById(`password`),n=document.getElementById(`btnAuthAction`);n.disabled=!0,n.innerHTML=`<span>Entrando...</span>`;let{error:r}=await Q.auth.signInWithPassword({email:e.value,password:t.value});if(r){let e=document.getElementById(`auth-error`);e&&(e.innerText=`Credenciais inválidas.`,e.style.display=`block`),n.disabled=!1,n.innerHTML=`<span>Entrar no Campo</span><i data-lucide="chevron-right"></i>`,rI()}else window.location.reload()})}function eI(){document.body.innerHTML=`
         <div id="app-container">
             <header id="app-header">
                 <div class="header-content">
@@ -482,7 +440,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
             
             <nav id="app-nav" class="nav-bottom-container"></nav>
         </div>
-    `,document.getElementById(`btnLogoutTop`)?.addEventListener(`click`,async()=>{await Q.auth.signOut(),window.location.reload()}),rI(),iI(`dash`)}function rI(){let e=document.getElementById(`app-nav`);e&&(e.innerHTML=`
+    `,document.getElementById(`btnLogoutTop`)?.addEventListener(`click`,async()=>{await Q.auth.signOut(),window.location.reload()}),tI(),nI(`dash`)}function tI(){let e=document.getElementById(`app-nav`);e&&(e.innerHTML=`
         <div class="nav-bottom-container">
             <div class="tab-bar-scrollable">
 
@@ -524,4 +482,4 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
 
             </div>
         </div>
-    `,window.navegar=(e,t)=>iI(e,t),aI())}async function iI(e,t){let n=document.getElementById(`main-content`);if(n){switch(document.querySelectorAll(`.nav-item`).forEach(e=>e.classList.remove(`active`)),document.querySelector(`[data-route="${e}"]`)?.classList.add(`active`),n.innerHTML=`<div class="loading">Carregando tática...</div>`,e){case`dash`:await GF(n);break;case`list`:await KF(n);break;case`form`:await YF(n,t);break;case`notificacoes`:await XF(n);break;case`detalhes`:await ZF(n,t);break;case`calendario`:await QF(n);break;case`config`:await $F(n);break;default:await GF(n)}aI()}}function aI(){HF({icons:VF})}document.addEventListener(`DOMContentLoaded`,eI);
+    `,window.navegar=(e,t)=>nI(e,t),rI())}async function nI(e,t){let n=document.getElementById(`main-content`);if(n){switch(document.querySelectorAll(`.nav-item`).forEach(e=>e.classList.remove(`active`)),document.querySelector(`[data-route="${e}"]`)?.classList.add(`active`),n.innerHTML=`<div class="loading">Carregando tática...</div>`,e){case`dash`:await GF(n);break;case`list`:await KF(n);break;case`form`:await qF(n,t);break;case`notificacoes`:await JF(n);break;case`detalhes`:await YF(n,t);break;case`calendario`:await XF(n);break;case`config`:await ZF(n);break;default:await GF(n)}rI()}}function rI(){HF({icons:VF})}document.addEventListener(`DOMContentLoaded`,QF);
