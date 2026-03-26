@@ -1,0 +1,175 @@
+:root {
+    --fec-blue: #004a8d;
+    --fec-red: #d71921;
+    --fec-white: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.98);
+    --input-bg: #f3f4f6;
+    --gradient-main: linear-gradient(135deg, #004a8d 0%, #d71921 100%);
+    
+    /* Ajustado para Light Mode */
+    --bg-light: #ffffff; 
+    --card-bg: #ffffff;
+    --text-main: #000000;
+    --text-muted: #64748b;
+    --success-green: #10b981;
+    --anime-border: 2px solid #000000;
+}
+
+.lista-wrapper {
+    padding: 20px;
+    background-color: var(--bg-light);
+    min-height: 100vh;
+    color: var(--text-main); /* Texto agora é preto */
+}
+
+/* BUSCA E FILTROS */
+.header-busca {
+    margin-bottom: 20px;
+}
+
+.search-box {
+    background: var(--input-bg);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    border: var(--anime-border); /* Borda anime preta */
+}
+
+.search-box input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    width: 100%;
+    font-size: 1rem;
+    margin-left: 10px;
+}
+
+.search-box i {
+    color: var(--text-muted);
+    width: 20px;
+}
+
+.filtros-rapidos {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.filtros-rapidos::-webkit-scrollbar { display: none; }
+
+.chip {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: var(--text-muted);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chip.active {
+    background: var(--fec-blue);
+    color: var(--fec-white);
+    border-color: var(--fec-blue);
+}
+
+/* SEÇÕES */
+.secao-titulo {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 25px 0 15px 5px;
+    color: var(--text-main);
+}
+
+/* CARD ESTILO ANIME LIGHT */
+.card-aniversario {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border: var(--anime-border); /* Borda preta de 2px */
+    transition: transform 0.2s ease;
+}
+
+.card-aniversario:active {
+    transform: scale(0.97);
+}
+
+.info-principal {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: 1;
+}
+
+/* AVATAR */
+.avatar-box {
+    width: 60px;
+    height: 60px;
+    background: #fff4e6;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--fec-blue);
+    border: 1.5px solid #000; /* Detalhe anime no avatar */
+    overflow: hidden;
+}
+
+.textos-contato {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nome-contato {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.subtexto-contato {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.categoria-tag {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--fec-red);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* CONTAGEM REGRESSIVA */
+.contagem-container {
+    text-align: right;
+    min-width: 60px;
+}
+
+.numero-dias {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--fec-blue); /* Azul do Fortaleza para os números */
+    line-height: 1;
+}
+
+.label-dias {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+}

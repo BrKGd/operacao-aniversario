@@ -1,0 +1,77 @@
+.notificacoes-container {
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.notif-header {
+    margin-bottom: 1.5rem;
+}
+
+.notif-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--fec-dark-blue);
+    font-size: 1.5rem;
+}
+
+.card-notif {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid #cbd5e1;
+}
+
+.card-notif.status-hoje {
+    border-left: 4px solid #e11d48; /* Vermelho destaque */
+    background: #fff1f2;
+}
+
+.notif-icon {
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+.notif-content {
+    flex: 1;
+}
+
+.notif-nome {
+    font-weight: bold;
+    color: #1e293b;
+}
+
+.notif-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.notif-categoria-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+.btn-notif-action {
+    background: #25d366;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.btn-notif-action:hover {
+    transform: scale(1.1);
+}

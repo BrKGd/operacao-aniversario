@@ -1,0 +1,98 @@
+.detalhes-container {
+    padding: 20px;
+    animation: slideInUp 0.3s ease-out;
+}
+
+.detalhes-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.btn-voltar {
+    background: transparent;
+    border: none;
+    color: var(--fec-blue);
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.perfil-card {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.perfil-avatar {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+.perfil-nome {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin: 5px 0;
+}
+
+.perfil-badge {
+    background: var(--fec-red);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+.info-item p {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.acoes-footer {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-whatsapp-full {
+    background: #25d366;
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-excluir-danger {
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #fecdd3;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}

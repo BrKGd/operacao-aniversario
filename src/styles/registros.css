@@ -1,0 +1,71 @@
+/* src/styles/registros.css */
+.reg-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.reg-card {
+    background: var(--fec-white);
+    padding: 40px;
+    border-radius: 28px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    border-top: 10px solid var(--fec-red); /* Destaque em Vermelho para diferenciar do Login */
+    text-align: center;
+}
+
+.reg-header {
+    margin-bottom: 30px;
+}
+
+.reg-header h2 {
+    color: var(--fec-blue);
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.reg-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.reg-form input {
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+}
+
+.reg-form input:focus {
+    border-color: var(--fec-red);
+    outline: none;
+}
+
+#btnFinalizarRegistro {
+    background: var(--fec-blue);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#btnFinalizarRegistro:hover {
+    background: var(--fec-red);
+}
+
+.reg-footer {
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.reg-footer a {
+    color: var(--fec-blue);
+    text-decoration: none;
+    font-weight: bold;
+}
