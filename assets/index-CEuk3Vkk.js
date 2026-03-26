@@ -175,6 +175,11 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                         </div>
 
                         <div class="fec-input-group-line">
+                            <i data-lucide="quote"></i>
+                            <input type="text" id="frase_exibicao" placeholder="Frase de exibição" value="${i?.frase_exibicao||``}">
+                        </div>
+
+                        <div class="fec-input-group-line">
                             <i data-lucide="cake"></i>
                             <div class="fec-column-input">
                                 <label class="fec-mini-label">Data de Nascimento</label>
@@ -186,6 +191,8 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                              <i data-lucide="bookmark"></i>
                              <select id="categoria_id" required>
                                 <option value="" disabled ${i?``:`selected`}>Selecione o grupo</option>
+                                <option value="NOVA_CATEGORIA" style="font-weight: bold; color: #e63946;">+ Adicionar categoria</option>
+                                
                                 ${n.map(e=>`<option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>${e.nome}</option>`).join(``)}
                              </select>
                         </div>
@@ -201,7 +208,6 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     </form>
                 </div>
 
-                <!-- Bottom Sheet de Avatares -->
                 <div id="avatarDrawer" class="avatar-drawer">
                     <div class="drawer-handle"></div>
                     <div class="drawer-header">Escolha seu Avatar</div>
@@ -214,7 +220,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                 </div>
                 <div id="drawerOverlay" class="drawer-overlay"></div>
             </div>
-        `;let s=document.getElementById(`avatarDrawer`),c=document.getElementById(`drawerOverlay`),l=document.getElementById(`avatarPreview`),u=document.getElementById(`imagem_url`),d=e=>{s.classList.toggle(`active`,e),c.classList.toggle(`active`,e)};document.getElementById(`btnAbrirGaleria`)?.addEventListener(`click`,()=>d(!0)),c.addEventListener(`click`,()=>d(!1)),document.querySelectorAll(`.avatar-circle-option`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-url`)||``;u.value=t,l.innerHTML=t?`<img src="${t}" class="img-preview-fec">`:`<i data-lucide="user" class="avatar-icon-fec"></i>`,d(!1),HF({icons:VF})})}),document.getElementById(`inputFoto`)?.addEventListener(`change`,e=>{let t=e.target.files[0];if(t){let e=new FileReader;e.onload=e=>{let t=e.target?.result;u.value=t,l.innerHTML=`<img src="${t}" class="img-preview-fec">`},e.readAsDataURL(t)}});let f=()=>{typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`};document.getElementById(`btnFecharForm`)?.addEventListener(`click`,()=>window.history.back()),document.getElementById(`btnSecondaryAction`)?.addEventListener(`click`,()=>{a?f():document.getElementById(`formAniversario`).reset()}),document.getElementById(`formAniversario`).onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;try{let e={nome:document.getElementById(`nome`).value,apelido:document.getElementById(`apelido`).value,data_nascimento:document.getElementById(`data_nascimento`).value,imagem_url:u.value,categoria_id:document.getElementById(`categoria_id`).value};a&&t?(await $.atualizar(t,e),f()):(await $.adicionar(e),window.location.hash=`#listagem`)}catch{alert(`Erro ao salvar.`)}finally{n.disabled=!1}},HF({icons:VF})}catch{e.innerHTML=`Erro ao carregar.`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
+        `;let s=document.getElementById(`categoria_id`);s.addEventListener(`change`,()=>{s.value===`NOVA_CATEGORIA`&&(typeof window.navegar==`function`?window.navegar(`categorias`):window.location.hash=`#categorias`)});let c=document.getElementById(`avatarDrawer`),l=document.getElementById(`drawerOverlay`),u=document.getElementById(`avatarPreview`),d=document.getElementById(`imagem_url`),f=e=>{c.classList.toggle(`active`,e),l.classList.toggle(`active`,e)};document.getElementById(`btnAbrirGaleria`)?.addEventListener(`click`,()=>f(!0)),l.addEventListener(`click`,()=>f(!1)),document.querySelectorAll(`.avatar-circle-option`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-url`)||``;d.value=t,u.innerHTML=t?`<img src="${t}" class="img-preview-fec">`:`<i data-lucide="user" class="avatar-icon-fec"></i>`,f(!1),HF({icons:VF})})}),document.getElementById(`inputFoto`)?.addEventListener(`change`,e=>{let t=e.target.files[0];if(t){let e=new FileReader;e.onload=e=>{let t=e.target?.result;d.value=t,u.innerHTML=`<img src="${t}" class="img-preview-fec">`},e.readAsDataURL(t)}});let p=()=>{typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`};document.getElementById(`btnFecharForm`)?.addEventListener(`click`,()=>window.history.back()),document.getElementById(`btnSecondaryAction`)?.addEventListener(`click`,()=>{a?p():document.getElementById(`formAniversario`).reset()}),document.getElementById(`formAniversario`).onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;try{let e={nome:document.getElementById(`nome`).value,apelido:document.getElementById(`apelido`).value,frase_exibicao:document.getElementById(`frase_exibicao`).value,data_nascimento:document.getElementById(`data_nascimento`).value,imagem_url:d.value,categoria_id:document.getElementById(`categoria_id`).value};if(e.categoria_id===`NOVA_CATEGORIA`){alert(`Por favor, selecione uma categoria válida.`),n.disabled=!1;return}a&&t?(await $.atualizar(t,e),p()):(await $.adicionar(e),window.location.hash=`#listagem`)}catch{alert(`Erro ao salvar.`)}finally{n.disabled=!1}},HF({icons:VF})}catch{e.innerHTML=`Erro ao carregar.`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
                     <h2><i data-lucide="bell"></i> Central de Alertas</h2>
