@@ -147,19 +147,17 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     <button class="fec-btn-close" id="btnFecharForm"><i data-lucide="x"></i></button>
 
                     <header class="fec-form-header">
-                        <div class="avatar-selection-zone">
-                            <div class="avatar-display" id="avatarPreview">
-                                ${o?`<img src="${o}" class="img-preview-fec">`:`<i data-lucide="user" class="avatar-icon-fec"></i>`}
-                            </div>
-                            <div class="avatar-btns-row">
-                                <button type="button" class="btn-media-fec" id="btnGaleriaAvatar">
-                                    <i data-lucide="layout-grid"></i> AVATAR
-                                </button>
-                                <label class="btn-media-fec" for="inputFoto">
-                                    <i data-lucide="camera"></i> FOTO
-                                    <input type="file" id="inputFoto" accept="image/*" hidden>
-                                </label>
-                            </div>
+                        <div class="avatar-squircle-fec" id="avatarPreview">
+                            ${o?`<img src="${o}" class="img-preview-fec">`:`<i data-lucide="user" class="avatar-icon-fec"></i>`}
+                        </div>
+                        <div class="avatar-action-btns">
+                            <button type="button" class="btn-fec-outline-sm" id="btnAbrirGaleria">
+                                <i data-lucide="layout-grid"></i> Avatares
+                            </button>
+                            <label class="btn-fec-outline-sm" for="inputFoto">
+                                <i data-lucide="camera"></i> Foto
+                                <input type="file" id="inputFoto" accept="image/*" hidden>
+                            </label>
                         </div>
                     </header>
 
@@ -177,11 +175,6 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                         </div>
 
                         <div class="fec-input-group-line">
-                             <i data-lucide="heart"></i>
-                             <input type="text" id="frase_exibicao" placeholder="Mensagem carinhosa" value="${i?.frase_exibicao||``}">
-                        </div>
-
-                        <div class="fec-input-group-line">
                             <i data-lucide="cake"></i>
                             <div class="fec-column-input">
                                 <label class="fec-mini-label">Data de Nascimento</label>
@@ -193,36 +186,35 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                              <i data-lucide="bookmark"></i>
                              <select id="categoria_id" required>
                                 <option value="" disabled ${i?``:`selected`}>Selecione o grupo</option>
-                                <option value="GO_CATEGORIAS">⚙️ ORGANIZAR GRUPOS</option>
-                                ${n.map(e=>`
-                                    <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>${e.nome}</option>
-                                `).join(``)}
+                                ${n.map(e=>`<option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>${e.nome}</option>`).join(``)}
                              </select>
                         </div>
 
                         <div class="fec-action-footer">
                             <button type="submit" class="btn-fec-submit" id="btnSubmit">
-                                ${a?`SALVAR ALTERAÇÕES`:`CONFIRMAR CADASTRO`}
+                                ${a?`Salvar Alterações`:`Confirmar Cadastro`}
                             </button>
                             <button type="button" class="btn-fec-cancel" id="btnSecondaryAction">
-                                ${a?`DESCARTAR`:`LIMPAR`}
+                                ${a?`Descartar`:`Limpar`}
                             </button>
                         </div>
                     </form>
                 </div>
-            </div>
 
-            <!-- Modal de Galeria de Avatares (Oculto inicialmente) -->
-            <div id="modalAvatares" class="fec-modal-overlay" style="display:none">
-                <div class="fec-modal-content">
-                    <h3>Escolha um Avatar</h3>
-                    <div class="avatar-grid">
-                        ${[1,2,3,4,5,6].map(e=>`<img src="assets/avatars/av-${e}.png" class="avatar-option" data-url="assets/avatars/av-${e}.png">`).join(``)}
+                <!-- Bottom Sheet de Avatares -->
+                <div id="avatarDrawer" class="avatar-drawer">
+                    <div class="drawer-handle"></div>
+                    <div class="drawer-header">Escolha seu Avatar</div>
+                    <div class="avatar-grid-scroll">
+                        <div class="avatar-circle-option" data-url="">
+                             <i data-lucide="user-minus"></i>
+                        </div>
+                        ${[`Leo`,`Mia`,`Jack`,`Aria`,`Noah`,`Zoe`,`Max`,`Luna`,`Caleb`,`Iris`].map(e=>{let t=`https://api.dicebear.com/7.x/avataaars/svg?seed=${e}`;return`<img src="${t}" class="avatar-circle-option" data-url="${t}">`}).join(``)}
                     </div>
-                    <button type="button" class="btn-close-modal" id="btnCloseModal">Fechar</button>
                 </div>
+                <div id="drawerOverlay" class="drawer-overlay"></div>
             </div>
-        `;let s=document.getElementById(`formAniversario`),c=document.getElementById(`avatarPreview`),l=document.getElementById(`imagem_url`);document.getElementById(`inputFoto`)?.addEventListener(`change`,e=>{let t=e.target.files[0];if(t){let e=new FileReader;e.onload=e=>{let t=e.target?.result;l.value=t,c.innerHTML=`<img src="${t}" class="img-preview-fec">`},e.readAsDataURL(t)}});let u=document.getElementById(`modalAvatares`);document.getElementById(`btnGaleriaAvatar`)?.addEventListener(`click`,()=>u.style.display=`flex`),document.getElementById(`btnCloseModal`)?.addEventListener(`click`,()=>u.style.display=`none`),document.querySelectorAll(`.avatar-option`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target.getAttribute(`data-url`);l.value=t,c.innerHTML=`<img src="${t}" class="img-preview-fec">`,u.style.display=`none`})});let d=()=>{typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`};document.getElementById(`btnSecondaryAction`)?.addEventListener(`click`,()=>{a?d():s.reset()}),s.onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;let r={nome:document.getElementById(`nome`).value,apelido:document.getElementById(`apelido`).value,frase_exibicao:document.getElementById(`frase_exibicao`).value,data_nascimento:document.getElementById(`data_nascimento`).value,imagem_url:l.value,categoria_id:document.getElementById(`categoria_id`).value};try{a&&t?(await $.atualizar(t,r),d()):(await $.adicionar(r),s.reset(),alert(`✅ Cadastrado!`))}catch{alert(`❌ Erro ao salvar.`)}finally{n.disabled=!1,HF({icons:VF})}},HF({icons:VF})}catch{e.innerHTML=`Erro ao carregar.`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
+        `;let s=document.getElementById(`avatarDrawer`),c=document.getElementById(`drawerOverlay`),l=document.getElementById(`avatarPreview`),u=document.getElementById(`imagem_url`),d=e=>{s.classList.toggle(`active`,e),c.classList.toggle(`active`,e)};document.getElementById(`btnAbrirGaleria`)?.addEventListener(`click`,()=>d(!0)),c.addEventListener(`click`,()=>d(!1)),document.querySelectorAll(`.avatar-circle-option`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-url`)||``;u.value=t,l.innerHTML=t?`<img src="${t}" class="img-preview-fec">`:`<i data-lucide="user" class="avatar-icon-fec"></i>`,d(!1),HF({icons:VF})})}),document.getElementById(`inputFoto`)?.addEventListener(`change`,e=>{let t=e.target.files[0];if(t){let e=new FileReader;e.onload=e=>{let t=e.target?.result;u.value=t,l.innerHTML=`<img src="${t}" class="img-preview-fec">`},e.readAsDataURL(t)}});let f=()=>{typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`};document.getElementById(`btnFecharForm`)?.addEventListener(`click`,()=>window.history.back()),document.getElementById(`btnSecondaryAction`)?.addEventListener(`click`,()=>{a?f():document.getElementById(`formAniversario`).reset()}),document.getElementById(`formAniversario`).onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;try{let e={nome:document.getElementById(`nome`).value,apelido:document.getElementById(`apelido`).value,data_nascimento:document.getElementById(`data_nascimento`).value,imagem_url:u.value,categoria_id:document.getElementById(`categoria_id`).value};a&&t?(await $.atualizar(t,e),f()):(await $.adicionar(e),window.location.hash=`#listagem`)}catch{alert(`Erro ao salvar.`)}finally{n.disabled=!1}},HF({icons:VF})}catch{e.innerHTML=`Erro ao carregar.`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
                     <h2><i data-lucide="bell"></i> Central de Alertas</h2>
