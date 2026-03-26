@@ -141,79 +141,88 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     ${r()}
                 </div>
             </div>
-        `;let i=()=>{document.querySelectorAll(`.btn-mini.edit`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=e.getAttribute(`data-id`);window.navegar(`form`,n)})}),document.querySelectorAll(`.btn-mini.del`).forEach(t=>{t.addEventListener(`click`,async n=>{n.stopPropagation();let r=t.getAttribute(`data-id`);r&&confirm(`Remover do elenco?`)&&(await $.excluir(r),KF(e))})})};document.getElementById(`inputBusca`)?.addEventListener(`input`,e=>{let t=e.target.value,n=document.getElementById(`listaContatos`);n&&(n.innerHTML=r(t),i(),window.lucide&&window.lucide.createIcons())}),i(),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar lista.</div>`}}async function qF(e,t){e.innerHTML=`<div class="fec-center-wrapper"><div class="fec-loader-minimal">CONVOCANDO LEÃO...</div></div>`;try{let[n,r]=await Promise.all([$.listarCategorias(),t?$.listarTodos():Promise.resolve([])]),i=t&&r.find(e=>e.id===t)||null,a=!!(t&&i);e.innerHTML=`
+        `;let i=()=>{document.querySelectorAll(`.btn-mini.edit`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=e.getAttribute(`data-id`);window.navegar(`form`,n)})}),document.querySelectorAll(`.btn-mini.del`).forEach(t=>{t.addEventListener(`click`,async n=>{n.stopPropagation();let r=t.getAttribute(`data-id`);r&&confirm(`Remover do elenco?`)&&(await $.excluir(r),KF(e))})})};document.getElementById(`inputBusca`)?.addEventListener(`input`,e=>{let t=e.target.value,n=document.getElementById(`listaContatos`);n&&(n.innerHTML=r(t),i(),window.lucide&&window.lucide.createIcons())}),i(),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML=`<div class="error-msg">Erro ao carregar lista.</div>`}}async function qF(e,t){e.innerHTML=`<div class="fec-center-wrapper"><div class="fec-loader-minimal">Preparando...</div></div>`;try{let[n,r]=await Promise.all([$.listarCategorias(),t?$.listarTodos():Promise.resolve([])]),i=t&&r.find(e=>e.id===t)||null,a=!!(t&&i),o=i?.imagem_url||``;e.innerHTML=`
             <div class="fec-center-wrapper">
                 <div class="fec-form-wrapper">
-                    <button class="fec-btn-close" id="btnFecharForm" title="Voltar">
-                        <i data-lucide="x"></i>
-                    </button>
+                    <button class="fec-btn-close" id="btnFecharForm"><i data-lucide="x"></i></button>
 
                     <header class="fec-form-header">
-                        <div class="avatar-edit-container">
-                            <div class="avatar-squircle-fec">
-                                <i data-lucide="user" class="avatar-icon-fec"></i>
+                        <div class="avatar-selection-zone">
+                            <div class="avatar-display" id="avatarPreview">
+                                ${o?`<img src="${o}" class="img-preview-fec">`:`<i data-lucide="user" class="avatar-icon-fec"></i>`}
                             </div>
-                            <div class="avatar-action-btns">
-                                <button type="button" class="btn-fec-outline-sm">ESCUDO</button>
-                                <button type="button" class="btn-fec-outline-sm">FOTO</button>
+                            <div class="avatar-btns-row">
+                                <button type="button" class="btn-media-fec" id="btnGaleriaAvatar">
+                                    <i data-lucide="layout-grid"></i> AVATAR
+                                </button>
+                                <label class="btn-media-fec" for="inputFoto">
+                                    <i data-lucide="camera"></i> FOTO
+                                    <input type="file" id="inputFoto" accept="image/*" hidden>
+                                </label>
                             </div>
                         </div>
                     </header>
 
                     <form id="formAniversario" class="fec-form-main">
+                        <input type="hidden" id="imagem_url" value="${o}">
+                        
                         <div class="fec-input-group-line">
                             <i data-lucide="user"></i>
-                            <input type="text" id="nome" placeholder="Nome do Convocado" required 
-                                   value="${i?.nome||``}">
+                            <input type="text" id="nome" placeholder="Nome completo" required value="${i?.nome||``}">
                         </div>
 
                         <div class="fec-input-group-line">
-                             <i data-lucide="megaphone"></i>
-                             <input type="text" id="frase_exibicao" placeholder="Grito / Apelido" 
-                                    value="${i?.frase_exibicao||``}">
+                            <i data-lucide="smile"></i>
+                            <input type="text" id="apelido" placeholder="Apelido" value="${i?.apelido||``}">
                         </div>
 
-                        <div class="fec-input-group-line fec-date-row">
-                            <div class="fec-date-content">
-                                <i data-lucide="cake"></i>
-                                <div class="fec-column-input">
-                                    <label class="fec-mini-label">Aniversário</label>
-                                    <input type="date" id="data_nascimento" required 
-                                           value="${i?.data_nascimento||``}">
-                                </div>
-                            </div>
-                            <div class="fec-toggle-inline">
-                                <span>ANO</span>
-                                <label class="fec-switch-ui">
-                                    <input type="checkbox" checked>
-                                    <span class="fec-slider-ui"></span>
-                                </label>
+                        <div class="fec-input-group-line">
+                             <i data-lucide="heart"></i>
+                             <input type="text" id="frase_exibicao" placeholder="Mensagem carinhosa" value="${i?.frase_exibicao||``}">
+                        </div>
+
+                        <div class="fec-input-group-line">
+                            <i data-lucide="cake"></i>
+                            <div class="fec-column-input">
+                                <label class="fec-mini-label">Data de Nascimento</label>
+                                <input type="date" id="data_nascimento" required value="${i?.data_nascimento||``}">
                             </div>
                         </div>
 
                         <div class="fec-input-group-line">
-                             <i data-lucide="layers"></i>
+                             <i data-lucide="bookmark"></i>
                              <select id="categoria_id" required>
-                                <option value="" disabled ${i?``:`selected`}>Círculo / Categoria</option>
-                                <option value="GO_CATEGORIAS" class="opt-manage-fec">⚙️ GERENCIAR CATEGORIAS</option>
+                                <option value="" disabled ${i?``:`selected`}>Selecione o grupo</option>
+                                <option value="GO_CATEGORIAS">⚙️ ORGANIZAR GRUPOS</option>
                                 ${n.map(e=>`
-                                    <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>
-                                        ${e.nome}
-                                    </option>
+                                    <option value="${e.id}" ${i?.categoria_id===e.id?`selected`:``}>${e.nome}</option>
                                 `).join(``)}
                              </select>
                         </div>
 
                         <div class="fec-action-footer">
-                            <button type="submit" class="btn-fec-submit">
-                                ${a?`ATUALIZAR DADOS`:`CONFIRMAR ESCALAÇÃO`}
+                            <button type="submit" class="btn-fec-submit" id="btnSubmit">
+                                ${a?`SALVAR ALTERAÇÕES`:`CONFIRMAR CADASTRO`}
                             </button>
-                            <button type="button" class="btn-fec-cancel" id="btnCancelar">CANCELAR</button>
+                            <button type="button" class="btn-fec-cancel" id="btnSecondaryAction">
+                                ${a?`DESCARTAR`:`LIMPAR`}
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-        `;let o=document.getElementById(`formAniversario`),s=document.getElementById(`categoria_id`),c=document.getElementById(`btnFecharForm`),l=document.getElementById(`btnCancelar`),u=()=>window.history.back();c?.addEventListener(`click`,u),l?.addEventListener(`click`,u),s.addEventListener(`change`,()=>{s.value===`GO_CATEGORIAS`&&(window.navegar?window.navegar(`categorias`):window.location.hash=`#categorias`)}),o.onsubmit=async e=>{e.preventDefault();let n=document.querySelector(`.btn-fec-submit`);n.innerText=`SALVANDO...`,n.disabled=!0;let r={nome:document.getElementById(`nome`).value,frase_exibicao:document.getElementById(`frase_exibicao`).value,data_nascimento:document.getElementById(`data_nascimento`).value,categoria_id:s.value};try{a&&t?(await $.atualizar(t,r),window.location.hash=`#detalhes?id=${t}`):(await $.adicionar(r),o.reset(),alert(`✅ Convocação realizada!`))}catch{alert(`❌ Erro ao salvar.`)}finally{n.innerText=a?`ATUALIZAR DADOS`:`CONFIRMAR ESCALAÇÃO`,n.disabled=!1,HF({icons:VF})}},HF({icons:VF})}catch{e.innerHTML=`<div class="fec-center-wrapper"><div class="fec-loader-minimal">ERRO NA CONVOCAÇÃO</div></div>`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
+
+            <!-- Modal de Galeria de Avatares (Oculto inicialmente) -->
+            <div id="modalAvatares" class="fec-modal-overlay" style="display:none">
+                <div class="fec-modal-content">
+                    <h3>Escolha um Avatar</h3>
+                    <div class="avatar-grid">
+                        ${[1,2,3,4,5,6].map(e=>`<img src="assets/avatars/av-${e}.png" class="avatar-option" data-url="assets/avatars/av-${e}.png">`).join(``)}
+                    </div>
+                    <button type="button" class="btn-close-modal" id="btnCloseModal">Fechar</button>
+                </div>
+            </div>
+        `;let s=document.getElementById(`formAniversario`),c=document.getElementById(`avatarPreview`),l=document.getElementById(`imagem_url`);document.getElementById(`inputFoto`)?.addEventListener(`change`,e=>{let t=e.target.files[0];if(t){let e=new FileReader;e.onload=e=>{let t=e.target?.result;l.value=t,c.innerHTML=`<img src="${t}" class="img-preview-fec">`},e.readAsDataURL(t)}});let u=document.getElementById(`modalAvatares`);document.getElementById(`btnGaleriaAvatar`)?.addEventListener(`click`,()=>u.style.display=`flex`),document.getElementById(`btnCloseModal`)?.addEventListener(`click`,()=>u.style.display=`none`),document.querySelectorAll(`.avatar-option`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target.getAttribute(`data-url`);l.value=t,c.innerHTML=`<img src="${t}" class="img-preview-fec">`,u.style.display=`none`})});let d=()=>{typeof window.navegar==`function`?window.navegar(`detalhes`,t):window.location.hash=`#detalhes?id=${t}`};document.getElementById(`btnSecondaryAction`)?.addEventListener(`click`,()=>{a?d():s.reset()}),s.onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;let r={nome:document.getElementById(`nome`).value,apelido:document.getElementById(`apelido`).value,frase_exibicao:document.getElementById(`frase_exibicao`).value,data_nascimento:document.getElementById(`data_nascimento`).value,imagem_url:l.value,categoria_id:document.getElementById(`categoria_id`).value};try{a&&t?(await $.atualizar(t,r),d()):(await $.adicionar(r),s.reset(),alert(`✅ Cadastrado!`))}catch{alert(`❌ Erro ao salvar.`)}finally{n.disabled=!1,HF({icons:VF})}},HF({icons:VF})}catch{e.innerHTML=`Erro ao carregar.`}}async function JF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
                     <h2><i data-lucide="bell"></i> Central de Alertas</h2>
