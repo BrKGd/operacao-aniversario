@@ -31,7 +31,7 @@ function configurarLogin() {
         <div class="auth-container">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="/escudo-fec.png" alt="Fortaleza EC" class="auth-logo"> 
+                    <img src="./escudo-fec.png" alt="Fortaleza EC" class="auth-logo"> 
                     <h1>Operação Aniversário</h1>
                     <p>Acesso restrito à convocação</p>
                 </div>
@@ -103,7 +103,7 @@ function montarLayoutEstrutural() {
         <div id="app-container">
             <header id="app-header">
                 <div class="header-content">
-                    <img src="/assets/favicon.ico" class="mini-logo">
+                    <img src="./assets/favicon.ico" class="mini-logo">
                     <span class="app-title-header">Leão Festivo</span>
                     <button id="btnLogoutTop" class="btn-logout-minimal" title="Sair">
                         <i data-lucide="log-out"></i>
