@@ -1,19 +1,20 @@
-/* 
-   ARQUIVO: cadastro.css
-   ESTILO: Vibrante Tricolor - Fortaleza EC 
-   FOCO: Contraste Máximo e Integração
+/* ARQUIVO: cadastro.css
+   ESTILO: Vibrante Tricolor - Edição Comemorativa
+   FOCO: Identidade Visual Forte, Mídia e Interatividade
 */
 
 :root {
-    --fec-azul-vibrante: #003399;   /* Azul Royal Intenso */
-    --fec-vermelho-vibrante: #ff0000; /* Vermelho Vivo */
+    --fec-azul-vibrante: #003399;   
+    --fec-vermelho-vibrante: #ff0000; 
+    --fec-vermelho-dark: #cc0000;
     --fec-branco: #ffffff;
     --fec-cinza-texto: #cbd5e1;
     --fec-border: rgba(255, 255, 255, 0.2);
-    --fec-glass: rgba(255, 255, 255, 0.08);
+    --fec-bg-overlay: rgba(0, 5, 20, 0.95);
+    --fec-shadow: rgba(0, 51, 153, 0.4);
 }
 
-/* --- ESTRUTURA DE CENTRALIZAÇÃO --- */
+/* --- ESTRUTURA BASE --- */
 
 .fec-center-wrapper {
     display: flex;
@@ -21,9 +22,9 @@
     align-items: center;
     min-height: 100%;
     width: 100%;
-    padding: 20px;
+    padding: 24px;
     box-sizing: border-box;
-    animation: fecFadeUp 0.5s ease-out;
+    animation: fecFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fec-form-wrapper {
@@ -33,76 +34,91 @@
     background: transparent;
 }
 
-/* --- NAVEGAÇÃO E HEADER --- */
+/* --- HEADER E SELEÇÃO DE MÍDIA --- */
 
 .fec-btn-close {
     position: absolute;
-    top: -10px;
+    top: -15px;
     right: 0;
     background: var(--fec-vermelho-vibrante);
     border: 2px solid var(--fec-branco);
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.2s ease;
     z-index: 10;
     box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
 }
 
-.fec-btn-close:hover {
-    transform: scale(1.1);
-}
+.fec-btn-close:active { transform: scale(0.9); }
 
 .fec-form-header {
     display: flex;
-    justify-content: center;
-    margin-bottom: 40px;
-}
-
-.avatar-edit-container {
-    display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 35px;
     gap: 15px;
 }
 
+/* Container do Avatar Redesenhado */
 .avatar-squircle-fec {
-    width: 125px;
-    height: 125px;
+    width: 120px;
+    height: 120px;
     background: linear-gradient(135deg, var(--fec-azul-vibrante), var(--fec-vermelho-vibrante));
     border-radius: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 30px rgba(0, 51, 153, 0.5);
+    box-shadow: 0 12px 25px var(--fec-shadow);
     border: 3px solid var(--fec-branco);
+    overflow: hidden; /* Para a foto preencher o squircle */
 }
 
-.avatar-icon-fec { color: white; width: 65px; height: 65px; }
+.avatar-icon-fec { color: white; width: 60px; height: 60px; }
+
+.img-preview-fec {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-action-btns {
+    display: flex;
+    gap: 10px;
+}
 
 .btn-fec-outline-sm {
     background: var(--fec-branco);
     border: none;
     color: var(--fec-azul-vibrante);
-    padding: 8px 18px;
+    padding: 8px 16px;
     border-radius: 50px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 900;
     cursor: pointer;
     text-transform: uppercase;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-/* --- FORMULÁRIO --- */
+.btn-fec-outline-sm:hover {
+    background: var(--fec-vermelho-vibrante);
+    color: white;
+}
+
+/* --- CAMPOS DO FORMULÁRIO --- */
 
 .fec-form-main {
     display: flex;
     flex-direction: column;
-    gap: 35px;
+    gap: 30px;
 }
 
 .fec-input-group-line {
@@ -110,8 +126,8 @@
     align-items: center;
     gap: 15px;
     border-bottom: 2px solid var(--fec-border);
-    padding-bottom: 12px;
-    transition: border-color 0.3s;
+    padding-bottom: 10px;
+    transition: border-color 0.3s ease;
 }
 
 .fec-input-group-line:focus-within {
@@ -120,8 +136,8 @@
 
 .fec-input-group-line i { 
     color: var(--fec-vermelho-vibrante); 
-    width: 22px;
-    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.4));
+    width: 20px;
+    filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.3));
 }
 
 .fec-input-group-line input, 
@@ -129,41 +145,97 @@
     background: transparent;
     border: none;
     color: white;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     width: 100%;
     outline: none;
     font-weight: 500;
 }
 
-::placeholder { color: rgba(255, 255, 255, 0.5); }
-
-/* --- SEÇÃO DE DATA --- */
-
-.fec-date-row { justify-content: space-between; }
-.fec-date-content { display: flex; align-items: center; gap: 15px; flex: 1; }
-.fec-column-input { display: flex; flex-direction: column; gap: 2px; }
+.fec-column-input { 
+    display: flex; 
+    flex-direction: column; 
+    width: 100%;
+    gap: 2px;
+}
 
 .fec-mini-label {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
     font-weight: 900;
     color: var(--fec-vermelho-vibrante);
     letter-spacing: 1px;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-    opacity: 0.8;
+::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+/* --- MODAL DE AVATARES --- */
+
+.fec-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--fec-bg-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
 }
 
-/* --- BOTÕES DE AÇÃO --- */
+.fec-modal-content {
+    background: var(--fec-branco);
+    padding: 25px;
+    border-radius: 24px;
+    width: 85%;
+    max-width: 360px;
+    text-align: center;
+}
+
+.fec-modal-content h3 {
+    color: var(--fec-azul-vibrante);
+    margin-bottom: 20px;
+    font-weight: 900;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.avatar-option {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 15px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+    object-fit: cover;
+}
+
+.avatar-option:hover {
+    transform: scale(1.1);
+    border-color: var(--fec-vermelho-vibrante);
+}
+
+.btn-close-modal {
+    background: var(--fec-azul-vibrante);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* --- FOOTER E BOTÕES --- */
 
 .fec-action-footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
-    margin-top: 25px;
+    gap: 15px;
+    margin-top: 30px;
 }
 
 .btn-fec-submit {
@@ -171,72 +243,47 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background: var(--fec-azul-vibrante);
     color: white;
     border: 2px solid var(--fec-branco);
-    padding: 20px;
+    padding: 18px;
     border-radius: 16px;
     font-weight: 900;
-    font-size: 1.1rem;
-    letter-spacing: 1.5px;
-    box-shadow: 0 10px 25px rgba(0, 51, 153, 0.4);
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 20px var(--fec-shadow);
     cursor: pointer;
     text-transform: uppercase;
+    transition: all 0.2s;
 }
+
+.btn-fec-submit:active { transform: translateY(2px); box-shadow: none; }
 
 .btn-fec-cancel {
     background: none;
     border: none;
     color: var(--fec-cinza-texto);
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
 }
 
 .btn-fec-cancel:hover { color: var(--fec-vermelho-vibrante); }
 
-/* --- SWITCH UI --- */
-
-.fec-toggle-inline { 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    font-size: 0.85rem; 
-    font-weight: 700;
-    color: var(--fec-cinza-texto); 
-}
-
-.fec-switch-ui { position: relative; width: 44px; height: 24px; }
-.fec-switch-ui input { opacity: 0; width: 0; height: 0; }
-
-.fec-slider-ui {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #1e293b; transition: .4s; border-radius: 34px;
-    border: 1px solid var(--fec-border);
-}
-
-.fec-slider-ui:before {
-    position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 2px;
-    background-color: white; transition: .4s; border-radius: 50%;
-}
-
-input:checked + .fec-slider-ui { background-color: var(--fec-vermelho-vibrante); }
-input:checked + .fec-slider-ui:before { transform: translateX(20px); }
-
-/* --- UTILITÁRIOS --- */
-
-.opt-manage-fec { 
-    background-color: #050b1a; 
-    color: var(--fec-vermelho-vibrante); 
-    font-weight: bold; 
-}
+/* --- ANIMAÇÕES E LOADERS --- */
 
 .fec-loader-minimal { 
     color: var(--fec-vermelho-vibrante); 
     font-weight: 900; 
-    font-size: 1rem;
     letter-spacing: 2px;
 }
 
 @keyframes fecFadeUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Adjustments */
+@media (max-height: 700px) {
+    .fec-form-main { gap: 20px; }
+    .avatar-squircle-fec { width: 100px; height: 100px; }
 }
