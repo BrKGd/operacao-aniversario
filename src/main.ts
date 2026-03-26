@@ -1,4 +1,4 @@
-import './styles/app.css'; 
+import 'styles/app.css'; 
 import { supabase } from './supabaseClient';
 
 // ✅ Forma correta do Lucide (vanilla)
