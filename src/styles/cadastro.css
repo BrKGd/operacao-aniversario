@@ -87,25 +87,38 @@
     object-fit: cover;
 }
 
+/* Container dos botões */
 .avatar-action-btns {
     display: flex;
-    gap: 10px;
+    gap: 10px;          /* Espaço entre os botões */
+    justify-content: center;
+    width: 100%;        /* Garante que o container use a largura disponível */
+    margin-top: 15px;
 }
 
+/* Ajuste nos botões individuais */
 .btn-fec-outline-sm {
-    background: var(--fec-branco);
-    border: none;
-    color: var(--fec-azul-vibrante);
-    padding: 8px 16px;
-    border-radius: 50px;
-    font-size: 0.65rem;
-    font-weight: 900;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
+    flex: 1;            /* Força ambos a terem a mesma largura proporcional */
+    max-width: 125px;   /* Largura mínima para não esmagar o texto */
+    height: 30px; 
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 8px; 
+    border-radius: 20px;
+    border: none;
+    background-color: #ffffff;
+    color: #003399;     /* Azul do Fortaleza */
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Garante que o ícone não desalinhe o texto */
+.btn-fec-outline-sm i {
+    width: 15px;
+    height: 15px;
 }
 
 .btn-fec-outline-sm:hover {

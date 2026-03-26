@@ -1,7 +1,7 @@
 import '../styles/cadastro.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
-import { createIcons, icons } from 'lucide'; 
+import { createIcons, icons } from 'lucide';
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Preparando...</div></div>`;
