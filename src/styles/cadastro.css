@@ -287,3 +287,93 @@
     .fec-form-main { gap: 20px; }
     .avatar-squircle-fec { width: 100px; height: 100px; }
 }
+
+/* --- NOVO: DRAWER DE AVATARES (ESTILO BOTTOM SHEET) --- */
+
+.avatar-drawer {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    background: #001a4d; /* Azul profundo para o fundo do drawer */
+    border-top: 3px solid var(--fec-vermelho-vibrante);
+    border-radius: 30px 30px 0 0;
+    padding: 20px;
+    z-index: 1100;
+    transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+}
+
+.avatar-drawer.active {
+    bottom: 0;
+}
+
+.drawer-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1050;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(4px);
+}
+
+.drawer-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.drawer-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--fec-border);
+    border-radius: 10px;
+    margin: 0 auto 15px;
+}
+
+.drawer-header {
+    color: white;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.avatar-grid-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px 5px 30px;
+    scroll-snap-type: x mandatory;
+}
+
+/* Esconder scrollbar mantendo funcionalidade */
+.avatar-grid-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.avatar-circle-option {
+    width: 70px;
+    height: 70px;
+    min-width: 70px;
+    border-radius: 50%;
+    background: var(--fec-azul-vibrante);
+    border: 3px solid var(--fec-border);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    scroll-snap-align: center;
+    object-fit: cover;
+}
+
+.avatar-circle-option:hover {
+    transform: scale(1.1);
+    border-color: var(--fec-vermelho-vibrante);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+}

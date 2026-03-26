@@ -14,9 +14,10 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
         const dadosEdicao = idEdicao ? todos.find(t => t.id === idEdicao) || null : null;
         const ehEdicao = !!(idEdicao && dadosEdicao);
-        
-        // Estado inicial da imagem
-        let imagemAtual = (dadosEdicao as any)?.imagem_url || '';
+        let imagemSelecionada = (dadosEdicao as any)?.imagem_url || '';
+
+        // Lista de sementes para gerar avatares variados no estilo ilustrado (estilo 'avataaars')
+        const avataresSementes = ['Leo', 'Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
 
         container.innerHTML = `
             <div class="fec-center-wrapper">
@@ -24,26 +25,24 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     <button class="fec-btn-close" id="btnFecharForm"><i data-lucide="x"></i></button>
 
                     <header class="fec-form-header">
-                        <div class="avatar-selection-zone">
-                            <div class="avatar-display" id="avatarPreview">
-                                ${imagemAtual 
-                                    ? `<img src="${imagemAtual}" class="img-preview-fec">` 
-                                    : `<i data-lucide="user" class="avatar-icon-fec"></i>`}
-                            </div>
-                            <div class="avatar-btns-row">
-                                <button type="button" class="btn-media-fec" id="btnGaleriaAvatar">
-                                    <i data-lucide="layout-grid"></i> AVATAR
-                                </button>
-                                <label class="btn-media-fec" for="inputFoto">
-                                    <i data-lucide="camera"></i> FOTO
-                                    <input type="file" id="inputFoto" accept="image/*" hidden>
-                                </label>
-                            </div>
+                        <div class="avatar-squircle-fec" id="avatarPreview">
+                            ${imagemSelecionada 
+                                ? `<img src="${imagemSelecionada}" class="img-preview-fec">` 
+                                : `<i data-lucide="user" class="avatar-icon-fec"></i>`}
+                        </div>
+                        <div class="avatar-action-btns">
+                            <button type="button" class="btn-fec-outline-sm" id="btnAbrirGaleria">
+                                <i data-lucide="layout-grid"></i> Avatares
+                            </button>
+                            <label class="btn-fec-outline-sm" for="inputFoto">
+                                <i data-lucide="camera"></i> Foto
+                                <input type="file" id="inputFoto" accept="image/*" hidden>
+                            </label>
                         </div>
                     </header>
 
                     <form id="formAniversario" class="fec-form-main">
-                        <input type="hidden" id="imagem_url" value="${imagemAtual}">
+                        <input type="hidden" id="imagem_url" value="${imagemSelecionada}">
                         
                         <div class="fec-input-group-line">
                             <i data-lucide="user"></i>
@@ -53,11 +52,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                         <div class="fec-input-group-line">
                             <i data-lucide="smile"></i>
                             <input type="text" id="apelido" placeholder="Apelido" value="${(dadosEdicao as any)?.apelido || ''}">
-                        </div>
-
-                        <div class="fec-input-group-line">
-                             <i data-lucide="heart"></i>
-                             <input type="text" id="frase_exibicao" placeholder="Mensagem carinhosa" value="${dadosEdicao?.frase_exibicao || ''}">
                         </div>
 
                         <div class="fec-input-group-line">
@@ -72,48 +66,73 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                              <i data-lucide="bookmark"></i>
                              <select id="categoria_id" required>
                                 <option value="" disabled ${!dadosEdicao ? 'selected' : ''}>Selecione o grupo</option>
-                                <option value="GO_CATEGORIAS">⚙️ ORGANIZAR GRUPOS</option>
-                                ${categorias.map(cat => `
-                                    <option value="${cat.id}" ${dadosEdicao?.categoria_id === cat.id ? 'selected' : ''}>${cat.nome}</option>
-                                `).join('')}
+                                ${categorias.map(cat => `<option value="${cat.id}" ${dadosEdicao?.categoria_id === cat.id ? 'selected' : ''}>${cat.nome}</option>`).join('')}
                              </select>
                         </div>
 
                         <div class="fec-action-footer">
                             <button type="submit" class="btn-fec-submit" id="btnSubmit">
-                                ${ehEdicao ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR CADASTRO'}
+                                ${ehEdicao ? 'Salvar Alterações' : 'Confirmar Cadastro'}
                             </button>
                             <button type="button" class="btn-fec-cancel" id="btnSecondaryAction">
-                                ${ehEdicao ? 'DESCARTAR' : 'LIMPAR'}
+                                ${ehEdicao ? 'Descartar' : 'Limpar'}
                             </button>
                         </div>
                     </form>
                 </div>
-            </div>
 
-            <!-- Modal de Galeria de Avatares (Oculto inicialmente) -->
-            <div id="modalAvatares" class="fec-modal-overlay" style="display:none">
-                <div class="fec-modal-content">
-                    <h3>Escolha um Avatar</h3>
-                    <div class="avatar-grid">
-                        ${[1,2,3,4,5,6].map(n => `<img src="assets/avatars/av-${n}.png" class="avatar-option" data-url="assets/avatars/av-${n}.png">`).join('')}
+                <!-- Bottom Sheet de Avatares -->
+                <div id="avatarDrawer" class="avatar-drawer">
+                    <div class="drawer-handle"></div>
+                    <div class="drawer-header">Escolha seu Avatar</div>
+                    <div class="avatar-grid-scroll">
+                        <div class="avatar-circle-option" data-url="">
+                             <i data-lucide="user-minus"></i>
+                        </div>
+                        ${avataresSementes.map(seed => {
+                            const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+                            return `<img src="${url}" class="avatar-circle-option" data-url="${url}">`;
+                        }).join('')}
                     </div>
-                    <button type="button" class="btn-close-modal" id="btnCloseModal">Fechar</button>
                 </div>
+                <div id="drawerOverlay" class="drawer-overlay"></div>
             </div>
         `;
 
-        const form = document.getElementById('formAniversario') as HTMLFormElement;
+        const drawer = document.getElementById('avatarDrawer') as HTMLElement;
+        const overlay = document.getElementById('drawerOverlay') as HTMLElement;
         const preview = document.getElementById('avatarPreview') as HTMLElement;
         const inputHidden = document.getElementById('imagem_url') as HTMLInputElement;
 
-        // Lógica de Upload de Foto (Base64 para exemplo simples)
+        // Abrir/Fechar Drawer
+        const toggleDrawer = (open: boolean) => {
+            drawer.classList.toggle('active', open);
+            overlay.classList.toggle('active', open);
+        };
+
+        document.getElementById('btnAbrirGaleria')?.addEventListener('click', () => toggleDrawer(true));
+        overlay.addEventListener('click', () => toggleDrawer(false));
+
+        // Selecionar Avatar
+        document.querySelectorAll('.avatar-circle-option').forEach(el => {
+            el.addEventListener('click', () => {
+                const url = el.getAttribute('data-url') || '';
+                inputHidden.value = url;
+                preview.innerHTML = url 
+                    ? `<img src="${url}" class="img-preview-fec">` 
+                    : `<i data-lucide="user" class="avatar-icon-fec"></i>`;
+                toggleDrawer(false);
+                createIcons({ icons });
+            });
+        });
+
+        // Upload de Foto
         document.getElementById('inputFoto')?.addEventListener('change', (e: any) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    const url = event.target?.result as string;
+                reader.onload = (ev) => {
+                    const url = ev.target?.result as string;
                     inputHidden.value = url;
                     preview.innerHTML = `<img src="${url}" class="img-preview-fec">`;
                 };
@@ -121,56 +140,40 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             }
         });
 
-        // Lógica da Galeria de Avatares
-        const modal = document.getElementById('modalAvatares') as HTMLElement;
-        document.getElementById('btnGaleriaAvatar')?.addEventListener('click', () => modal.style.display = 'flex');
-        document.getElementById('btnCloseModal')?.addEventListener('click', () => modal.style.display = 'none');
-
-        document.querySelectorAll('.avatar-option').forEach(img => {
-            img.addEventListener('click', (e: any) => {
-                const url = e.target.getAttribute('data-url');
-                inputHidden.value = url;
-                preview.innerHTML = `<img src="${url}" class="img-preview-fec">`;
-                modal.style.display = 'none';
-            });
-        });
-
+        // Navegação
         const irParaDetalhes = () => {
             if (typeof (window as any).navegar === 'function') (window as any).navegar('detalhes', idEdicao);
             else window.location.hash = `#detalhes?id=${idEdicao}`;
         };
 
+        document.getElementById('btnFecharForm')?.addEventListener('click', () => window.history.back());
         document.getElementById('btnSecondaryAction')?.addEventListener('click', () => {
-            if (ehEdicao) irParaDetalhes(); else form.reset();
+            if (ehEdicao) irParaDetalhes(); else (document.getElementById('formAniversario') as HTMLFormElement).reset();
         });
 
-        form.onsubmit = async (e) => {
+        (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (e) => {
             e.preventDefault();
-            const btnSubmit = document.getElementById('btnSubmit') as HTMLButtonElement;
-            btnSubmit.disabled = true;
-
-            const dados = {
-                nome: (document.getElementById('nome') as HTMLInputElement).value,
-                apelido: (document.getElementById('apelido') as HTMLInputElement).value,
-                frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
-                data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
-                imagem_url: inputHidden.value,
-                categoria_id: (document.getElementById('categoria_id') as HTMLSelectElement).value
-            };
-
+            const btn = document.getElementById('btnSubmit') as HTMLButtonElement;
+            btn.disabled = true;
             try {
+                const dados = {
+                    nome: (document.getElementById('nome') as HTMLInputElement).value,
+                    apelido: (document.getElementById('apelido') as HTMLInputElement).value,
+                    data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
+                    imagem_url: inputHidden.value,
+                    categoria_id: (document.getElementById('categoria_id') as HTMLSelectElement).value
+                };
                 if (ehEdicao && idEdicao) {
                     await aniversarioService.atualizar(idEdicao, dados);
                     irParaDetalhes();
                 } else {
                     await aniversarioService.adicionar(dados);
-                    form.reset();
-                    alert("✅ Cadastrado!");
+                    window.location.hash = '#listagem';
                 }
-            } catch (err) { alert("❌ Erro ao salvar."); }
-            finally { btnSubmit.disabled = false; createIcons({ icons }); }
+            } catch (err) { alert("Erro ao salvar."); }
+            finally { btn.disabled = false; }
         };
 
         createIcons({ icons });
-    } catch (error) { container.innerHTML = `Erro ao carregar.`; }
+    } catch (error) { container.innerHTML = "Erro ao carregar."; }
 }
