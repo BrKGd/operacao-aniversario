@@ -428,7 +428,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
         <div class="auth-container">
             <div class="auth-card">
                 <div class="auth-header">
-                    <img src="./escudo-fec.png" alt="Fortaleza EC" class="auth-logo"> 
+                    <img src="./escudo-fec.png" alt="Fortaleza EC" class="auth-logo">
                     <h1>Operação Aniversário</h1>
                     <p>Acesso restrito à convocação</p>
                 </div>
