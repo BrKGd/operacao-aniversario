@@ -16,7 +16,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const ehEdicao = !!(idEdicao && dadosEdicao);
         let imagemSelecionada = (dadosEdicao as any)?.imagem_url || '';
 
-        // Lista de sementes para gerar avatares variados no estilo ilustrado (estilo 'avataaars')
         const avataresSementes = ['Leo', 'Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
 
         container.innerHTML = `
@@ -55,6 +54,11 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                         </div>
 
                         <div class="fec-input-group-line">
+                            <i data-lucide="quote"></i>
+                            <input type="text" id="frase_exibicao" placeholder="Frase de exibição" value="${(dadosEdicao as any)?.frase_exibicao || ''}">
+                        </div>
+
+                        <div class="fec-input-group-line">
                             <i data-lucide="cake"></i>
                             <div class="fec-column-input">
                                 <label class="fec-mini-label">Data de Nascimento</label>
@@ -66,6 +70,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                              <i data-lucide="bookmark"></i>
                              <select id="categoria_id" required>
                                 <option value="" disabled ${!dadosEdicao ? 'selected' : ''}>Selecione o grupo</option>
+                                <option value="NOVA_CATEGORIA" style="font-weight: bold; color: #e63946;">+ Adicionar categoria</option>
+                                
                                 ${categorias.map(cat => `<option value="${cat.id}" ${dadosEdicao?.categoria_id === cat.id ? 'selected' : ''}>${cat.nome}</option>`).join('')}
                              </select>
                         </div>
@@ -81,7 +87,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     </form>
                 </div>
 
-                <!-- Bottom Sheet de Avatares -->
                 <div id="avatarDrawer" class="avatar-drawer">
                     <div class="drawer-handle"></div>
                     <div class="drawer-header">Escolha seu Avatar</div>
@@ -99,12 +104,24 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             </div>
         `;
 
+        // LÓGICA DE NAVEGAÇÃO
+        const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
+        selectCategoria.addEventListener('change', () => {
+            if (selectCategoria.value === "NOVA_CATEGORIA") {
+                if (typeof (window as any).navegar === 'function') {
+                    (window as any).navegar('categorias'); 
+                } else {
+                    window.location.hash = '#categorias';
+                }
+            }
+        });
+
+        // --- RESTANTE DA LÓGICA (AVATARES E UPLOAD) ---
         const drawer = document.getElementById('avatarDrawer') as HTMLElement;
         const overlay = document.getElementById('drawerOverlay') as HTMLElement;
         const preview = document.getElementById('avatarPreview') as HTMLElement;
         const inputHidden = document.getElementById('imagem_url') as HTMLInputElement;
 
-        // Abrir/Fechar Drawer
         const toggleDrawer = (open: boolean) => {
             drawer.classList.toggle('active', open);
             overlay.classList.toggle('active', open);
@@ -113,7 +130,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         document.getElementById('btnAbrirGaleria')?.addEventListener('click', () => toggleDrawer(true));
         overlay.addEventListener('click', () => toggleDrawer(false));
 
-        // Selecionar Avatar
         document.querySelectorAll('.avatar-circle-option').forEach(el => {
             el.addEventListener('click', () => {
                 const url = el.getAttribute('data-url') || '';
@@ -126,7 +142,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             });
         });
 
-        // Upload de Foto
         document.getElementById('inputFoto')?.addEventListener('change', (e: any) => {
             const file = e.target.files[0];
             if (file) {
@@ -140,7 +155,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             }
         });
 
-        // Navegação
         const irParaDetalhes = () => {
             if (typeof (window as any).navegar === 'function') (window as any).navegar('detalhes', idEdicao);
             else window.location.hash = `#detalhes?id=${idEdicao}`;
@@ -159,10 +173,18 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 const dados = {
                     nome: (document.getElementById('nome') as HTMLInputElement).value,
                     apelido: (document.getElementById('apelido') as HTMLInputElement).value,
+                    frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                     imagem_url: inputHidden.value,
                     categoria_id: (document.getElementById('categoria_id') as HTMLSelectElement).value
                 };
+                
+                if (dados.categoria_id === "NOVA_CATEGORIA") {
+                    alert("Por favor, selecione uma categoria válida.");
+                    btn.disabled = false;
+                    return;
+                }
+
                 if (ehEdicao && idEdicao) {
                     await aniversarioService.atualizar(idEdicao, dados);
                     irParaDetalhes();

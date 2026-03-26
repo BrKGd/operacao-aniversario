@@ -8,7 +8,7 @@
     --fec-vermelho-vibrante: #ff0000; 
     --fec-vermelho-dark: #cc0000;
     --fec-branco: #ffffff;
-    --fec-cinza-texto: #cbd5e1;
+    --fec-cinza-texto: #43464a;
     --fec-border: rgba(255, 255, 255, 0.2);
     --fec-bg-overlay: rgba(0, 5, 20, 0.95);
     --fec-shadow: rgba(0, 51, 153, 0.4);
@@ -122,10 +122,11 @@
 }
 
 .fec-input-group-line {
+    color: var(--fec-azul-vibrante);
     display: flex;
     align-items: center;
     gap: 15px;
-    border-bottom: 2px solid var(--fec-border);
+    border-bottom: 2px solid var(--fec-azul-vibrante);
     padding-bottom: 10px;
     transition: border-color 0.3s ease;
 }
@@ -144,11 +145,16 @@
 .fec-input-group-line select {
     background: transparent;
     border: none;
-    color: white;
+    color: var(--fec-cinza-texto);
     font-size: 1.1rem;
     width: 100%;
     outline: none;
     font-weight: 500;
+}
+
+.fec-input-group-line input::placeholder{
+    color: var(--fec-azul-vibrante);
+    opacity: 30%;
 }
 
 .fec-column-input { 
