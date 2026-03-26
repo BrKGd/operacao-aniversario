@@ -36,7 +36,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 </div>
 
                 <form id="formAniversario" class="form-body">
-                    <!-- ... campos de nome, data e telefone (mantidos iguais) ... -->
                     <div class="form-group">
                         <label class="label-mini">Nome Completo *</label>
                         <input type="text" id="nome" class="modern-input" required 
@@ -57,7 +56,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     </div>
 
                     <div class="form-group">
-                        <label class="label-mini">Categoria / Círculo</label>
+                        <label class="label-mini">Categoria / Círculo (Clique direito ou Segure para editar)</label>
                         <select id="categoria_id" class="modern-input" required>
                             <option value="">Selecione uma categoria</option>
                             <option value="new" style="font-weight: bold; color: #4361ee;">+ Adicionar Nova Categoria...</option>
@@ -83,7 +82,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     <div class="form-header-dark">
                         <div class="header-title">
                             <i data-lucide="tag"></i>
-                            <span>Nova Categoria</span>
+                            <span id="tituloModalCat">Nova Categoria</span>
                         </div>
                         <button type="button" id="fecharModal" class="btn-close-circle">
                             <i data-lucide="x"></i>
@@ -91,6 +90,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     </div>
 
                     <div class="modal-body-scroll">
+                        <input type="hidden" id="idCategoriaEdicao">
                         <label class="label-mini">Nome da Categoria</label>
                         <input type="text" id="novoNomeCategoria" class="modern-input" placeholder="Ex: Academia">
                         
@@ -119,7 +119,10 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     </div>
 
                     <div class="floating-actions-modal">
-                         <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
+                        <button type="button" id="btnExcluirCategoria" class="btn-action-round" style="background: #fee2e2; color: #ef4444; display: none;">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                        <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
                             <i data-lucide="check"></i>
                         </button>
                     </div>
@@ -127,21 +130,17 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             </div>
         `;
 
+        const form = document.getElementById('formAniversario') as HTMLFormElement;
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
         const modal = document.getElementById('modalCategoria') as HTMLElement;
         const gridIcones = document.getElementById('gridIcones') as HTMLElement;
         const hiddenIconInput = document.getElementById('novoIconeCategoria') as HTMLInputElement;
         const inputBusca = document.getElementById('buscaIcone') as HTMLInputElement;
 
-        // Função principal que "ativa" os ícones do Lucide
         const atualizarIconesNaTela = () => {
             createIcons({
-                icons, // Passa o objeto de ícones importado
-                attrs: {
-                    strokeWidth: 2,
-                    width: 24,
-                    height: 24
-                }
+                icons,
+                attrs: { strokeWidth: 2, width: 24, height: 24 }
             });
         };
 
@@ -158,11 +157,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             }
 
             gridIcones.innerHTML = chaves.map(key => {
-                // O Lucide Vanilla espera o nome do ícone em kebab-case ou como definido no data-lucide
-                // Como as chaves de 'icons' geralmente são PascalCase, formatamos:
                 const kebabName = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
                 const isSelected = hiddenIconInput.value === kebabName;
-                
                 return `
                     <div class="icon-card ${isSelected ? 'selected' : ''}" data-icon="${kebabName}">
                         <i data-lucide="${kebabName}"></i>
@@ -170,26 +166,118 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 `;
             }).join('');
 
-            // CRÍTICO: Registra o clique e RE-RENDERIZA o Lucide para as novas tags <i>
             atualizarIconesNaTela();
 
             gridIcones.querySelectorAll('.icon-card').forEach(card => {
                 card.addEventListener('click', () => {
                     gridIcones.querySelectorAll('.icon-card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
-                    hiddenIconInput.value = card.getAttribute('data-icon') || 'user';
+                    hiddenIconInput.value = (card as HTMLElement).dataset.icon || 'user';
                 });
             });
         };
 
-        // --- Eventos ---
-        inputBusca.addEventListener('input', (e) => {
-            renderizarGrid((e.target as HTMLInputElement).value);
+        // --- Lógica de Edição de Categoria ---
+        const abrirEdicaoCategoria = (id: string) => {
+            const cat = categorias.find(c => c.id === id);
+            if (!cat) return;
+
+            (document.getElementById('tituloModalCat') as HTMLElement).innerText = "Editar Categoria";
+            (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value = cat.id;
+            (document.getElementById('novoNomeCategoria') as HTMLInputElement).value = cat.nome;
+            (document.getElementById('novaCorCategoria') as HTMLInputElement).value = cat.cor || '#4361ee';
+            hiddenIconInput.value = cat.icone || 'user';
+            (document.getElementById('btnExcluirCategoria') as HTMLElement).style.display = 'flex';
+            
+            modal.style.display = 'flex';
+            renderizarGrid();
+        };
+
+        // --- Eventos de Clique (Híbrido) ---
+        let timer: any;
+        selectCategoria.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); // Bloqueia menu padrão do PC
+            if (selectCategoria.value && selectCategoria.value !== 'new') {
+                abrirEdicaoCategoria(selectCategoria.value);
+            }
         });
 
-        document.querySelectorAll('.chip').forEach(chip => {
+        // Long Press para Mobile
+        selectCategoria.addEventListener('touchstart', () => {
+            timer = setTimeout(() => {
+                if (selectCategoria.value && selectCategoria.value !== 'new') {
+                    abrirEdicaoCategoria(selectCategoria.value);
+                }
+            }, 800);
+        });
+        selectCategoria.addEventListener('touchend', () => clearTimeout(timer));
+
+        // --- Salvar Cadastro Principal ---
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit') as HTMLButtonElement;
+            btn.disabled = true;
+
+            const dados: Omit<Aniversario, 'id'> = {
+                nome: (document.getElementById('nome') as HTMLInputElement).value,
+                data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
+                telefone: (document.getElementById('telefone') as HTMLInputElement).value,
+                categoria_id: selectCategoria.value
+            };
+
+            try {
+                if (idEdicao) {
+                    await aniversarioService.atualizar(idEdicao, dados);
+                    window.location.hash = `#detalhes?id=${idEdicao}`; // Volta para detalhes
+                } else {
+                    await aniversarioService.adicionar(dados);
+                    window.location.hash = '#elenco';
+                }
+                form.reset();
+            } catch (err) {
+                alert("Erro ao salvar.");
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        // --- Salvar/Excluir Categoria ---
+        document.getElementById('btnSalvarCategoria')?.addEventListener('click', async () => {
+            const id = (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value;
+            const payload = {
+                nome: (document.getElementById('novoNomeCategoria') as HTMLInputElement).value,
+                cor: (document.getElementById('novaCorCategoria') as HTMLInputElement).value,
+                icone: hiddenIconInput.value
+            };
+
+            try {
+                if (id) {
+                    // @ts-ignore
+                    await aniversarioService.atualizarCategoria(id, payload);
+                } else {
+                    await aniversarioService.adicionarCategoria(payload);
+                }
+                modal.style.display = 'none';
+                montarCadastro(container, idEdicao); // Recarrega para atualizar o select
+            } catch (err) { alert("Erro ao salvar categoria."); }
+        });
+
+        document.getElementById('btnExcluirCategoria')?.addEventListener('click', async () => {
+            const id = (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value;
+            if (id && confirm("Excluir esta categoria?")) {
+                // @ts-ignore
+                await aniversarioService.excluirCategoria(id);
+                modal.style.display = 'none';
+                montarCadastro(container, idEdicao);
+            }
+        });
+
+        // --- Outros Eventos ---
+        inputBusca.addEventListener('input', (e) => renderizarGrid((e.target as HTMLInputElement).value));
+
+        container.querySelectorAll('.chip').forEach(chip => {
             chip.addEventListener('click', () => {
-                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
                 inputBusca.value = '';
                 renderizarGrid();
@@ -198,15 +286,19 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
         selectCategoria.addEventListener('change', () => {
             if (selectCategoria.value === 'new') {
+                (document.getElementById('idCategoriaEdicao') as HTMLInputElement).value = '';
+                (document.getElementById('tituloModalCat') as HTMLElement).innerText = "Nova Categoria";
+                (document.getElementById('btnExcluirCategoria') as HTMLElement).style.display = 'none';
                 modal.style.display = 'flex';
-                selectCategoria.value = '';
                 renderizarGrid();
             }
         });
 
         document.getElementById('fecharModal')?.addEventListener('click', () => modal.style.display = 'none');
+        document.getElementById('btnCancelar')?.addEventListener('click', () => {
+             window.history.back();
+        });
 
-        // Renderização inicial (ícones do formulário principal)
         atualizarIconesNaTela();
 
     } catch (error) {
