@@ -167,7 +167,6 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                 </div>
 
                 <form id="formAniversario" class="form-body">
-                    <!-- ... campos de nome, data e telefone (mantidos iguais) ... -->
                     <div class="form-group">
                         <label class="label-mini">Nome Completo *</label>
                         <input type="text" id="nome" class="modern-input" required 
@@ -188,7 +187,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     </div>
 
                     <div class="form-group">
-                        <label class="label-mini">Categoria / Círculo</label>
+                        <label class="label-mini">Categoria / Círculo (Clique direito ou Segure para editar)</label>
                         <select id="categoria_id" class="modern-input" required>
                             <option value="">Selecione uma categoria</option>
                             <option value="new" style="font-weight: bold; color: #4361ee;">+ Adicionar Nova Categoria...</option>
@@ -214,7 +213,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     <div class="form-header-dark">
                         <div class="header-title">
                             <i data-lucide="tag"></i>
-                            <span>Nova Categoria</span>
+                            <span id="tituloModalCat">Nova Categoria</span>
                         </div>
                         <button type="button" id="fecharModal" class="btn-close-circle">
                             <i data-lucide="x"></i>
@@ -222,6 +221,7 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     </div>
 
                     <div class="modal-body-scroll">
+                        <input type="hidden" id="idCategoriaEdicao">
                         <label class="label-mini">Nome da Categoria</label>
                         <input type="text" id="novoNomeCategoria" class="modern-input" placeholder="Ex: Academia">
                         
@@ -250,17 +250,20 @@ lucide.createIcons({icons});\``);if(r===void 0)throw Error("`createIcons()` only
                     </div>
 
                     <div class="floating-actions-modal">
-                         <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
+                        <button type="button" id="btnExcluirCategoria" class="btn-action-round" style="background: #fee2e2; color: #ef4444; display: none;">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                        <button type="button" id="btnSalvarCategoria" class="btn-action-round confirm">
                             <i data-lucide="check"></i>
                         </button>
                     </div>
                 </div>
             </div>
-        `;let a=document.getElementById(`categoria_id`),o=document.getElementById(`modalCategoria`),s=document.getElementById(`gridIcones`),c=document.getElementById(`novoIconeCategoria`),l=document.getElementById(`buscaIcone`),u=()=>{HF({icons:VF,attrs:{strokeWidth:2,width:24,height:24}})},d=(e=``)=>{let t=[],n=document.querySelector(`.chip.active`)?.getAttribute(`data-cat`)||`Populares`;t=e.trim()?JF.filter(t=>t.toLowerCase().includes(e.toLowerCase())).slice(0,50):n===`all`?JF.slice(0,50):qF[n]||[],s.innerHTML=t.map(e=>{let t=e.replace(/([a-z0-9])([A-Z])/g,`$1-$2`).toLowerCase();return`
-                    <div class="icon-card ${c.value===t?`selected`:``}" data-icon="${t}">
+        `;let a=document.getElementById(`formAniversario`),o=document.getElementById(`categoria_id`),s=document.getElementById(`modalCategoria`),c=document.getElementById(`gridIcones`),l=document.getElementById(`novoIconeCategoria`),u=document.getElementById(`buscaIcone`),d=()=>{HF({icons:VF,attrs:{strokeWidth:2,width:24,height:24}})},f=(e=``)=>{let t=[],n=document.querySelector(`.chip.active`)?.getAttribute(`data-cat`)||`Populares`;t=e.trim()?JF.filter(t=>t.toLowerCase().includes(e.toLowerCase())).slice(0,50):n===`all`?JF.slice(0,50):qF[n]||[],c.innerHTML=t.map(e=>{let t=e.replace(/([a-z0-9])([A-Z])/g,`$1-$2`).toLowerCase();return`
+                    <div class="icon-card ${l.value===t?`selected`:``}" data-icon="${t}">
                         <i data-lucide="${t}"></i>
                     </div>
-                `}).join(``),u(),s.querySelectorAll(`.icon-card`).forEach(e=>{e.addEventListener(`click`,()=>{s.querySelectorAll(`.icon-card`).forEach(e=>e.classList.remove(`selected`)),e.classList.add(`selected`),c.value=e.getAttribute(`data-icon`)||`user`})})};l.addEventListener(`input`,e=>{d(e.target.value)}),document.querySelectorAll(`.chip`).forEach(e=>{e.addEventListener(`click`,()=>{document.querySelectorAll(`.chip`).forEach(e=>e.classList.remove(`active`)),e.classList.add(`active`),l.value=``,d()})}),a.addEventListener(`change`,()=>{a.value===`new`&&(o.style.display=`flex`,a.value=``,d())}),document.getElementById(`fecharModal`)?.addEventListener(`click`,()=>o.style.display=`none`),u()}catch(t){console.error(t),e.innerHTML=`<div class="error-msg">Erro ao carregar formulário.</div>`}}async function XF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
+                `}).join(``),d(),c.querySelectorAll(`.icon-card`).forEach(e=>{e.addEventListener(`click`,()=>{c.querySelectorAll(`.icon-card`).forEach(e=>e.classList.remove(`selected`)),e.classList.add(`selected`),l.value=e.dataset.icon||`user`})})},p=e=>{let t=n.find(t=>t.id===e);t&&(document.getElementById(`tituloModalCat`).innerText=`Editar Categoria`,document.getElementById(`idCategoriaEdicao`).value=t.id,document.getElementById(`novoNomeCategoria`).value=t.nome,document.getElementById(`novaCorCategoria`).value=t.cor||`#4361ee`,l.value=t.icone||`user`,document.getElementById(`btnExcluirCategoria`).style.display=`flex`,s.style.display=`flex`,f())},m;o.addEventListener(`contextmenu`,e=>{e.preventDefault(),o.value&&o.value!==`new`&&p(o.value)}),o.addEventListener(`touchstart`,()=>{m=setTimeout(()=>{o.value&&o.value!==`new`&&p(o.value)},800)}),o.addEventListener(`touchend`,()=>clearTimeout(m)),a.onsubmit=async e=>{e.preventDefault();let n=document.getElementById(`btnSubmit`);n.disabled=!0;let r={nome:document.getElementById(`nome`).value,data_nascimento:document.getElementById(`data_nascimento`).value,telefone:document.getElementById(`telefone`).value,categoria_id:o.value};try{t?(await $.atualizar(t,r),window.location.hash=`#detalhes?id=${t}`):(await $.adicionar(r),window.location.hash=`#elenco`),a.reset()}catch{alert(`Erro ao salvar.`)}finally{n.disabled=!1}},document.getElementById(`btnSalvarCategoria`)?.addEventListener(`click`,async()=>{let n=document.getElementById(`idCategoriaEdicao`).value,r={nome:document.getElementById(`novoNomeCategoria`).value,cor:document.getElementById(`novaCorCategoria`).value,icone:l.value};try{n?await $.atualizarCategoria(n,r):await $.adicionarCategoria(r),s.style.display=`none`,YF(e,t)}catch{alert(`Erro ao salvar categoria.`)}}),document.getElementById(`btnExcluirCategoria`)?.addEventListener(`click`,async()=>{let n=document.getElementById(`idCategoriaEdicao`).value;n&&confirm(`Excluir esta categoria?`)&&(await $.excluirCategoria(n),s.style.display=`none`,YF(e,t))}),u.addEventListener(`input`,e=>f(e.target.value)),e.querySelectorAll(`.chip`).forEach(t=>{t.addEventListener(`click`,()=>{e.querySelectorAll(`.chip`).forEach(e=>e.classList.remove(`active`)),t.classList.add(`active`),u.value=``,f()})}),o.addEventListener(`change`,()=>{o.value===`new`&&(document.getElementById(`idCategoriaEdicao`).value=``,document.getElementById(`tituloModalCat`).innerText=`Nova Categoria`,document.getElementById(`btnExcluirCategoria`).style.display=`none`,s.style.display=`flex`,f())}),document.getElementById(`fecharModal`)?.addEventListener(`click`,()=>s.style.display=`none`),document.getElementById(`btnCancelar`)?.addEventListener(`click`,()=>{window.history.back()}),d()}catch(t){console.error(t),e.innerHTML=`<div class="error-msg">Erro ao carregar formulário.</div>`}}async function XF(e){e.innerHTML=`<div class="loading">Sincronizando alertas...</div>`;try{let t=new Date,n=(await $.listarTodos()).filter(e=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.getFullYear(),n.getMonth(),n.getDate()).getTime()-t.getTime(),i=Math.ceil(r/(1e3*60*60*24));return i>=0&&i<=3}).sort((e,t)=>{let n=new Date(e.data_nascimento+`T00:00:00`),r=new Date(t.data_nascimento+`T00:00:00`);return n.getDate()-r.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
                     <h2><i data-lucide="bell"></i> Central de Alertas</h2>
