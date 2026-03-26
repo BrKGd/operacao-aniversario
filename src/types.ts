@@ -21,6 +21,7 @@ export interface Aniversario {
   data_nascimento: string;  // Formato YYYY-MM-DD
   telefone?: string;        // Opcional: (85) 9....
   observacoes?: string;     // Opcional: Algum detalhe extra
+  frase_exibicao?: string;
   
   // Relacionamento
   categoria_id: string;     // FK para a tabela categorias

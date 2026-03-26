@@ -1,7 +1,7 @@
 import '../styles/cadastro.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
-import { createIcons, icons } from 'lucide'; // ✅ Importação corrigida para 'lucide'
+import { createIcons, icons } from 'lucide'; 
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
     container.innerHTML = `<div class="loading">Preparando convocação...</div>`;
@@ -30,6 +30,12 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                         <label class="label-mini">Nome Completo *</label>
                         <input type="text" id="nome" class="modern-input" required 
                                value="${dadosEdicao?.nome || ''}" placeholder="Ex: Marcelo Boeck">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label-mini">Frase de Exibição (Apelido ou Mensagem)</label>
+                        <input type="text" id="frase_exibicao" class="modern-input" 
+                               value="${dadosEdicao?.frase_exibicao || ''}" placeholder="Ex: Paredão do Leão 🦁">
                     </div>
 
                     <div class="form-row-group">
@@ -81,8 +87,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         // ✅ LÓGICA DO BOTÃO VOLTAR / CANCELAR
         btnSecondary.addEventListener('click', () => {
             if (ehEdicao) {
-                // Se for edição, navega explicitamente via window.navegar (ou hash)
-                if (window.hasOwnProperty('navegar')) {
+                if (typeof (window as any).navegar === 'function') {
                     (window as any).navegar('detalhes', idEdicao);
                 } else {
                     window.location.hash = `#detalhes?id=${idEdicao}`;
@@ -92,17 +97,13 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             }
         });
 
-        // Lógica de categorias
+        // ✅ LÓGICA DE CATEGORIAS (Navegação explícita)
         selectCat.addEventListener('change', () => {
             if (selectCat.value === 'GO_CATEGORIAS') {
-                // 1. Voltamos o select para o estado inicial (para não ficar com o texto de erro)
                 selectCat.value = ""; 
-
-                // 2. Chamamos a navegação global definida no main.ts
                 if (typeof (window as any).navegar === 'function') {
                     (window as any).navegar('categorias');
                 } else {
-                    // Plano B: Força o hash e dispara o evento manualmente se o roteador falhar
                     window.location.hash = '#categorias';
                     window.dispatchEvent(new HashChangeEvent('hashchange'));
                 }
@@ -117,32 +118,37 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
             const dados = {
                 nome: (document.getElementById('nome') as HTMLInputElement).value,
+                frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                 data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                 telefone: (document.getElementById('telefone') as HTMLInputElement).value,
                 categoria_id: selectCat.value
             };
 
-            if (dados.categoria_id === 'GO_CATEGORIAS') return (btnSubmit.disabled = false);
+            if (dados.categoria_id === 'GO_CATEGORIAS' || !dados.categoria_id) {
+                alert("Selecione uma categoria válida.");
+                btnSubmit.disabled = false;
+                return;
+            }
 
             try {
                 if (ehEdicao && idEdicao) {
-                    // ATUALIZAÇÃO
+                    // MODO EDIÇÃO
                     await aniversarioService.atualizar(idEdicao, dados);
                     form.reset();
-                    // ✅ Navegação forçada após salvar na edição
-                    if (window.hasOwnProperty('navegar')) {
+                    if (typeof (window as any).navegar === 'function') {
                         (window as any).navegar('detalhes', idEdicao);
                     } else {
                         window.location.hash = `#detalhes?id=${idEdicao}`;
                     }
                 } else {
-                    // NOVO CADASTRO
+                    // MODO NOVO CADASTRO
                     await aniversarioService.adicionar(dados);
                     form.reset();
                     alert("Cadastrado com sucesso!");
                 }
             } catch (err) {
-                alert("Erro na operação.");
+                console.error(err);
+                alert("Erro ao salvar os dados.");
             } finally {
                 btnSubmit.disabled = false;
                 createIcons({ icons });
@@ -151,6 +157,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
         createIcons({ icons });
     } catch (error) {
-        container.innerHTML = `Erro ao carregar formulário.`;
+        console.error(error);
+        container.innerHTML = `<div class="error-msg">Erro ao carregar formulário.</div>`;
     }
 }
