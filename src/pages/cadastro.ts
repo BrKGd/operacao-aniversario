@@ -33,7 +33,13 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             return dataStr;
         };
 
-        const avataresSementes = ['Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
+        const avataresSementes = [
+        'Easton','Every','Avery','Jordan','Parker','Quinn','Rowan','Skyler','Emerson','Finley',
+        'Charlie','Dakota','Harper','Reese','Riley','Sawyer','Taylor','Alex','Blake','Cameron',
+        'Drew','Elliot','Hayden','Jamie','Kai','Logan','Morgan','Noel','River','Sage',
+        'Shawn','Terry','Tyler','Adrian','Ashton','Bailey','Casey','Corey','Devon','Eden',
+        'Frankie','Gray','Hunter','Indigo','Jesse','Kendall','Lane','Micah','Nico','Oakley'    
+        ];
 
         container.innerHTML = `
             <div class="fec-center-wrapper">

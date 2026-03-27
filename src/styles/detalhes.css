@@ -1,20 +1,21 @@
 .detalhes-page-wrapper {
-    width: 100vw;
-    min-height: 100vh;
+    width: 100%;
+    min-height: calc(100vh - 60px); /* Ajuste conforme a altura do seu header no main.ts */
     display: flex;
     flex-direction: column;
-    background: #001f3f; /* Azul escuro da parte de baixo */
+    background: #ffffff; /* Fundo totalmente branco */
+    color: #1e293b;
 }
 
-/* --- PARTE SUPERIOR (CLARA) --- */
+/* --- SEÇÃO SUPERIOR (HERO) --- */
 .section-hero-light {
-    background: #fdf2e9; /* Tom pastel da foto */
-    height: 50vh;
+    background: #f8fafc; /* Cinza claríssimo para destacar a foto */
+    padding: 40px 20px;
     position: relative;
     display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    padding-bottom: 40px;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .btn-back-absolute {
@@ -22,101 +23,128 @@
     top: 20px;
     left: 20px;
     background: white;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     color: #001f3f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    z-index: 10;
+    transition: all 0.2s;
+}
+
+.btn-back-absolute:hover {
+    background: #f1f5f9;
 }
 
 .profile-image-container {
-    width: 280px;
-    height: 100%;
+    width: 180px;
+    height: 180px;
+    background: white;
+    border-radius: 50%;
+    padding: 5px;
+    border: 3px solid #e63946; /* Borda vermelha na foto */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     display: flex;
-    align-items: flex-end;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: -60px; /* Faz o nome "subir" para cima da seção */
+    z-index: 5;
 }
 
 .img-full-profile {
     width: 100%;
-    height: auto;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* --- CARD FLUTUANTE --- */
+/* --- CARD DE NOME (CLEAN) --- */
 .name-floating-card {
-    position: absolute;
-    bottom: -35px; /* Metade para fora */
-    width: 85%;
-    max-width: 400px;
-    background: #002d57; /* Azul do card na foto */
-    border-radius: 20px;
-    padding: 15px 20px;
+    width: 90%;
+    max-width: 450px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: white;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    z-index: 20;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    z-index: 10;
+    margin-top: 20px;
 }
 
 .name-info h1 {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     margin: 0;
-    font-weight: 600;
+    color: #001f3f; /* Azul Marinho */
+    font-weight: 700;
 }
 
 .name-info span {
-    font-size: 0.85rem;
-    opacity: 0.7;
+    font-size: 0.9rem;
+    color: #e63946; /* Vermelho para a categoria */
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .btn-more-options {
-    background: transparent;
+    background: #f1f5f9;
     border: none;
-    color: white;
+    color: #64748b;
+    border-radius: 8px;
     cursor: pointer;
-    padding: 5px;
+    padding: 8px;
+    display: flex;
 }
 
-/* Dropdown */
+/* Menu Dropdown */
 .dropdown-options {
     position: absolute;
-    right: 0;
-    top: 60px;
+    right: 20px;
+    top: 80px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
     display: none;
     flex-direction: column;
-    min-width: 150px;
-    overflow: hidden;
+    min-width: 180px;
+    border: 1px solid #e2e8f0;
+    z-index: 100;
 }
 
 .dropdown-options.active { display: flex; }
 
 .dropdown-options button {
-    padding: 12px 15px;
+    padding: 14px 18px;
     border: none;
-    background: white;
+    background: transparent;
     text-align: left;
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: #334155;
     cursor: pointer;
 }
 
 .dropdown-options button:hover { background: #f8fafc; }
-.dropdown-options button.delete-opt { color: #e11d48; }
+.dropdown-options button.delete-opt { color: #e63946; border-top: 1px solid #f1f5f9; }
 
-/* --- PARTE INFERIOR (ESCURA) --- */
-.section-details-dark {
-    padding: 60px 25px 30px 25px;
-    flex: 1;
-    color: #cbd5e1;
+/* --- SEÇÃO DE CONTEÚDO (BRANCO) --- */
+.section-details-white {
+    padding: 60px 24px 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.content-max-width {
+    width: 100%;
+    max-width: 600px;
 }
 
 .info-row {
@@ -124,39 +152,53 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed #e2e8f0;
 }
 
 .info-block label {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1rem;
-    color: #60a5fa; /* Azul claro para ícones */
+    font-size: 0.85rem;
+    color: #64748b;
     font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
-.info-block p { font-size: 1.1rem; color: white; margin: 0; }
-.info-block small { opacity: 0.6; }
+.info-block p { 
+    font-size: 1.15rem; 
+    color: #001f3f; 
+    margin: 0; 
+    font-weight: 700;
+}
 
 .days-badge {
-    color: #60a5fa;
-    font-weight: bold;
+    background: #f1f5f9;
+    color: #001f3f;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .notes-section label {
     display: block;
-    margin-bottom: 15px;
-    font-weight: 600;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #001f3f;
+    font-size: 0.9rem;
 }
 
 .notes-content {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     padding: 20px;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    border-radius: 14px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #475569;
+    min-height: 100px;
 }
 
 .footer-actions {
@@ -164,14 +206,15 @@
 }
 
 .btn-whatsapp-modern {
-    background: #25d366;
+    background: #25d366; /* Mantive o verde aqui por ser padrão universal do Whats */
     color: white;
     text-decoration: none;
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 14px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
-    font-weight: bold;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
 }
