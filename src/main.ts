@@ -1,6 +1,6 @@
 import './styles/app.css'; 
 import { supabase } from './supabaseClient';
-import { createIcons, icons } from 'lucide';
+import { createIcons, icons } from 'lucide'; // Ajustado para lucide-react ou lucide conforme seu projeto
 
 // Importação das páginas
 import { montarTelaRegistro } from './pages/registros';
@@ -139,12 +139,12 @@ function montarLayoutEstrutural() {
 
     renderizarNavegacao();
     
-    // Escutador de mudança de URL (Botão voltar/avançar e cliques)
+    // Listener de Hash para suportar o botão "Voltar" do navegador
     window.addEventListener('hashchange', () => {
         processarRotaAtual();
     });
 
-    // Inicializa a primeira tela
+    // Processamento da rota inicial
     processarRotaAtual(); 
 }
 
@@ -153,13 +153,16 @@ function montarLayoutEstrutural() {
  */
 function processarRotaAtual() {
     const hashCompleto = window.location.hash.replace('#', '') || 'dash';
-    const [tela, query] = hashCompleto.split('?');
+    const partes = hashCompleto.split('?');
     
-    const paramsURL = new URLSearchParams(query || '');
+    // CORREÇÃO ERRO 2345: Garantimos que 'tela' é tratada como string
+    const tela = partes[0] as string; 
+    const query = partes[1] || '';
+    
+    const paramsURL = new URLSearchParams(query);
     const id = paramsURL.get('id'); 
 
-    // O uso de 'id ?? undefined' resolve o erro 2345:
-    // Converte null (do navegador) para undefined (do parâmetro opcional)
+    // CORREÇÃO ERRO 2345: Convertemos null para undefined para bater com params?
     irPara(tela, id ?? undefined);
 }
 
@@ -200,7 +203,7 @@ function renderizarNavegacao() {
         </div>
     `;
 
-    // Atualiza a URL e deixa o evento 'hashchange' disparar a renderização
+    // Função global que apenas atualiza o Hash
     // @ts-ignore
     window.navegar = (tela: string, id?: string) => {
         window.location.hash = id ? `${tela}?id=${id}` : tela;
@@ -210,6 +213,10 @@ function renderizarNavegacao() {
 }
 
 // --- RENDERIZADOR DE TELAS ---
+/**
+ * @param tela Nome da página a ser montada
+ * @param params ID ou dado opcional (aceita undefined para evitar erro 2345)
+ */
 export async function irPara(tela: string, params?: any) {
     const container = document.getElementById('main-content');
     if (!container) return;
@@ -225,7 +232,7 @@ export async function irPara(tela: string, params?: any) {
         </div>
     `;
 
-    // Roteamento baseado no nome da tela
+    // Roteamento
     switch (tela) {
         case 'dash': await montarDashboard(container); break;
         case 'list': await montarLista(container); break;
@@ -242,7 +249,10 @@ export async function irPara(tela: string, params?: any) {
 }
 
 function recarregarIcones() {
-    createIcons({ icons });
+    // @ts-ignore
+    if (typeof createIcons === 'function') {
+        createIcons({ icons });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
