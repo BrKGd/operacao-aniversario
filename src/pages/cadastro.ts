@@ -1,8 +1,9 @@
 import '../styles/cadastro.css';
+import { modalAlerta } from '../utils/modalAlertas';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
 import { createIcons, icons } from 'lucide';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx'; // Importação do XLSX mantida
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Preparando...</div></div>`;
@@ -17,29 +18,22 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const ehEdicao = !!(idEdicao && dadosEdicao);
         let imagemSelecionada = (dadosEdicao as any)?.imagem_url || '';
 
+        // Helper para datas vindo do Excel
         const formatarDataParaISO = (d: any): string => {
             if (!d) return '';
             const dataStr = String(d).trim();
             const regexBR = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/;
             const matchBR = dataStr.match(regexBR);
-            if (matchBR) {
-                return `${matchBR[3]}-${matchBR[2]!.padStart(2, '0')}-${matchBR[1]!.padStart(2, '0')}`;
-            }
+            if (matchBR) return `${matchBR[3]}-${matchBR[2]!.padStart(2, '0')}-${matchBR[1]!.padStart(2, '0')}`;
+            
             const regexISO = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/;
             const matchISO = dataStr.match(regexISO);
-            if (matchISO) {
-                return `${matchISO[1]}-${matchISO[2]!.padStart(2, '0')}-${matchISO[3]!.padStart(2, '0')}`;
-            }
+            if (matchISO) return `${matchISO[1]}-${matchISO[2]!.padStart(2, '0')}-${matchISO[3]!.padStart(2, '0')}`;
+            
             return dataStr;
         };
 
-        const avataresSementes = [
-            'Easton','Every','Avery','Jordan','Parker','Quinn','Rowan','Skyler','Emerson','Finley',
-            'Charlie','Dakota','Harper','Reese','Riley','Sawyer','Taylor','Alex','Blake','Cameron',
-            'Drew','Elliot','Hayden','Jamie','Kai','Logan','Morgan','Noel','River','Sage',
-            'Shawn','Terry','Tyler','Adrian','Ashton','Bailey','Casey','Corey','Devon','Eden',
-            'Frankie','Gray','Hunter','Indigo','Jesse','Kendall','Lane','Micah','Nico','Oakley'
-        ];
+        const avataresSementes = ['Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
 
         container.innerHTML = `
             <div class="fec-center-wrapper">
@@ -67,7 +61,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
                     <form id="formAniversario" class="fec-form-main">
                         <input type="hidden" id="imagem_url" value="${imagemSelecionada}">
-
+                        
+                        <!-- AÇÕES DE IMPORTAÇÃO/EXPORTAÇÃO -->
                         <div class="fec-import-actions">
                             <span id="btnDownloadModelo" class="fec-import-icon-btn" title="${ehEdicao ? 'Exportar dados' : 'Baixar planilha modelo (.xlsx)'}">
                                 <i data-lucide="download"></i>
@@ -144,11 +139,10 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const inputTelefone = document.getElementById('telefone') as HTMLInputElement;
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
 
-        // --- MÁSCARA DE TELEFONE (Corrigido para evitar o erro de 'e' não lido) ---
+        // MÁSCARA DE TELEFONE
         inputTelefone.addEventListener('input', () => {
-            let v = inputTelefone.value.replace(/\D/g, ""); // Remove letras e caracteres
+            let v = inputTelefone.value.replace(/\D/g, "");
             if (v.length > 11) v = v.substring(0, 11); 
-
             if (v.length > 0) {
                 v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
                 v = v.replace(/(\d{5})(\d)/, "$1-$2");
@@ -156,7 +150,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             inputTelefone.value = v;
         });
 
-        // --- DOWNLOAD / EXPORTAÇÃO ---
+        // DOWNLOAD MODELO / EXPORTAR
         document.getElementById('btnDownloadModelo')?.addEventListener('click', () => {
             const dadosExport = ehEdicao && dadosEdicao ? [{
                 nome: dadosEdicao.nome,
@@ -179,13 +173,18 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             XLSX.writeFile(wb, nomeArquivo);
         });
 
-        // --- IMPORTAÇÃO PLANILHA ---
+        // IMPORTAÇÃO VIA PLANILHA
         document.getElementById('inputPlanilha')?.addEventListener('change', async (e: any) => {
             const file = e.target.files[0];
             const categoriaId = selectCategoria.value;
 
+            // Validação de categoria selecionada
             if (!categoriaId || categoriaId === "NOVA_CATEGORIA") {
-                alert("Selecione um grupo antes de importar.");
+                await modalAlerta.show({
+                    title: "Grupo necessário",
+                    message: "Por favor, selecione um grupo antes de realizar a importação.",
+                    type: "info"
+                });
                 e.target.value = '';
                 return;
             }
@@ -196,83 +195,116 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     try {
                         const data = evt.target?.result;
                         const workbook = XLSX.read(data, { type: 'binary' });
-                        const primeiraAba = workbook.SheetNames ? workbook.SheetNames[0] : null;
-                        if (!primeiraAba) return;
+                        
+                        // 1. Pega o nome da aba com segurança (Resolve erro TS 2538)
+                        const nomePrimeiraAba = workbook.SheetNames.length > 0 ? workbook.SheetNames[0] : null;
 
-                        const sheet = workbook.Sheets[primeiraAba];
-                        if (!sheet) return;
+                        if (nomePrimeiraAba) {
+                            // 2. Tenta obter a aba
+                            const sheet = workbook.Sheets[nomePrimeiraAba];
+                            
+                            // 3. Verifica se a aba existe (Resolve erro TS 2769)
+                            if (sheet) {
+                                const json: any[] = XLSX.utils.sheet_to_json(sheet);
 
-                        const json: any[] = XLSX.utils.sheet_to_json(sheet);
+                                if (json.length > 0) {
+                                    // Substituição do confirm nativo pelo modal customizado
+                                    const confirmacao = await modalAlerta.show({
+                                        title: "Confirmar Importação",
+                                        message: `Encontramos ${json.length} registros. Deseja importar todos para este grupo?`,
+                                        type: "confirm",
+                                        confirmText: "Sim, importar",
+                                        cancelText: "Cancelar"
+                                    });
 
-                        if (json.length > 0 && confirm(`Importar ${json.length} registros?`)) {
-                            const promises = json.map(row => {
-                                return aniversarioService.adicionar({
-                                    nome: row.nome || 'Sem Nome',
-                                    apelido: row.apelido || '',
-                                    telefone: String(row.telefone || '').replace(/\D/g, ''),
-                                    frase_exibicao: row.frase_exibicao || '',
-                                    data_nascimento: formatarDataParaISO(row.data_nascimento),
-                                    categoria_id: categoriaId,
-                                    imagem_url: ''
-                                } as any);
+                                    if (confirmacao) {
+                                        for (const row of json) {
+                                            await aniversarioService.adicionar({
+                                                nome: row.nome || 'Sem Nome',
+                                                apelido: row.apelido || '',
+                                                telefone: String(row.telefone || '').replace(/\D/g, ''),
+                                                frase_exibicao: row.frase_exibicao || '',
+                                                data_nascimento: formatarDataParaISO(row.data_nascimento),
+                                                categoria_id: categoriaId,
+                                                imagem_url: ''
+                                            } as any);
+                                        }
+                                        
+                                        await modalAlerta.show({
+                                            title: "Sucesso!",
+                                            message: "Todos os aniversariantes foram importados com sucesso.",
+                                            type: "success"
+                                        });
+                                        
+                                        // Navegação após sucesso
+                                        if (typeof (window as any).navegar === 'function') {
+                                            (window as any).navegar('list');
+                                        } else {
+                                            window.location.hash = '#listagem';
+                                        }
+                                    }
+                                } else {
+                                    await modalAlerta.show({
+                                        message: "A planilha parece não conter nenhum dado válido.",
+                                        type: "warning" as any // ou info
+                                    });
+                                }
+                            } else {
+                                await modalAlerta.show({
+                                    message: "Não foi possível ler o conteúdo da aba selecionada.",
+                                    type: "error"
+                                });
+                            }
+                        } else {
+                            await modalAlerta.show({
+                                message: "O arquivo Excel não possui abas válidas.",
+                                type: "error"
                             });
-                            await Promise.all(promises);
-                            alert("Sucesso!");
-                            window.location.hash = '#listagem';
                         }
-                    } catch (err) { alert("Erro ao importar planilha."); }
+                    } catch (err) { 
+                        console.error(err);
+                        await modalAlerta.show({
+                            title: "Erro no processamento",
+                            message: "Houve um erro ao ler o arquivo Excel. Verifique se o arquivo não está corrompido.",
+                            type: "error"
+                        });
+                    }
                 };
                 reader.readAsBinaryString(file);
             }
         });
 
-        // --- GESTÃO DE AVATARES ---
-        const drawer = document.getElementById('avatarDrawer') as HTMLElement;
-        const overlay = document.getElementById('drawerOverlay') as HTMLElement;
-        const preview = document.getElementById('avatarPreview') as HTMLElement;
-        const inputHidden = document.getElementById('imagem_url') as HTMLInputElement;
+        // LÓGICA DE NAVEGAÇÃO E AVATARES (Padrão do anexo)
+        const irParaDetalhes = () => {
+            if (typeof (window as any).navegar === 'function') (window as any).navegar('detalhes', idEdicao);
+            else window.location.hash = `#detalhes?id=${idEdicao}`;
+        };
 
         const toggleDrawer = (open: boolean) => {
-            drawer.classList.toggle('active', open);
-            overlay.classList.toggle('active', open);
+            const drawer = document.getElementById('avatarDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            drawer?.classList.toggle('active', open);
+            overlay?.classList.toggle('active', open);
         };
 
         document.getElementById('btnAbrirGaleria')?.addEventListener('click', () => toggleDrawer(true));
-        overlay.addEventListener('click', () => toggleDrawer(false));
+        document.getElementById('drawerOverlay')?.addEventListener('click', () => toggleDrawer(false));
 
         document.querySelectorAll('.avatar-circle-option').forEach(el => {
             el.addEventListener('click', () => {
                 const url = el.getAttribute('data-url') || '';
-                inputHidden.value = url;
+                (document.getElementById('imagem_url') as HTMLInputElement).value = url;
+                const preview = document.getElementById('avatarPreview')!;
                 preview.innerHTML = url ? `<img src="${url}" class="img-preview-fec">` : `<i data-lucide="user" class="avatar-icon-fec"></i>`;
                 toggleDrawer(false);
                 createIcons({ icons });
             });
         });
 
-        document.getElementById('inputFoto')?.addEventListener('change', (e: any) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const url = ev.target?.result as string;
-                    inputHidden.value = url;
-                    preview.innerHTML = `<img src="${url}" class="img-preview-fec">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // --- SUBMISSÃO ---
-        (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (evt) => {
-            evt.preventDefault();
-            
+        // SUBMISSÃO DO FORMULÁRIO
+        (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (e) => {
+            e.preventDefault();
             const telLimpo = inputTelefone.value.replace(/\D/g, "");
-            if (telLimpo.length > 0 && telLimpo.length < 10) {
-                alert("O telefone deve ter pelo menos o DDD + 8 ou 9 dígitos.");
-                return;
-            }
-
             const btn = document.getElementById('btnSubmit') as HTMLButtonElement;
             btn.disabled = true;
 
@@ -283,25 +315,28 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     telefone: telLimpo,
                     frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
-                    imagem_url: inputHidden.value,
-                    categoria_id: (document.getElementById('categoria_id') as HTMLSelectElement).value
+                    imagem_url: (document.getElementById('imagem_url') as HTMLInputElement).value,
+                    categoria_id: selectCategoria.value
                 };
-                
+
                 if (ehEdicao && idEdicao) {
                     await aniversarioService.atualizar(idEdicao, dados as any);
-                    window.location.hash = `#detalhes?id=${idEdicao}`;
+                    irParaDetalhes();
                 } else {
                     await aniversarioService.adicionar(dados as any);
-                    window.location.hash = '#listagem';
+                    if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
+                    else window.location.hash = '#listagem';
                 }
-            } catch (err) { alert("Erro ao salvar."); } 
+            } catch (err) { alert("Erro ao salvar."); }
             finally { btn.disabled = false; }
         };
 
-        document.getElementById('btnVoltarForm')?.addEventListener('click', () => window.history.back());
+        document.getElementById('btnVoltarForm')?.addEventListener('click', () => {
+            if (ehEdicao) irParaDetalhes(); else window.history.back();
+        });
+
         document.getElementById('btnSecondaryAction')?.addEventListener('click', () => {
-            if (ehEdicao) window.location.hash = `#detalhes?id=${idEdicao}`;
-            else (document.getElementById('formAniversario') as HTMLFormElement).reset();
+            if (ehEdicao) irParaDetalhes(); else (document.getElementById('formAniversario') as HTMLFormElement).reset();
         });
 
         createIcons({ icons });
