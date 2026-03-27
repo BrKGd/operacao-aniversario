@@ -2,7 +2,6 @@ import '../styles/cadastro.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
 import { createIcons, icons } from 'lucide';
-// Importação necessária para gerar o Excel real (instale com: npm install xlsx)
 import * as XLSX from 'xlsx';
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
@@ -18,12 +17,28 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const ehEdicao = !!(idEdicao && dadosEdicao);
         let imagemSelecionada = (dadosEdicao as any)?.imagem_url || '';
 
+        const formatarDataParaISO = (d: any): string => {
+            if (!d) return '';
+            const dataStr = String(d).trim();
+            const regexBR = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/;
+            const matchBR = dataStr.match(regexBR);
+            if (matchBR) {
+                return `${matchBR[3]}-${matchBR[2]!.padStart(2, '0')}-${matchBR[1]!.padStart(2, '0')}`;
+            }
+            const regexISO = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/;
+            const matchISO = dataStr.match(regexISO);
+            if (matchISO) {
+                return `${matchISO[1]}-${matchISO[2]!.padStart(2, '0')}-${matchISO[3]!.padStart(2, '0')}`;
+            }
+            return dataStr;
+        };
+
         const avataresSementes = [
-        'Easton','Every','Avery','Jordan','Parker','Quinn','Rowan','Skyler','Emerson','Finley',
-        'Charlie','Dakota','Harper','Reese','Riley','Sawyer','Taylor','Alex','Blake','Cameron',
-        'Drew','Elliot','Hayden','Jamie','Kai','Logan','Morgan','Noel','River','Sage',
-        'Shawn','Terry','Tyler','Adrian','Ashton','Bailey','Casey','Corey','Devon','Eden',
-        'Frankie','Gray','Hunter','Indigo','Jesse','Kendall','Lane','Micah','Nico','Oakley'
+            'Easton','Every','Avery','Jordan','Parker','Quinn','Rowan','Skyler','Emerson','Finley',
+            'Charlie','Dakota','Harper','Reese','Riley','Sawyer','Taylor','Alex','Blake','Cameron',
+            'Drew','Elliot','Hayden','Jamie','Kai','Logan','Morgan','Noel','River','Sage',
+            'Shawn','Terry','Tyler','Adrian','Ashton','Bailey','Casey','Corey','Devon','Eden',
+            'Frankie','Gray','Hunter','Indigo','Jesse','Kendall','Lane','Micah','Nico','Oakley'
         ];
 
         container.innerHTML = `
@@ -53,9 +68,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     <form id="formAniversario" class="fec-form-main">
                         <input type="hidden" id="imagem_url" value="${imagemSelecionada}">
 
-                        <!-- SEÇÃO DE IMPORTAÇÃO (ESTILIZADA VIA CSS) -->
                         <div class="fec-import-actions">
-                            <span id="btnDownloadModelo" class="fec-import-icon-btn" title="Baixar planilha modelo (.xlsx)">
+                            <span id="btnDownloadModelo" class="fec-import-icon-btn" title="${ehEdicao ? 'Exportar dados' : 'Baixar planilha modelo (.xlsx)'}">
                                 <i data-lucide="download"></i>
                             </span>
                             <label for="inputPlanilha" class="fec-import-icon-btn" title="Selecionar planilha">
@@ -76,7 +90,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
                         <div class="fec-input-group-line">
                             <i data-lucide="phone"></i>
-                            <input type="tel" id="telefone" placeholder="WhatsApp (DDD + Número)" value="${(dadosEdicao as any)?.telefone || ''}">
+                            <input type="tel" id="telefone" placeholder="(00) 00000-0000" maxlength="15" value="${(dadosEdicao as any)?.telefone || ''}">
                         </div>
 
                         <div class="fec-input-group-line">
@@ -127,43 +141,92 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             </div>
         `;
 
-        // --- LÓGICA DE DOWNLOAD EM .XLSX REAL ---
-        document.getElementById('btnDownloadModelo')?.addEventListener('click', () => {
-            // Definimos os dados com acentuação correta
-            const dados = [
-                { 
-                    "nome": "João Silva", 
-                    "apelido": "Jo", 
-                    "telefone": "71988887766", 
-                    "frase_exibicao": "Parabéns!", 
-                    "data_nascimento": "1990-05-20" 
-                }
-            ];
-
-            // Cria a planilha (Worksheet)
-            const ws = XLSX.utils.json_to_sheet(dados);
-            // Cria o livro (Workbook)
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Aniversariantes");
-
-            // Gera o arquivo e inicia o download
-            XLSX.writeFile(wb, "modelo_aniversariantes.xlsx");
-        });
-
-        // --- RESTANTE DAS FUNCIONALIDADES MANTIDAS ---
-        document.getElementById('inputPlanilha')?.addEventListener('change', (e: any) => {
-            const file = e.target.files[0];
-            if (file) alert(`Arquivo "${file.name}" carregado. Próximo passo: processar via XLSX.read().`);
-        });
-
+        const inputTelefone = document.getElementById('telefone') as HTMLInputElement;
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
-        selectCategoria.addEventListener('change', () => {
-            if (selectCategoria.value === "NOVA_CATEGORIA") {
-                if (typeof (window as any).navegar === 'function') (window as any).navegar('categorias'); 
-                else window.location.hash = '#categorias';
+
+        // --- MÁSCARA DE TELEFONE (Corrigido para evitar o erro de 'e' não lido) ---
+        inputTelefone.addEventListener('input', () => {
+            let v = inputTelefone.value.replace(/\D/g, ""); // Remove letras e caracteres
+            if (v.length > 11) v = v.substring(0, 11); 
+
+            if (v.length > 0) {
+                v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+                v = v.replace(/(\d{5})(\d)/, "$1-$2");
+            }
+            inputTelefone.value = v;
+        });
+
+        // --- DOWNLOAD / EXPORTAÇÃO ---
+        document.getElementById('btnDownloadModelo')?.addEventListener('click', () => {
+            const dadosExport = ehEdicao && dadosEdicao ? [{
+                nome: dadosEdicao.nome,
+                apelido: (dadosEdicao as any).apelido || '',
+                telefone: (dadosEdicao as any).telefone || '',
+                frase_exibicao: (dadosEdicao as any).frase_exibicao || '',
+                data_nascimento: dadosEdicao.data_nascimento
+            }] : [{ 
+                nome: "Exemplo Nome", 
+                apelido: "Apelido", 
+                telefone: "71999998888", 
+                frase_exibicao: "Feliz Aniversário!", 
+                data_nascimento: "1995-10-30" 
+            }];
+
+            const ws = XLSX.utils.json_to_sheet(dadosExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Dados");
+            const nomeArquivo = ehEdicao ? `export_${dadosEdicao?.nome.replace(/\s/g, '_')}.xlsx` : "modelo_aniversariantes.xlsx";
+            XLSX.writeFile(wb, nomeArquivo);
+        });
+
+        // --- IMPORTAÇÃO PLANILHA ---
+        document.getElementById('inputPlanilha')?.addEventListener('change', async (e: any) => {
+            const file = e.target.files[0];
+            const categoriaId = selectCategoria.value;
+
+            if (!categoriaId || categoriaId === "NOVA_CATEGORIA") {
+                alert("Selecione um grupo antes de importar.");
+                e.target.value = '';
+                return;
+            }
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (evt) => {
+                    try {
+                        const data = evt.target?.result;
+                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const primeiraAba = workbook.SheetNames ? workbook.SheetNames[0] : null;
+                        if (!primeiraAba) return;
+
+                        const sheet = workbook.Sheets[primeiraAba];
+                        if (!sheet) return;
+
+                        const json: any[] = XLSX.utils.sheet_to_json(sheet);
+
+                        if (json.length > 0 && confirm(`Importar ${json.length} registros?`)) {
+                            const promises = json.map(row => {
+                                return aniversarioService.adicionar({
+                                    nome: row.nome || 'Sem Nome',
+                                    apelido: row.apelido || '',
+                                    telefone: String(row.telefone || '').replace(/\D/g, ''),
+                                    frase_exibicao: row.frase_exibicao || '',
+                                    data_nascimento: formatarDataParaISO(row.data_nascimento),
+                                    categoria_id: categoriaId,
+                                    imagem_url: ''
+                                } as any);
+                            });
+                            await Promise.all(promises);
+                            alert("Sucesso!");
+                            window.location.hash = '#listagem';
+                        }
+                    } catch (err) { alert("Erro ao importar planilha."); }
+                };
+                reader.readAsBinaryString(file);
             }
         });
 
+        // --- GESTÃO DE AVATARES ---
         const drawer = document.getElementById('avatarDrawer') as HTMLElement;
         const overlay = document.getElementById('drawerOverlay') as HTMLElement;
         const preview = document.getElementById('avatarPreview') as HTMLElement;
@@ -200,53 +263,46 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             }
         });
 
-        const irParaDetalhes = () => {
-            if (typeof (window as any).navegar === 'function') (window as any).navegar('detalhes', idEdicao);
-            else window.location.hash = `#detalhes?id=${idEdicao}`;
-        };
+        // --- SUBMISSÃO ---
+        (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (evt) => {
+            evt.preventDefault();
+            
+            const telLimpo = inputTelefone.value.replace(/\D/g, "");
+            if (telLimpo.length > 0 && telLimpo.length < 10) {
+                alert("O telefone deve ter pelo menos o DDD + 8 ou 9 dígitos.");
+                return;
+            }
 
-        document.getElementById('btnVoltarForm')?.addEventListener('click', () => {
-            if (ehEdicao) irParaDetalhes(); else window.history.back();
-        });
-
-        document.getElementById('btnSecondaryAction')?.addEventListener('click', () => {
-            if (ehEdicao) irParaDetalhes(); else (document.getElementById('formAniversario') as HTMLFormElement).reset();
-        });
-
-        (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (e) => {
-            e.preventDefault();
             const btn = document.getElementById('btnSubmit') as HTMLButtonElement;
             btn.disabled = true;
+
             try {
                 const dados = {
                     nome: (document.getElementById('nome') as HTMLInputElement).value,
                     apelido: (document.getElementById('apelido') as HTMLInputElement).value,
-                    telefone: (document.getElementById('telefone') as HTMLInputElement).value,
+                    telefone: telLimpo,
                     frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                     imagem_url: inputHidden.value,
                     categoria_id: (document.getElementById('categoria_id') as HTMLSelectElement).value
                 };
                 
-                if (dados.categoria_id === "NOVA_CATEGORIA") {
-                    alert("Por favor, selecione uma categoria válida.");
-                    btn.disabled = false;
-                    return;
-                }
-
                 if (ehEdicao && idEdicao) {
-                    await aniversarioService.atualizar(idEdicao, dados);
-                    irParaDetalhes();
+                    await aniversarioService.atualizar(idEdicao, dados as any);
+                    window.location.hash = `#detalhes?id=${idEdicao}`;
                 } else {
-                    await aniversarioService.adicionar(dados);
-                    if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
-                    else window.location.hash = '#listagem';
+                    await aniversarioService.adicionar(dados as any);
+                    window.location.hash = '#listagem';
                 }
-            } catch (err) { 
-                console.error(err);
-                alert("Erro ao salvar."); 
-            } finally { btn.disabled = false; }
+            } catch (err) { alert("Erro ao salvar."); } 
+            finally { btn.disabled = false; }
         };
+
+        document.getElementById('btnVoltarForm')?.addEventListener('click', () => window.history.back());
+        document.getElementById('btnSecondaryAction')?.addEventListener('click', () => {
+            if (ehEdicao) window.location.hash = `#detalhes?id=${idEdicao}`;
+            else (document.getElementById('formAniversario') as HTMLFormElement).reset();
+        });
 
         createIcons({ icons });
     } catch (error) { container.innerHTML = "Erro ao carregar."; }
