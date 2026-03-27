@@ -1,30 +1,50 @@
-/* --- TELA DE GESTÃO DE CATEGORIAS --- */
-.categorias-container {
+/* --- TELA DE GESTÃO DE CATEGORIAS (ISOLADA) --- */
+.catg-container {
     padding: 20px;
-    max-width: 600px;
+    max-width: 500px;
     margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
 }
 
-.cat-header {
+.catg-btn-back {
+    position: absolute;
+    top: 15px;
+    left: 0;
+    width: 45px;
+    height: 45px;
+    border-radius: 14px;
+    border: none;
+    background: white;
+    color: #1e293b;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s;
+    z-index: 100;
 }
 
-.cat-header h2 {
+.catg-header {
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 30px;
+}
+
+.catg-header h2 {
     color: var(--azul-fortaleza);
     font-weight: 800;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
 }
 
-.cat-list {
+.catg-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.cat-item {
+.catg-item {
     background: white;
     padding: 16px;
     border-radius: 20px;
@@ -33,40 +53,146 @@
     gap: 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     border: 2px solid transparent;
-    transition: 0.2s;
+    transition: 0.3s ease;
 }
 
-.cat-item:hover {
-    border-color: var(--cinza-borda);
-    transform: translateY(-2px);
-}
-
-.cat-info {
-    flex-grow: 1;
-}
-
-.cat-info span {
-    display: block;
-    font-weight: 700;
-    color: #1e293b;
-}
-
-.cat-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-mini-action {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    border: none;
+.catg-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: 0.2s;
 }
 
-.btn-edit { background: #eff6ff; color: var(--azul-fortaleza); }
-.btn-del { background: #fef2f2; color: var(--vermelho-fortaleza); }
+.catg-info { flex-grow: 1; }
+.catg-info span { font-weight: 700; color: #1e293b; }
+
+.catg-actions { display: flex; gap: 8px; }
+
+.catg-btn-mini {
+    width: 38px; height: 38px; border-radius: 12px; border: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+
+.catg-edit { background: #eff6ff; color: #2563eb; }
+.catg-del { background: #fef2f2; color: #dc2626; }
+
+.catg-btn-add {
+    background: #e63946; color: white; border: none; padding: 14px;
+    border-radius: 16px; font-weight: 700; display: flex; align-items: center;
+    justify-content: center; gap: 10px; margin: 30px auto; cursor: pointer;
+    width: 100%;
+}
+
+/* --- MODAL EXCLUSIVO PARA CATEGORIAS --- */
+
+.catg-modal-header {
+    background: #1e293b; color: white; padding: 20px 25px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* O Overlay deve cobrir a tela inteira para centralizar o conteúdo */
+.catg-modal-overlay {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Escurece o fundo */
+    display: flex; 
+    align-items: center;     /* Centraliza Verticalmente */
+    justify-content: center;  /* Centraliza Horizontalmente */
+    z-index: 11000;
+    padding: 20px;           /* Margem de segurança para telas pequenas */
+}
+
+/* O Card é onde definimos a largura e a altura máxima */
+.catg-modal-card {
+    background: white; 
+    width: 100%; 
+    max-width: 500px;        /* Deixa o modal mais largo (ajuste se quiser mais) */
+    max-height: 550px;       /* Altura máxima solicitada */
+    border-radius: 30px;
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;  /* Garante que o header/body/footer fiquem empilhados */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalEntrada 0.3s ease-out;
+}
+
+/* Importante: O corpo do modal deve ter scroll se o conteúdo for maior que 550px */
+.catg-modal-body { 
+    padding: 25px; 
+    overflow-y: auto;        /* Ativa o scroll interno se necessário */
+    flex-grow: 1;            /* Ocupa o espaço entre header e footer */
+}
+
+/* Animação suave de entrada */
+@keyframes modalEntrada {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.catg-modal-header h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.4rem; }
+
+.catg-btn-close {
+    background: #ef4444; color: white; border: none; width: 35px; height: 35px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+
+
+.catg-input-group { margin-bottom: 20px; }
+.catg-input-group label { 
+    display: block; font-size: 0.75rem; font-weight: 800; 
+    color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;
+}
+
+.catg-input-text {
+    width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #f1f5f9;
+    background: #f8fafc; font-weight: 600; font-size: 1rem;
+}
+
+.catg-icon-grid-box {
+    background: #f8fafc; border-radius: 20px; padding: 15px; border: 1px solid #f1f5f9;
+}
+
+.catg-icon-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+    max-height: 150px; overflow-y: auto; margin-top: 15px; padding: 5px;
+}
+
+.catg-icon-item {
+    aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; border: 2px solid transparent;
+    background: white; color: #64748b; transition: 0.2s;
+}
+
+.catg-icon-item.active { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+
+.catg-color-row { display: flex; align-items: center; gap: 15px; }
+.catg-color-view { height: 45px; flex-grow: 1; border-radius: 10px; }
+.catg-color-hex { width: 100px; padding: 10px; border-radius: 10px; border: 1px solid #f1f5f9; text-align: center; font-weight: 700; }
+
+.catg-modal-footer {
+    padding: 15px 25px 25px; display: flex; justify-content: flex-end; gap: 15px;
+}
+
+.catg-btn-circle {
+    width: 55px; height: 55px; border-radius: 50%; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); color: white;
+}
+
+.catg-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.catg-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+/* Tags Scroll */
+.catg-tags-scroll {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px;
+}
+.catg-tag {
+    padding: 6px 14px; border-radius: 20px; background: white; border: 1px solid #e2e8f0;
+    font-size: 0.8rem; font-weight: 600; color: #64748b; white-space: nowrap;
+}
+.catg-tag.active { background: #3b82f6; color: white; border-color: #3b82f6; }

@@ -42,7 +42,8 @@ export const aniversarioService = {
     return data as Categoria[];
   },
 
-  async adicionarCategoria(categoria: Omit<Categoria, 'id' | 'created_at'>): Promise<Categoria | null> {
+  // ✅ RENOMEADO: De adicionarCategoria para salvarCategoria (para bater com a página)
+  async salvarCategoria(categoria: Omit<Categoria, 'id' | 'created_at'>): Promise<Categoria | null> {
     const { data, error } = await supabase
       .from('categorias')
       .insert([categoria])
@@ -56,7 +57,7 @@ export const aniversarioService = {
     return data as Categoria;
   },
 
-  // ✅ NOVO: Atualiza categoria no Supabase
+  // ✅ ATUALIZAÇÃO: Garante que os tipos batem
   async atualizarCategoria(id: string, dados: Partial<Categoria>): Promise<Categoria | null> {
     const { data, error } = await supabase
       .from('categorias')
@@ -72,7 +73,6 @@ export const aniversarioService = {
     return data as Categoria;
   },
 
-  // ✅ NOVO: Exclui categoria no Supabase
   async excluirCategoria(id: string): Promise<void> {
     const { error } = await supabase
       .from('categorias')
