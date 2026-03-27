@@ -2,51 +2,45 @@ import '../styles/categorias.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { modalAlerta } from '../utils/modalAlertas';
 import { 
-    Sparkles, 
-    LogOut, 
-    LayoutGrid, 
-    Contact2, 
-    CalendarHeart, 
-    Settings2,
-    createIcons, 
-    Wallet, 
-    X, 
-    RotateCcw, 
-    Check, 
-    Search, 
-    ChevronLeft, 
-    Pencil, 
-    Trash2, 
-    Plus,
-    Star,
-    Heart,
-    Church,
-    Tag,
-    Home,
-    Utensils,
-    Music,
-    Coffee,
-    User,
-    Camera, // Adicionado
-    Gift,   // Adicionado
-    Stethoscope,
-    Activity,
-    Pill,
-    Baby,
-    Dumbbell,
-    HelpCircle,
-    Brain,
-    Syringe,
-    Thermometer
+    Sparkles, LogOut, LayoutGrid, Contact2, CalendarHeart, Settings2,
+    createIcons, Wallet, X, RotateCcw, Check, Search, ChevronLeft, 
+    Pencil, Trash2, Plus, Star, Heart, Church, Tag, Home, Utensils, 
+    Music, Coffee, User, Camera, Gift, Stethoscope, Activity, Pill, 
+    Baby, Dumbbell, HelpCircle, Brain, Syringe, Thermometer
 } from 'lucide';
 
-let telaOrigem = '#cadastro';
+const ORIGEM_KEY = 'fec_catg_origem';
+
+const ICON_MAP = { 
+    ChevronLeft, Pencil, Trash2, Plus, Star, Tag, Heart, Church, Sparkles, 
+    LogOut, LayoutGrid, Contact2, CalendarHeart, Settings2, Wallet, X, 
+    RotateCcw, Check, Search, Home, Utensils, Music, Coffee, User, Camera, 
+    Gift, Stethoscope, Activity, Pill, Baby, Dumbbell, HelpCircle, Brain, 
+    Syringe, Thermometer 
+};
 
 export async function montarCategorias(container: HTMLElement) {
-    const hashAtual = window.location.hash;
-    if (hashAtual && hashAtual !== '#categorias' && !hashAtual.includes('id=')) {
-        telaOrigem = hashAtual;
-    }
+    
+    // --- NOVA LÓGICA DE CAPTURA BLINDADA ---
+    // Se o hash atual já é #categorias, tentamos pegar o histórico imediato do navegador
+    // Se o usuário clicou num link, o navegador sabe qual era a página anterior.
+    const salvarOrigem = () => {
+        const hashAntesDeMudar = window.location.hash;
+        
+        // Se o hash não for categorias, salvamos ele agora!
+        if (hashAntesDeMudar && hashAntesDeMudar !== '#categorias') {
+            localStorage.setItem(ORIGEM_KEY, hashAntesDeMudar);
+        } 
+        // Se já caiu aqui como #categorias e o storage está vazio ou com algo antigo,
+        // tentamos deduzir pelo comportamento comum (voltar para cadastro)
+        else if (!localStorage.getItem(ORIGEM_KEY)) {
+            localStorage.setItem(ORIGEM_KEY, '#cadastro');
+        }
+    };
+
+    // Executa a tentativa de salvamento
+    salvarOrigem();
+    // ---------------------------------------
 
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando categorias...</div></div>`;
 
@@ -91,19 +85,29 @@ export async function montarCategorias(container: HTMLElement) {
             </div>
         `;
 
-        document.getElementById('btnVoltarApp')?.addEventListener('click', () => {
-            window.location.hash = telaOrigem;
-        });
+        const acaoVoltar = () => {
+            const origem = localStorage.getItem(ORIGEM_KEY) || '#cadastro';
+            
+            if (origem.includes('#cadastro') || origem.includes('id=')) {
+                window.history.back();
+            } else {
+                window.location.hash = origem;
+            }
+        };
+
+        document.getElementById('btnVoltarApp')?.addEventListener('click', acaoVoltar);
 
         document.getElementById('btnNovaCat')?.addEventListener('click', () => {
-            abrirModalCategoria(null, () => montarCategorias(container));
+            abrirModalCategoria(null, () => montarCategorias(container), acaoVoltar);
         });
 
         container.querySelectorAll('.catg-edit').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = (btn as HTMLElement).dataset.id;
                 const categoria = categorias.find(c => c.id === id);
-                if (categoria) abrirModalCategoria(categoria, () => montarCategorias(container));
+                if (categoria) {
+                    abrirModalCategoria(categoria, () => montarCategorias(container), acaoVoltar);
+                }
             });
         });
 
@@ -126,21 +130,14 @@ export async function montarCategorias(container: HTMLElement) {
             });
         });
 
-        createIcons({ 
-            icons: { ChevronLeft, Pencil, Trash2, Plus, Star, Tag, Heart, Church,Sparkles, 
-                LogOut, 
-                LayoutGrid, 
-                Contact2, 
-                CalendarHeart, 
-                Settings2 } 
-        });
+        createIcons({ icons: ICON_MAP });
 
     } catch (e) {
         container.innerHTML = `<div class="fec-center-wrapper">Erro ao carregar dados.</div>`;
     }
 }
 
-function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
+function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinalize: () => void) {
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'catg-modal-overlay';
     
@@ -156,30 +153,21 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
     modalOverlay.innerHTML = `
         <div class="catg-modal-card">
             <div class="catg-modal-header">
-                <h3><i data-lucide="wallet"></i> ${dados ? 'Editar Categoria' : 'Nova Categoria'}</h3>
+                <h3><i data-lucide="tag"></i> ${dados ? 'Editar Categoria' : 'Nova Categoria'}</h3>
                 <button class="catg-btn-close" id="closeCatForm"><i data-lucide="x"></i></button>
             </div>
-
             <div class="catg-modal-body">
                 <div class="catg-input-group">
                     <label>NOME DA CATEGORIA</label>
                     <input type="text" class="catg-input-text" id="inNomeCat" placeholder="Ex: Amigos, Trabalho..." value="${dados?.nome || ''}">
                 </div>
-
                 <div class="catg-input-group">
                     <label>ESCOLHA UM ÍCONE</label>
                     <div class="catg-icon-grid-box">
                         <div style="position: relative; margin-bottom: 12px;">
-                            <input type="text" class="catg-input-text" placeholder="Buscar ícones..." style="padding-left: 40px; font-size: 0.9rem;">
+                            <input type="text" class="catg-input-text" id="searchIcon" placeholder="Buscar ícones..." style="padding-left: 40px;">
                             <i data-lucide="search" style="position: absolute; left: 12px; top: 12px; width: 18px; color: #94a3b8;"></i>
                         </div>
-                        
-                        <div class="catg-tags-scroll">
-                            <span class="catg-tag active">Todos</span>
-                            <span class="catg-tag">Saúde</span>
-                            <span class="catg-tag">Social</span>
-                        </div>
-
                         <div class="catg-icon-grid">
                             ${listaIcones.map(icon => `
                                 <div class="catg-icon-item ${iconeSelecionado === icon ? 'active' : ''}" data-icon="${icon}">
@@ -189,7 +177,6 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
                         </div>
                     </div>
                 </div>
-
                 <div class="catg-input-group">
                     <label>COR DA IDENTIDADE</label>
                     <div class="catg-color-row">
@@ -199,7 +186,6 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
                     </div>
                 </div>
             </div>
-
             <div class="catg-modal-footer">
                 <button class="catg-btn-circle catg-blue" id="btnResetCat"><i data-lucide="rotate-ccw"></i></button>
                 <button class="catg-btn-circle catg-green" id="btnSalvarCat"><i data-lucide="check"></i></button>
@@ -208,15 +194,7 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
     `;
 
     document.body.appendChild(modalOverlay);
-    
-    createIcons({ 
-        icons: { 
-            Wallet, X, RotateCcw, Check, Search, Star, Heart, Church, Tag, Home, 
-            Utensils, Music, Coffee, User, Camera, Gift, Stethoscope, Activity, 
-            Pill, Baby, Dumbbell, HelpCircle, Brain, Syringe, Thermometer,Sparkles, 
-            LogOut,LayoutGrid,Contact2,CalendarHeart,Settings2
-        } 
-    });
+    createIcons({ icons: ICON_MAP });
 
     modalOverlay.querySelector('#closeCatForm')?.addEventListener('click', () => modalOverlay.remove());
 
@@ -229,8 +207,8 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
     });
 
     const preview = modalOverlay.querySelector('#previewCor') as HTMLElement;
-    const inputHex = modalOverlay.querySelector('#hexCor') as HTMLInputElement;
     const picker = modalOverlay.querySelector('#hiddenPicker') as HTMLInputElement;
+    const inputHex = modalOverlay.querySelector('#hexCor') as HTMLInputElement;
 
     preview.addEventListener('click', () => picker.click());
     picker.addEventListener('input', () => {
@@ -246,7 +224,6 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
         modalAlerta.showLoading(dados ? "Atualizando..." : "Salvando...");
 
         try {
-            // Nota: Certifique-se que o arquivo aniversarioService.ts contém salvarCategoria e atualizarCategoria
             if (dados?.id) {
                 await (aniversarioService as any).atualizarCategoria(dados.id, { nome, icone: iconeSelecionado, cor: corSelecionada });
             } else {
@@ -255,13 +232,28 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void) {
 
             modalAlerta.close();
             modalOverlay.remove();
+            
             await modalAlerta.show({ message: "Sucesso!", type: "success" });
+
             onSuccess();
-            window.location.hash = telaOrigem;
+            onFinalize(); 
 
         } catch (err) {
             modalAlerta.close();
-            modalAlerta.show({ message: "Erro ao salvar.", type: "error" });
+            modalAlerta.show({ message: "Erro ao salvar categoria.", type: "error" });
         }
+    });
+
+    modalOverlay.querySelector('#btnResetCat')?.addEventListener('click', () => {
+        (modalOverlay.querySelector('#inNomeCat') as HTMLInputElement).value = dados?.nome || '';
+        iconeSelecionado = dados?.icone || 'star';
+        corSelecionada = dados?.cor || '#4361EE';
+        preview.style.background = corSelecionada;
+        inputHex.value = corSelecionada.toUpperCase();
+        picker.value = corSelecionada;
+        modalOverlay.querySelectorAll('.catg-icon-item').forEach(i => {
+            const el = i as HTMLElement;
+            el.classList.toggle('active', el.dataset.icon === iconeSelecionado);
+        });
     });
 }

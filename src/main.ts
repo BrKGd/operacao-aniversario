@@ -67,7 +67,6 @@ function configurarLogin() {
     const passEl = document.getElementById('password') as HTMLInputElement;
     const errEl = document.getElementById('auth-error');
 
-    // LIMPAR ERRO AO DIGITAR
     const limparErro = () => {
         if (errEl && errEl.style.display !== 'none') {
             errEl.style.display = 'none';
@@ -104,7 +103,6 @@ function configurarLogin() {
             btn.innerHTML = originalContent;
             recarregarIcones();
         } else {
-            // LOGIN SUCESSO: Força limpeza de hash e recarrega na Dashboard
             window.location.hash = '#dash';
             window.location.reload();
         }
@@ -141,9 +139,28 @@ function montarLayoutEstrutural() {
 
     renderizarNavegacao();
     
-    // Prioriza Dashboard no primeiro acesso após login
-    const rotaInicial = window.location.hash.replace('#', '') || 'dash';
-    irPara(rotaInicial); 
+    // Escutador de mudança de URL (Botão voltar/avançar e cliques)
+    window.addEventListener('hashchange', () => {
+        processarRotaAtual();
+    });
+
+    // Inicializa a primeira tela
+    processarRotaAtual(); 
+}
+
+/**
+ * Extrai a rota e o ID da URL de forma segura para o TypeScript
+ */
+function processarRotaAtual() {
+    const hashCompleto = window.location.hash.replace('#', '') || 'dash';
+    const [tela, query] = hashCompleto.split('?');
+    
+    const paramsURL = new URLSearchParams(query || '');
+    const id = paramsURL.get('id'); 
+
+    // O uso de 'id ?? undefined' resolve o erro 2345:
+    // Converte null (do navegador) para undefined (do parâmetro opcional)
+    irPara(tela, id ?? undefined);
 }
 
 // --- NAVEGAÇÃO ---
@@ -183,18 +200,16 @@ function renderizarNavegacao() {
         </div>
     `;
 
+    // Atualiza a URL e deixa o evento 'hashchange' disparar a renderização
     // @ts-ignore
-    window.navegar = (t, p) => irPara(t, p);
-
-    window.addEventListener('hashchange', () => {
-        const rota = window.location.hash.replace('#', '');
-        if (rota) irPara(rota);
-    });
+    window.navegar = (tela: string, id?: string) => {
+        window.location.hash = id ? `${tela}?id=${id}` : tela;
+    };
 
     recarregarIcones();
 }
 
-// --- ROTAS ---
+// --- RENDERIZADOR DE TELAS ---
 export async function irPara(tela: string, params?: any) {
     const container = document.getElementById('main-content');
     if (!container) return;
@@ -210,9 +225,8 @@ export async function irPara(tela: string, params?: any) {
         </div>
     `;
 
-    const rotaLimpa = tela.split('?')[0];
-
-    switch (rotaLimpa) {
+    // Roteamento baseado no nome da tela
+    switch (tela) {
         case 'dash': await montarDashboard(container); break;
         case 'list': await montarLista(container); break;
         case 'form': await montarCadastro(container, params); break;

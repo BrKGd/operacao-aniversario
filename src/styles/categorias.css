@@ -1,4 +1,16 @@
 /* --- TELA DE GESTÃO DE CATEGORIAS (ISOLADA) --- */
+:root {
+    --fec-azul-vibrante: #003399;   
+    --fec-vermelho-vibrante: #ff0000; 
+    --fec-vermelho-dark: #cc0000;
+    --fec-branco: #ffffff;
+    --fec-cinza-texto: #43464a;
+    --fec-border: rgba(255, 255, 255, 0.2);
+    --fec-bg-overlay: rgba(0, 5, 20, 0.95);
+    --fec-shadow: rgba(0, 51, 153, 0.4);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .catg-container {
     padding: 20px;
     max-width: 500px;
@@ -15,8 +27,8 @@
     height: 45px;
     border-radius: 14px;
     border: none;
-    background: white;
-    color: #1e293b;
+    background: transparent !important;
+    color: var(--fec-azul-vibrante)!important;
     display: flex;
     align-items: center;
     justify-content: center;
