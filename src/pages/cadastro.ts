@@ -3,7 +3,7 @@ import { modalAlerta } from '../utils/modalAlertas';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
 import { createIcons, icons } from 'lucide';
-import * as XLSX from 'xlsx'; // Importação do XLSX mantida
+import * as XLSX from 'xlsx';
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Preparando...</div></div>`;
@@ -62,7 +62,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     <form id="formAniversario" class="fec-form-main">
                         <input type="hidden" id="imagem_url" value="${imagemSelecionada}">
                         
-                        <!-- AÇÕES DE IMPORTAÇÃO/EXPORTAÇÃO -->
                         <div class="fec-import-actions">
                             <span id="btnDownloadModelo" class="fec-import-icon-btn" title="${ehEdicao ? 'Exportar dados' : 'Baixar planilha modelo (.xlsx)'}">
                                 <i data-lucide="download"></i>
@@ -138,18 +137,39 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
         const inputTelefone = document.getElementById('telefone') as HTMLInputElement;
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
+        const inputFotoLocal = document.getElementById('inputFoto') as HTMLInputElement;
+        const inputHiddenImagem = document.getElementById('imagem_url') as HTMLInputElement;
+        const previewAvatar = document.getElementById('avatarPreview')!;
 
-        // >>> ADICIONE ESTA FUNÇÃO AQUI <<<
+        // LÓGICA DE CARREGAMENTO DE FOTO LOCAL (ARQUIVO)
+        inputFotoLocal?.addEventListener('change', (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const file = target.files?.[0];
+
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    modalAlerta.show({ title: "Erro", message: "Selecione um arquivo de imagem.", type: "error" });
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const base64 = evt.target?.result as string;
+                    inputHiddenImagem.value = base64; // Define o valor para o formulário
+                    previewAvatar.innerHTML = `<img src="${base64}" class="img-preview-fec">`;
+                    createIcons({ icons });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // NAVEGAÇÃO PARA NOVA CATEGORIA
         selectCategoria.addEventListener('change', () => {
             if (selectCategoria.value === "NOVA_CATEGORIA") {
-                // Resetamos o valor para não ficar "travado" na opção de adicionar
                 selectCategoria.value = ""; 
-                
-                // Disparamos a navegação para a tela de categorias
                 if (typeof (window as any).navegar === 'function') {
                     (window as any).navegar('categorias');
                 } else {
-                    // Fallback caso a função global não esteja disponível
                     window.location.hash = '#categorias';
                 }
             }
@@ -195,11 +215,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             const categoriaId = selectCategoria.value;
 
             if (!categoriaId || categoriaId === "NOVA_CATEGORIA") {
-                await modalAlerta.show({
-                    title: "Atenção",
-                    message: "Selecione um grupo antes de importar.",
-                    type: "info"
-                });
+                await modalAlerta.show({ title: "Atenção", message: "Selecione um grupo antes de importar.", type: "info" });
                 e.target.value = '';
                 return;
             }
@@ -214,7 +230,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
                         if (nomeAba && workbook.Sheets[nomeAba]) {
                             const json: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAba]);
-
                             if (json.length > 0) {
                                 const confirmar = await modalAlerta.show({
                                     title: "Importar Planilha",
@@ -224,9 +239,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                                 });
 
                                 if (confirmar) {
-                                    // MOSTRA O LOADING DURANTE O PROCESSAMENTO
                                     modalAlerta.showLoading(`Processando ${json.length} aniversariantes...`);
-
                                     for (const row of json) {
                                         await aniversarioService.adicionar({
                                             nome: row.nome || 'Sem Nome',
@@ -238,33 +251,22 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                                             imagem_url: ''
                                         } as any);
                                     }
-
-                                    modalAlerta.close(); // Fecha o loading
-
-                                    await modalAlerta.show({
-                                        title: "Sucesso!",
-                                        message: "Importação concluída com êxito.",
-                                        type: "success"
-                                    });
-
+                                    modalAlerta.close();
+                                    await modalAlerta.show({ title: "Sucesso!", message: "Importação concluída com êxito.", type: "success" });
                                     if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
                                 }
                             }
                         }
                     } catch (err) {
                         modalAlerta.close();
-                        modalAlerta.show({
-                            title: "Erro",
-                            message: "Não foi possível processar a planilha.",
-                            type: "error"
-                        });
+                        modalAlerta.show({ title: "Erro", message: "Não foi possível processar a planilha.", type: "error" });
                     }
                 };
                 reader.readAsBinaryString(file);
             }
         });
 
-        // LÓGICA DE NAVEGAÇÃO E AVATARES (Padrão do anexo)
+        // LÓGICA DE NAVEGAÇÃO E AVATARES
         const irParaDetalhes = () => {
             if (typeof (window as any).navegar === 'function') (window as any).navegar('detalhes', idEdicao);
             else window.location.hash = `#detalhes?id=${idEdicao}`;
@@ -283,9 +285,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         document.querySelectorAll('.avatar-circle-option').forEach(el => {
             el.addEventListener('click', () => {
                 const url = el.getAttribute('data-url') || '';
-                (document.getElementById('imagem_url') as HTMLInputElement).value = url;
-                const preview = document.getElementById('avatarPreview')!;
-                preview.innerHTML = url ? `<img src="${url}" class="img-preview-fec">` : `<i data-lucide="user" class="avatar-icon-fec"></i>`;
+                inputHiddenImagem.value = url;
+                previewAvatar.innerHTML = url ? `<img src="${url}" class="img-preview-fec">` : `<i data-lucide="user" class="avatar-icon-fec"></i>`;
                 toggleDrawer(false);
                 createIcons({ icons });
             });
@@ -294,8 +295,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         // SUBMISSÃO DO FORMULÁRIO
         (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (e) => {
             e.preventDefault();
-            
-            // Mostra o loading imediatamente
             modalAlerta.showLoading("Salvando informações...");
 
             try {
@@ -305,7 +304,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     telefone: (document.getElementById('telefone') as HTMLInputElement).value.replace(/\D/g, ""),
                     frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
-                    imagem_url: (document.getElementById('imagem_url') as HTMLInputElement).value,
+                    imagem_url: inputHiddenImagem.value,
                     categoria_id: selectCategoria.value
                 };
 
@@ -315,24 +314,15 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     await aniversarioService.adicionar(dados as any);
                 }
 
-                modalAlerta.close(); // Fecha o loading antes de navegar
-
-                // Opcional: Mostrar sucesso rápido antes de voltar
-                await modalAlerta.show({
-                    message: "Salvo com sucesso!",
-                    type: "success"
-                });
+                modalAlerta.close();
+                await modalAlerta.show({ message: "Salvo com sucesso!", type: "success" });
 
                 if (ehEdicao) irParaDetalhes();
                 else if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
 
             } catch (err) {
                 modalAlerta.close();
-                modalAlerta.show({
-                    title: "Erro ao salvar",
-                    message: "Verifique sua conexão e tente novamente.",
-                    type: "error"
-                });
+                modalAlerta.show({ title: "Erro ao salvar", message: "Verifique sua conexão e tente novamente.", type: "error" });
             }
         };
 

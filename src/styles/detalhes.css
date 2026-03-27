@@ -1,98 +1,226 @@
-.detalhes-container {
-    padding: 20px;
-    animation: slideInUp 0.3s ease-out;
-}
-
-.detalhes-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
-.btn-voltar {
-    background: transparent;
-    border: none;
-    color: var(--fec-blue);
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.perfil-card {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.perfil-avatar {
-    font-size: 4rem;
-    margin-bottom: 10px;
-}
-
-.perfil-nome {
-    font-size: 1.5rem;
-    color: #1e293b;
-    margin: 5px 0;
-}
-
-.perfil-badge {
-    background: var(--fec-red);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-.info-item label {
-    display: block;
-    font-size: 0.75rem;
-    color: #64748b;
-    margin-bottom: 5px;
-}
-
-.info-item p {
-    font-weight: 600;
-    color: #1e293b;
-}
-
-.acoes-footer {
-    margin-top: 40px;
+/* Wrapper principal que ocupa a tela inteira */
+.detalhes-main-wrapper.full-screen-detalhes {
+    padding: 0;
+    width: 100vw;
+    min-height: 100vh;
+    background: #fff; /* Fundo branco para a tela toda */
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    animation: slideInUpfec 0.4s ease-out; /* Animação do app */
+    position: relative;
+    overflow-x: hidden;
 }
 
-.btn-whatsapp-full {
-    background: #25d366;
+/* Cabeçalho Flutuante Fixo no Topo da Tela */
+.profile-floating-header.header-full-screen {
+    position: fixed; /* Fixo no topo da janela */
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px; /* Altura do header */
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9); /* Fundo semi-transparente */
+    backdrop-filter: blur(5px); /* Efeito de desfoque */
+    z-index: 100; /* Garante que fique acima de tudo */
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.profile-floating-header button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-voltar-circle {
+    background: transparent;
+    color: var(--fec-blue); /* Identidade visual original */
+}
+
+.btn-voltar-circle:hover {
+    background: #f1f5f9;
+}
+
+.btn-edit-topo-circle {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.btn-edit-topo-circle:hover {
+    background: #e2e8f0;
+}
+
+/* Área Hero (Avatar e Nome) - Ajustada para Full Screen */
+.profile-hero.hero-full-screen {
+    text-align: center;
+    margin-top: 100px; /* Espaço para o header fixo */
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.fec-avatar-profile.avatar-full-screen {
+    width: 120px; /* Um pouco maior na tela cheia */
+    height: 120px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #cbd5e1;
+    overflow: hidden;
+}
+
+.fec-perfil-nome.nome-full-screen {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+    text-transform: capitalize;
+}
+
+.fec-perfil-badge.badge-full-screen {
+    display: inline-block;
+    background: var(--fec-red); /* Identidade visual original */
     color: white;
-    padding: 15px;
-    border-radius: 12px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Grid de Informações Básicas - Mais Largo */
+.info-inline-grid.grid-full-screen {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    padding: 20px;
+    background: #f8fafc; /* Fundo cinza para destacar contra a tela branca */
+    border-radius: 0; /* Quadrado para ocupar a largura toda */
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.info-inline-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+}
+
+.info-inline-item i {
+    width: 20px;
+    height: 20px;
+    color: #94a3b8;
+}
+
+.info-inline-item p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1e293b;
+}
+
+/* Área de Notas e Frase - Com Fundo para Destaque */
+.fec-perfil-notas.notas-full-screen {
+    margin-bottom: 40px;
+    padding: 0 20px;
+}
+
+.fec-perfil-notas label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.fec-notas-box.box-full-screen {
+    background: #f8fafc; /* Fundo cinza */
+    border: 1px solid #e2e8f0;
+    padding: 18px;
+    border-radius: 14px;
+    color: #334155;
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.6;
+    min-height: 100px;
+}
+
+/* Ações de Rodapé - Empurradas para o final */
+.acoes-perfil-footer.footer-full-screen {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    padding: 0 20px 30px 20px; /* Padding inferior */
+    width: 100%;
+}
+
+.fec-btn-whatsapp-full {
+    background: #25d366; /* Cor padrão Whatsapp */
+    color: white;
+    padding: 16px;
+    width: 100%;
+    border-radius: 16px;
     text-align: center;
     text-decoration: none;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-size: 1rem;
 }
 
-.btn-excluir-danger {
-    background: #fff1f2;
-    color: #e11d48;
-    border: 1px solid #fecdd3;
-    padding: 12px;
-    border-radius: 12px;
+.fec-btn-whatsapp-full:active {
+    transform: scale(0.98);
+}
+
+.fec-btn-whatsapp-full i {
+    width: 22px;
+    height: 22px;
+}
+
+/* Link de Exclusão (Danger) Discreto em Texto */
+.btn-text-danger {
+    background: transparent;
+    border: none;
+    color: #e11d48; /* Cor danger original */
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-text-danger:hover {
+    opacity: 1;
+}
+
+.btn-text-danger i {
+    width: 18px;
+    height: 18px;
 }
