@@ -139,6 +139,22 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const inputTelefone = document.getElementById('telefone') as HTMLInputElement;
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
 
+        // >>> ADICIONE ESTA FUNÇÃO AQUI <<<
+        selectCategoria.addEventListener('change', () => {
+            if (selectCategoria.value === "NOVA_CATEGORIA") {
+                // Resetamos o valor para não ficar "travado" na opção de adicionar
+                selectCategoria.value = ""; 
+                
+                // Disparamos a navegação para a tela de categorias
+                if (typeof (window as any).navegar === 'function') {
+                    (window as any).navegar('categorias');
+                } else {
+                    // Fallback caso a função global não esteja disponível
+                    window.location.hash = '#categorias';
+                }
+            }
+        });
+
         // MÁSCARA DE TELEFONE
         inputTelefone.addEventListener('input', () => {
             let v = inputTelefone.value.replace(/\D/g, "");
@@ -178,11 +194,10 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             const file = e.target.files[0];
             const categoriaId = selectCategoria.value;
 
-            // Validação de categoria selecionada
             if (!categoriaId || categoriaId === "NOVA_CATEGORIA") {
                 await modalAlerta.show({
-                    title: "Grupo necessário",
-                    message: "Por favor, selecione um grupo antes de realizar a importação.",
+                    title: "Atenção",
+                    message: "Selecione um grupo antes de importar.",
                     type: "info"
                 });
                 e.target.value = '';
@@ -195,77 +210,52 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     try {
                         const data = evt.target?.result;
                         const workbook = XLSX.read(data, { type: 'binary' });
-                        
-                        // 1. Pega o nome da aba com segurança (Resolve erro TS 2538)
-                        const nomePrimeiraAba = workbook.SheetNames.length > 0 ? workbook.SheetNames[0] : null;
+                        const nomeAba = workbook.SheetNames.length > 0 ? workbook.SheetNames[0] : null;
 
-                        if (nomePrimeiraAba) {
-                            // 2. Tenta obter a aba
-                            const sheet = workbook.Sheets[nomePrimeiraAba];
-                            
-                            // 3. Verifica se a aba existe (Resolve erro TS 2769)
-                            if (sheet) {
-                                const json: any[] = XLSX.utils.sheet_to_json(sheet);
+                        if (nomeAba && workbook.Sheets[nomeAba]) {
+                            const json: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAba]);
 
-                                if (json.length > 0) {
-                                    // Substituição do confirm nativo pelo modal customizado
-                                    const confirmacao = await modalAlerta.show({
-                                        title: "Confirmar Importação",
-                                        message: `Encontramos ${json.length} registros. Deseja importar todos para este grupo?`,
-                                        type: "confirm",
-                                        confirmText: "Sim, importar",
-                                        cancelText: "Cancelar"
-                                    });
-
-                                    if (confirmacao) {
-                                        for (const row of json) {
-                                            await aniversarioService.adicionar({
-                                                nome: row.nome || 'Sem Nome',
-                                                apelido: row.apelido || '',
-                                                telefone: String(row.telefone || '').replace(/\D/g, ''),
-                                                frase_exibicao: row.frase_exibicao || '',
-                                                data_nascimento: formatarDataParaISO(row.data_nascimento),
-                                                categoria_id: categoriaId,
-                                                imagem_url: ''
-                                            } as any);
-                                        }
-                                        
-                                        await modalAlerta.show({
-                                            title: "Sucesso!",
-                                            message: "Todos os aniversariantes foram importados com sucesso.",
-                                            type: "success"
-                                        });
-                                        
-                                        // Navegação após sucesso
-                                        if (typeof (window as any).navegar === 'function') {
-                                            (window as any).navegar('list');
-                                        } else {
-                                            window.location.hash = '#listagem';
-                                        }
-                                    }
-                                } else {
-                                    await modalAlerta.show({
-                                        message: "A planilha parece não conter nenhum dado válido.",
-                                        type: "warning" as any // ou info
-                                    });
-                                }
-                            } else {
-                                await modalAlerta.show({
-                                    message: "Não foi possível ler o conteúdo da aba selecionada.",
-                                    type: "error"
+                            if (json.length > 0) {
+                                const confirmar = await modalAlerta.show({
+                                    title: "Importar Planilha",
+                                    message: `Deseja importar ${json.length} registros para este grupo?`,
+                                    type: "confirm",
+                                    confirmText: "Sim, importar"
                                 });
+
+                                if (confirmar) {
+                                    // MOSTRA O LOADING DURANTE O PROCESSAMENTO
+                                    modalAlerta.showLoading(`Processando ${json.length} aniversariantes...`);
+
+                                    for (const row of json) {
+                                        await aniversarioService.adicionar({
+                                            nome: row.nome || 'Sem Nome',
+                                            apelido: row.apelido || '',
+                                            telefone: String(row.telefone || '').replace(/\D/g, ''),
+                                            frase_exibicao: row.frase_exibicao || '',
+                                            data_nascimento: formatarDataParaISO(row.data_nascimento),
+                                            categoria_id: categoriaId,
+                                            imagem_url: ''
+                                        } as any);
+                                    }
+
+                                    modalAlerta.close(); // Fecha o loading
+
+                                    await modalAlerta.show({
+                                        title: "Sucesso!",
+                                        message: "Importação concluída com êxito.",
+                                        type: "success"
+                                    });
+
+                                    if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
+                                }
                             }
-                        } else {
-                            await modalAlerta.show({
-                                message: "O arquivo Excel não possui abas válidas.",
-                                type: "error"
-                            });
                         }
-                    } catch (err) { 
-                        console.error(err);
-                        await modalAlerta.show({
-                            title: "Erro no processamento",
-                            message: "Houve um erro ao ler o arquivo Excel. Verifique se o arquivo não está corrompido.",
+                    } catch (err) {
+                        modalAlerta.close();
+                        modalAlerta.show({
+                            title: "Erro",
+                            message: "Não foi possível processar a planilha.",
                             type: "error"
                         });
                     }
@@ -304,15 +294,15 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         // SUBMISSÃO DO FORMULÁRIO
         (document.getElementById('formAniversario') as HTMLFormElement).onsubmit = async (e) => {
             e.preventDefault();
-            const telLimpo = inputTelefone.value.replace(/\D/g, "");
-            const btn = document.getElementById('btnSubmit') as HTMLButtonElement;
-            btn.disabled = true;
+            
+            // Mostra o loading imediatamente
+            modalAlerta.showLoading("Salvando informações...");
 
             try {
                 const dados = {
                     nome: (document.getElementById('nome') as HTMLInputElement).value,
                     apelido: (document.getElementById('apelido') as HTMLInputElement).value,
-                    telefone: telLimpo,
+                    telefone: (document.getElementById('telefone') as HTMLInputElement).value.replace(/\D/g, ""),
                     frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                     imagem_url: (document.getElementById('imagem_url') as HTMLInputElement).value,
@@ -321,14 +311,29 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
                 if (ehEdicao && idEdicao) {
                     await aniversarioService.atualizar(idEdicao, dados as any);
-                    irParaDetalhes();
                 } else {
                     await aniversarioService.adicionar(dados as any);
-                    if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
-                    else window.location.hash = '#listagem';
                 }
-            } catch (err) { alert("Erro ao salvar."); }
-            finally { btn.disabled = false; }
+
+                modalAlerta.close(); // Fecha o loading antes de navegar
+
+                // Opcional: Mostrar sucesso rápido antes de voltar
+                await modalAlerta.show({
+                    message: "Salvo com sucesso!",
+                    type: "success"
+                });
+
+                if (ehEdicao) irParaDetalhes();
+                else if (typeof (window as any).navegar === 'function') (window as any).navegar('list');
+
+            } catch (err) {
+                modalAlerta.close();
+                modalAlerta.show({
+                    title: "Erro ao salvar",
+                    message: "Verifique sua conexão e tente novamente.",
+                    type: "error"
+                });
+            }
         };
 
         document.getElementById('btnVoltarForm')?.addEventListener('click', () => {
