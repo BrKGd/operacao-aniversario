@@ -1,125 +1,124 @@
-.detalhes-page-wrapper {
-    width: 100%;
-    min-height: calc(100vh - 60px); /* Ajuste conforme a altura do seu header no main.ts */
+/* Container que garante ocupação total da viewport */
+.fec-det-screen-wrapper {
+    width: 100vw;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #ffffff; /* Fundo totalmente branco */
-    color: #1e293b;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    position: relative;
 }
 
-/* --- SEÇÃO SUPERIOR (HERO) --- */
-.section-hero-light {
-    background: #f8fafc; /* Cinza claríssimo para destacar a foto */
-    padding: 40px 20px;
+/* --- SEÇÃO HERO (SUPERIOR) --- */
+.fec-det-hero-section {
+    background: #f1f5f9; /* Cinza bem leve para contraste */
+    height: 48vh; /* Quase metade da tela */
     position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-bottom: 1px solid #e2e8f0;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 10px;
 }
 
-.btn-back-absolute {
+.fec-det-back-btn {
     position: absolute;
-    top: 20px;
+    top: 25px;
     left: 20px;
-    background: white;
+    background: #ffffff;
     border: 1px solid #e2e8f0;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
     color: #001f3f;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    z-index: 50;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-.btn-back-absolute:hover {
-    background: #f1f5f9;
-}
-
-.profile-image-container {
-    width: 180px;
-    height: 180px;
-    background: white;
-    border-radius: 50%;
-    padding: 5px;
-    border: 3px solid #e63946; /* Borda vermelha na foto */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+.fec-det-image-box {
+    width: 100%;
+    max-width: 380px;
+    height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    margin-bottom: -60px; /* Faz o nome "subir" para cima da seção */
-    z-index: 5;
+    align-items: flex-end;
 }
 
-.img-full-profile {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.fec-det-profile-img {
+    max-width: 95%;
+    max-height: 98%;
+    object-fit: contain;
 }
 
-/* --- CARD DE NOME (CLEAN) --- */
-.name-floating-card {
-    width: 90%;
-    max-width: 450px;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 20px 25px;
+/* --- CARD FLUTUANTE (BRANCO COM BORDA AZUL) --- */
+.fec-det-name-card {
+    position: absolute;
+    bottom: -40px; /* Posicionado exatamente no meio da transição */
+    width: 88%;
+    max-width: 440px;
+    background: #ffffff; /* Fundo Branco conforme pedido */
+    border: 2px solid #001f3f; /* Borda Azul de 2px conforme pedido */
+    border-radius: 22px;
+    padding: 18px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    border: 1px solid #e2e8f0;
-    z-index: 10;
-    margin-top: 20px;
+    z-index: 40;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 12px 30px rgba(0, 31, 63, 0.15);
 }
 
-.name-info h1 {
+.fec-det-name-group h1 {
     font-size: 1.4rem;
     margin: 0;
-    color: #001f3f; /* Azul Marinho */
-    font-weight: 700;
+    font-weight: 800;
+    color: #001f3f;
+    letter-spacing: -0.5px;
 }
 
-.name-info span {
-    font-size: 0.9rem;
-    color: #e63946; /* Vermelho para a categoria */
+.fec-det-name-group span {
+    font-size: 0.85rem;
+    color: #e63946; /* Vermelho FEC para a categoria */
     font-weight: 600;
     text-transform: uppercase;
 }
 
-.btn-more-options {
+.fec-det-menu-btn {
     background: #f1f5f9;
     border: none;
-    color: #64748b;
-    border-radius: 8px;
+    color: #001f3f;
+    border-radius: 10px;
     cursor: pointer;
-    padding: 8px;
+    padding: 10px;
     display: flex;
 }
 
-/* Menu Dropdown */
-.dropdown-options {
+/* Dropdown Personalizado */
+.fec-det-dropdown {
     position: absolute;
-    right: 20px;
-    top: 80px;
+    right: 0;
+    top: 85px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
     display: none;
     flex-direction: column;
-    min-width: 180px;
+    min-width: 190px;
     border: 1px solid #e2e8f0;
     z-index: 100;
+    overflow: hidden;
 }
 
-.dropdown-options.active { display: flex; }
+.fec-det-dropdown.active { display: flex; }
 
-.dropdown-options button {
-    padding: 14px 18px;
+.fec-det-dropdown-item {
+    padding: 15px 20px;
     border: none;
     background: transparent;
     text-align: left;
@@ -127,94 +126,109 @@
     align-items: center;
     gap: 12px;
     font-size: 0.95rem;
-    color: #334155;
+    color: #001f3f;
     cursor: pointer;
+    font-weight: 600;
 }
 
-.dropdown-options button:hover { background: #f8fafc; }
-.dropdown-options button.delete-opt { color: #e63946; border-top: 1px solid #f1f5f9; }
+.fec-det-dropdown-item:hover { background: #f8fafc; }
+.fec-det-dropdown-item.is-danger { color: #e63946; border-top: 1px solid #f1f5f9; }
 
-/* --- SEÇÃO DE CONTEÚDO (BRANCO) --- */
-.section-details-white {
-    padding: 60px 24px 40px 24px;
+/* --- SEÇÃO DE DADOS (INFERIOR) --- */
+.fec-det-data-section {
+    padding: 80px 24px 40px 24px;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.content-max-width {
+.fec-det-content-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 500px;
 }
 
-.info-row {
+.fec-det-info-tile {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px dashed #e2e8f0;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-.info-block label {
+.fec-det-label-box label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
+    gap: 10px;
+    font-size: 0.8rem;
     color: #64748b;
-    font-weight: 600;
-    margin-bottom: 5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
 }
 
-.info-block p { 
-    font-size: 1.15rem; 
+.fec-det-label-box p { 
+    font-size: 1.25rem; 
     color: #001f3f; 
     margin: 0; 
     font-weight: 700;
 }
 
-.days-badge {
-    background: #f1f5f9;
-    color: #001f3f;
-    padding: 6px 14px;
-    border-radius: 10px;
-    font-weight: 700;
+.fec-det-age-badge {
+    background: #001f3f;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 800;
     font-size: 0.9rem;
 }
 
-.notes-section label {
+.fec-det-notes-area {
+    margin-top: 10px;
+}
+
+.fec-det-notes-area label {
     display: block;
     margin-bottom: 12px;
     font-weight: 700;
-    color: #001f3f;
-    font-size: 0.9rem;
+    color: #64748b;
+    font-size: 0.85rem;
 }
 
-.notes-content {
+.fec-det-notes-paper {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    padding: 20px;
-    border-radius: 14px;
+    padding: 22px;
+    border-radius: 20px;
     font-size: 1rem;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #475569;
-    min-height: 100px;
+    min-height: 130px;
 }
 
-.footer-actions {
-    margin-top: 40px;
+/* Botão de Ação */
+.fec-det-footer {
+    margin-top: 50px;
+    width: 100%;
 }
 
-.btn-whatsapp-modern {
-    background: #25d366; /* Mantive o verde aqui por ser padrão universal do Whats */
+.fec-det-whatsapp-btn {
+    background: #25d366;
     color: white;
     text-decoration: none;
-    padding: 16px;
-    border-radius: 14px;
+    padding: 20px;
+    border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+    font-size: 1.1rem;
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.25);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fec-det-whatsapp-btn:active {
+    transform: scale(0.94);
 }

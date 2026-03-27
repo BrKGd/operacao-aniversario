@@ -9,7 +9,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         return;
     }
 
-    container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Aguarde...</div></div>`;
+    container.innerHTML = `<div class="fec-center-wrapper">Carregando...</div>`;
 
     try {
         const todos: Aniversario[] = await aniversarioService.listarTodos();
@@ -30,68 +30,68 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         }
 
         container.innerHTML = `
-            <div class="detalhes-page-wrapper">
+            <div class="fec-det-screen-wrapper">
                 
-                <section class="section-hero-light">
-                    <button class="btn-back-absolute" onclick="window.navegar('list')">
-                        <i data-lucide="arrow-left"></i>
+                <section class="fec-det-hero-section">
+                    <button class="fec-det-back-btn" onclick="window.navegar('list')">
+                        <i data-lucide="chevron-left"></i>
                     </button>
 
-                    <div class="profile-image-container">
+                    <div class="fec-det-image-box">
                         ${imagemPessoa 
-                            ? `<img src="${imagemPessoa}" class="img-full-profile">` 
-                            : `<div style="font-size: 60px; color: #cbd5e1"><i data-lucide="user"></i></div>`}
+                            ? `<img src="${imagemPessoa}" class="fec-det-profile-img">` 
+                            : `<div style="font-size: 80px; color: #cbd5e1"><i data-lucide="user"></i></div>`}
                     </div>
 
-                    <div class="name-floating-card">
-                        <div class="name-info">
+                    <div class="fec-det-name-card">
+                        <div class="fec-det-name-group">
                             <h1>${pessoa.nome}</h1>
-                            <span>${pessoa.categorias?.nome || 'Geral'}</span>
+                            <span>${pessoa.categorias?.nome || 'Padrão'}</span>
                         </div>
-                        <button class="btn-more-options" id="btnMenuOpcoes">
+                        <button class="fec-det-menu-btn" id="fec-det-btn-menu">
                             <i data-lucide="more-vertical"></i>
                         </button>
                         
-                        <div class="dropdown-options" id="dropdownMenu">
-                            <button onclick="window.navegar('form', '${pessoa.id}')">
-                                <i data-lucide="edit"></i> Editar Perfil
+                        <div class="fec-det-dropdown" id="fec-det-dropdown">
+                            <button class="fec-det-dropdown-item" onclick="window.navegar('form', '${pessoa.id}')">
+                                <i data-lucide="edit-3"></i> Editar Perfil
                             </button>
-                            <button class="delete-opt" id="btnExcluirFicha">
+                            <button class="fec-det-dropdown-item is-danger" id="fec-det-btn-delete">
                                 <i data-lucide="trash-2"></i> Remover Integrante
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <section class="section-details-white">
-                    <div class="content-max-width">
-                        <div class="info-row">
-                            <div class="info-block">
-                                <label><i data-lucide="calendar"></i> ANIVERSÁRIO</label>
+                <section class="fec-det-data-section">
+                    <div class="fec-det-content-container">
+                        <div class="fec-det-info-tile">
+                            <div class="fec-det-label-box">
+                                <label><i data-lucide="cake"></i> Aniversário</label>
                                 <p>${dataNasc.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'})}</p>
                             </div>
-                            <div class="days-badge">
+                            <div class="fec-det-age-badge">
                                 <span>${idade} ANOS</span>
                             </div>
                         </div>
 
-                        <div class="info-row">
-                            <div class="info-block">
-                                <label><i data-lucide="phone"></i> CONTATO</label>
-                                <p>${pessoa.telefone || 'Não cadastrado'}</p>
+                        <div class="fec-det-info-tile">
+                            <div class="fec-det-label-box">
+                                <label><i data-lucide="phone"></i> Contato</label>
+                                <p>${pessoa.telefone || 'Não informado'}</p>
                             </div>
                         </div>
 
-                        <div class="notes-section">
-                            <label>NOTAS E OBSERVAÇÕES</label>
-                            <div class="notes-content">
-                                ${(pessoa as any).frase_exibicao || 'Sem observações adicionais para este integrante.'}
+                        <div class="fec-det-notes-area">
+                            <label>IDEIAS DE PRESENTES E NOTAS</label>
+                            <div class="fec-det-notes-paper">
+                                ${(pessoa as any).frase_exibicao || 'Toque em editar para registrar gostos, tamanhos de roupa ou ideias de presente.'}
                             </div>
                         </div>
 
-                        <div class="footer-actions">
+                        <div class="fec-det-footer">
                             <a href="${gerarLinkWhatsapp(pessoa.nome, pessoa.telefone || '')}" 
-                               target="_blank" class="btn-whatsapp-modern">
+                               target="_blank" class="fec-det-whatsapp-btn">
                                 <i data-lucide="message-circle"></i> ENVIAR MENSAGEM
                             </a>
                         </div>
@@ -100,18 +100,18 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
             </div>
         `;
 
-        // Logica Dropdown
-        const btnMenu = document.getElementById('btnMenuOpcoes');
-        const dropdown = document.getElementById('dropdownMenu');
-        btnMenu?.addEventListener('click', (e) => {
+        // Lógica do Menu Dropdown
+        const menuBtn = document.getElementById('fec-det-btn-menu');
+        const dropdown = document.getElementById('fec-det-dropdown');
+        menuBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
             dropdown?.classList.toggle('active');
         });
         document.addEventListener('click', () => dropdown?.classList.remove('active'));
 
-        // Excluir
-        document.getElementById('btnExcluirFicha')?.addEventListener('click', async () => {
-            if (confirm(`Deseja realmente remover ${pessoa.nome}?`)) {
+        // Lógica de Exclusão
+        document.getElementById('fec-det-btn-delete')?.addEventListener('click', async () => {
+            if (confirm(`Remover permanentemente ${pessoa.nome}?`)) {
                 await aniversarioService.excluir(pessoa.id!);
                 (window as any).navegar('list');
             }
@@ -120,6 +120,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         if ((window as any).lucide) (window as any).lucide.createIcons();
 
     } catch (error) {
-        container.innerHTML = `<div class="fec-center-wrapper">Erro ao abrir detalhes.</div>`;
+        console.error(error);
+        container.innerHTML = `<div class="fec-center-wrapper">Erro na conexão.</div>`;
     }
 }
