@@ -8920,74 +8920,74 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     `}
                 </div>
             </div>
-        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function NK(e,t){var a,r;if(!t){e.innerHTML='<div class="fec-center-wrapper">ID não encontrado.</div>';return}e.innerHTML='<div class="fec-center-wrapper"><div class="fec-loader-minimal">Aguarde...</div></div>';try{const i=(await Mt.listarTodos()).find(f=>f.id===t);if(!i){e.innerHTML='<div class="fec-center-wrapper">Integrante não localizado.</div>';return}const s=i.imagem_url,h=new Date(i.data_nascimento+"T00:00:00"),c=new Date;let o=c.getFullYear()-h.getFullYear();(c.getMonth()<h.getMonth()||c.getMonth()===h.getMonth()&&c.getDate()<h.getDate())&&o--,e.innerHTML=`
-            <div class="detalhes-page-wrapper">
+        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function NK(e,t){var a,r;if(!t){e.innerHTML='<div class="fec-center-wrapper">ID não encontrado.</div>';return}e.innerHTML='<div class="fec-center-wrapper">Carregando...</div>';try{const i=(await Mt.listarTodos()).find(f=>f.id===t);if(!i){e.innerHTML='<div class="fec-center-wrapper">Integrante não localizado.</div>';return}const s=i.imagem_url,h=new Date(i.data_nascimento+"T00:00:00"),c=new Date;let o=c.getFullYear()-h.getFullYear();(c.getMonth()<h.getMonth()||c.getMonth()===h.getMonth()&&c.getDate()<h.getDate())&&o--,e.innerHTML=`
+            <div class="fec-det-screen-wrapper">
                 
-                <section class="section-hero-light">
-                    <button class="btn-back-absolute" onclick="window.navegar('list')">
-                        <i data-lucide="arrow-left"></i>
+                <section class="fec-det-hero-section">
+                    <button class="fec-det-back-btn" onclick="window.navegar('list')">
+                        <i data-lucide="chevron-left"></i>
                     </button>
 
-                    <div class="profile-image-container">
-                        ${s?`<img src="${s}" class="img-full-profile">`:'<div style="font-size: 60px; color: #cbd5e1"><i data-lucide="user"></i></div>'}
+                    <div class="fec-det-image-box">
+                        ${s?`<img src="${s}" class="fec-det-profile-img">`:'<div style="font-size: 80px; color: #cbd5e1"><i data-lucide="user"></i></div>'}
                     </div>
 
-                    <div class="name-floating-card">
-                        <div class="name-info">
+                    <div class="fec-det-name-card">
+                        <div class="fec-det-name-group">
                             <h1>${i.nome}</h1>
-                            <span>${((a=i.categorias)==null?void 0:a.nome)||"Geral"}</span>
+                            <span>${((a=i.categorias)==null?void 0:a.nome)||"Padrão"}</span>
                         </div>
-                        <button class="btn-more-options" id="btnMenuOpcoes">
+                        <button class="fec-det-menu-btn" id="fec-det-btn-menu">
                             <i data-lucide="more-vertical"></i>
                         </button>
                         
-                        <div class="dropdown-options" id="dropdownMenu">
-                            <button onclick="window.navegar('form', '${i.id}')">
-                                <i data-lucide="edit"></i> Editar Perfil
+                        <div class="fec-det-dropdown" id="fec-det-dropdown">
+                            <button class="fec-det-dropdown-item" onclick="window.navegar('form', '${i.id}')">
+                                <i data-lucide="edit-3"></i> Editar Perfil
                             </button>
-                            <button class="delete-opt" id="btnExcluirFicha">
+                            <button class="fec-det-dropdown-item is-danger" id="fec-det-btn-delete">
                                 <i data-lucide="trash-2"></i> Remover Integrante
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <section class="section-details-white">
-                    <div class="content-max-width">
-                        <div class="info-row">
-                            <div class="info-block">
-                                <label><i data-lucide="calendar"></i> ANIVERSÁRIO</label>
+                <section class="fec-det-data-section">
+                    <div class="fec-det-content-container">
+                        <div class="fec-det-info-tile">
+                            <div class="fec-det-label-box">
+                                <label><i data-lucide="cake"></i> Aniversário</label>
                                 <p>${h.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</p>
                             </div>
-                            <div class="days-badge">
+                            <div class="fec-det-age-badge">
                                 <span>${o} ANOS</span>
                             </div>
                         </div>
 
-                        <div class="info-row">
-                            <div class="info-block">
-                                <label><i data-lucide="phone"></i> CONTATO</label>
-                                <p>${i.telefone||"Não cadastrado"}</p>
+                        <div class="fec-det-info-tile">
+                            <div class="fec-det-label-box">
+                                <label><i data-lucide="phone"></i> Contato</label>
+                                <p>${i.telefone||"Não informado"}</p>
                             </div>
                         </div>
 
-                        <div class="notes-section">
-                            <label>NOTAS E OBSERVAÇÕES</label>
-                            <div class="notes-content">
-                                ${i.frase_exibicao||"Sem observações adicionais para este integrante."}
+                        <div class="fec-det-notes-area">
+                            <label>IDEIAS DE PRESENTES E NOTAS</label>
+                            <div class="fec-det-notes-paper">
+                                ${i.frase_exibicao||"Toque em editar para registrar gostos, tamanhos de roupa ou ideias de presente."}
                             </div>
                         </div>
 
-                        <div class="footer-actions">
+                        <div class="fec-det-footer">
                             <a href="${T1(i.nome,i.telefone||"")}" 
-                               target="_blank" class="btn-whatsapp-modern">
+                               target="_blank" class="fec-det-whatsapp-btn">
                                 <i data-lucide="message-circle"></i> ENVIAR MENSAGEM
                             </a>
                         </div>
                     </div>
                 </section>
             </div>
-        `;const l=document.getElementById("btnMenuOpcoes"),d=document.getElementById("dropdownMenu");l==null||l.addEventListener("click",f=>{f.stopPropagation(),d==null||d.classList.toggle("active")}),document.addEventListener("click",()=>d==null?void 0:d.classList.remove("active")),(r=document.getElementById("btnExcluirFicha"))==null||r.addEventListener("click",async()=>{confirm(`Deseja realmente remover ${i.nome}?`)&&(await Mt.excluir(i.id),window.navegar("list"))}),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML='<div class="fec-center-wrapper">Erro ao abrir detalhes.</div>'}}async function BK(e){e.innerHTML='<div class="loading">Organizando calendário...</div>';try{const t=new Date,a=await Mt.listarTodos();let r=t.getMonth(),n=t.getFullYear();const i=()=>{var d,f;const s=new Date(n,r,1).getDay(),h=new Date(n,r+1,0).getDate(),c=new Date(n,r).toLocaleString("pt-BR",{month:"long"}),o=a.filter(u=>new Date(u.data_nascimento+"T00:00:00").getMonth()===r);let l="";for(let u=0;u<s;u++)l+='<div class="dia-vazio"></div>';for(let u=1;u<=h;u++){const v=o.filter(x=>new Date(x.data_nascimento+"T00:00:00").getDate()===u),p=u===t.getDate()&&r===t.getMonth()&&n===t.getFullYear();l+=`
+        `;const l=document.getElementById("fec-det-btn-menu"),d=document.getElementById("fec-det-dropdown");l==null||l.addEventListener("click",f=>{f.stopPropagation(),d==null||d.classList.toggle("active")}),document.addEventListener("click",()=>d==null?void 0:d.classList.remove("active")),(r=document.getElementById("fec-det-btn-delete"))==null||r.addEventListener("click",async()=>{confirm(`Remover permanentemente ${i.nome}?`)&&(await Mt.excluir(i.id),window.navegar("list"))}),window.lucide&&window.lucide.createIcons()}catch(n){console.error(n),e.innerHTML='<div class="fec-center-wrapper">Erro na conexão.</div>'}}async function BK(e){e.innerHTML='<div class="loading">Organizando calendário...</div>';try{const t=new Date,a=await Mt.listarTodos();let r=t.getMonth(),n=t.getFullYear();const i=()=>{var d,f;const s=new Date(n,r,1).getDay(),h=new Date(n,r+1,0).getDate(),c=new Date(n,r).toLocaleString("pt-BR",{month:"long"}),o=a.filter(u=>new Date(u.data_nascimento+"T00:00:00").getMonth()===r);let l="";for(let u=0;u<s;u++)l+='<div class="dia-vazio"></div>';for(let u=1;u<=h;u++){const v=o.filter(x=>new Date(x.data_nascimento+"T00:00:00").getDate()===u),p=u===t.getDate()&&r===t.getMonth()&&n===t.getFullYear();l+=`
                     <div class="dia-card ${p?"hoje":""} ${v.length>0?"tem-evento":""}">
                         <span class="num-dia">${u}</span>
                         <div class="eventos-dia">
