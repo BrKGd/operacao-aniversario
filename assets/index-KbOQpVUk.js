@@ -8920,60 +8920,70 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     `}
                 </div>
             </div>
-        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function NK(e,t){var a,r;if(!t){e.innerHTML='<div class="fec-center-wrapper"><div class="error-msg-fec">ID do integrante não fornecido.</div></div>';return}e.innerHTML='<div class="fec-center-wrapper"><div class="fec-loader-minimal">Buscando ficha técnica...</div></div>';try{const i=(await Mt.listarTodos()).find(d=>d.id===t);if(!i){e.innerHTML='<div class="fec-center-wrapper"><div class="error-msg-fec">Integrante não encontrado.</div></div>';return}const s=i.imagem_url,h=new Date(i.data_nascimento+"T00:00:00"),c=new Date;let o=c.getFullYear()-h.getFullYear();const l=c.getMonth()-h.getMonth();(l<0||l===0&&c.getDate()<h.getDate())&&o--,e.innerHTML=`
-            <div class="detalhes-main-wrapper full-screen-detalhes">
+        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function NK(e,t){var a,r;if(!t){e.innerHTML='<div class="fec-center-wrapper"><div class="error-msg-fec">ID não fornecido.</div></div>';return}e.innerHTML='<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando perfil...</div></div>';try{const i=(await Mt.listarTodos()).find(u=>u.id===t);if(!i){e.innerHTML='<div class="fec-center-wrapper"><div class="error-msg-fec">Não encontrado.</div></div>';return}const s=i.imagem_url,h=new Date(i.data_nascimento+"T00:00:00"),c=new Date;let o=c.getFullYear()-h.getFullYear();const l=c.getMonth()-h.getMonth();(l<0||l===0&&c.getDate()<h.getDate())&&o--,e.innerHTML=`
+            <div class="detalhes-page-wrapper">
                 
-                <div class="profile-floating-header header-full-screen">
-                    <button class="btn-voltar-circle" onclick="window.navegar('list')" title="Voltar">
+                <!-- Topo com Foto (Fundo Claro) -->
+                <section class="section-hero-light">
+                    <button class="btn-back-absolute" onclick="window.navegar('list')">
                         <i data-lucide="chevron-left"></i>
                     </button>
-                    <button class="btn-edit-topo-circle" onclick="window.navegar('form', '${i.id}')" title="Editar">
-                        <i data-lucide="edit-3"></i>
-                    </button>
-                </div>
 
-                <div class="profile-hero hero-full-screen">
-                    <div class="fec-avatar-profile avatar-full-screen">
-                        ${s?`<img src="${s}" class="img-avatar-fec">`:'<i data-lucide="user" class="avatar-icon-placeholder"></i>'}
+                    <div class="profile-image-container">
+                        ${s?`<img src="${s}" class="img-full-profile">`:'<div class="avatar-placeholder-big"><i data-lucide="user"></i></div>'}
                     </div>
-                    <h1 class="fec-perfil-nome nome-full-screen">${i.nome}</h1>
-                    <span class="fec-perfil-badge badge-full-screen">${((a=i.categorias)==null?void 0:a.nome)||"Sem Grupo"}</span>
-                </div>
 
-                <div class="info-inline-grid grid-full-screen">
-                    <div class="info-inline-item">
-                        <i data-lucide="cake"></i>
-                        <p>${h.toLocaleDateString("pt-BR")}</p>
+                    <!-- O Card Flutuante do Nome -->
+                    <div class="name-floating-card">
+                        <div class="name-info">
+                            <h1>${i.nome}</h1>
+                            <span>${((a=i.categorias)==null?void 0:a.nome)||"Sem grupo"}</span>
+                        </div>
+                        <button class="btn-more-options" id="btnMenuOpcoes">
+                            <i data-lucide="more-vertical"></i>
+                        </button>
+                        
+                        <!-- Menu Dropdown Escondido -->
+                        <div class="dropdown-options" id="dropdownMenu">
+                            <button onclick="window.navegar('form', '${i.id}')">
+                                <i data-lucide="edit-3"></i> Editar
+                            </button>
+                            <button class="delete-opt" id="btnExcluirFicha">
+                                <i data-lucide="trash-2"></i> Excluir
+                            </button>
+                        </div>
                     </div>
-                    <div class="info-inline-item">
-                        <i data-lucide="phone"></i>
-                        <p>${i.telefone||"Não informado"}</p>
-                    </div>
-                    <div class="info-inline-item">
-                        <i data-lucide="bar-chart-3"></i>
-                        <p>${o} anos</p>
-                    </div>
-                </div>
+                </section>
 
-                <div class="fec-perfil-notas notas-full-screen">
-                    <label><i data-lucide="quote"></i> Frase / Notas</label>
-                    <div class="fec-notas-box box-full-screen">
-                        ${i.frase_exibicao||"Nenhuma nota registrada..."}
+                <!-- Seção de Informações (Fundo Escuro) -->
+                <section class="section-details-dark">
+                    <div class="info-row">
+                        <div class="info-block">
+                            <label><i data-lucide="cake"></i> Aniversário</label>
+                            <p>Nascido em ${h.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</p>
+                            <small>Idade: ${o} anos</small>
+                        </div>
+                        <div class="days-badge">
+                            <span>${o} anos</span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="acoes-perfil-footer footer-full-screen">
-                    <a href="${T1(i.nome,i.telefone||"")}" 
-                       target="_blank" class="fec-btn-whatsapp-full">
-                        <i data-lucide="message-circle"></i> ENVIAR MENSAGEM
-                    </a>
-                    
-                    <button class="btn-text-danger" id="btnExcluirFicha">
-                        <i data-lucide="trash-2"></i> EXCLUIR DO ELENCO
-                    </button>
-                </div>
+                    <div class="notes-section">
+                        <label>Ideias de presentes e notas</label>
+                        <div class="notes-content">
+                            ${i.frase_exibicao||"Escreva aqui suas ideias para presentes..."}
+                        </div>
+                    </div>
+
+                    <div class="footer-actions">
+                        <a href="${T1(i.nome,i.telefone||"")}" 
+                           target="_blank" class="btn-whatsapp-modern">
+                            <i data-lucide="message-circle"></i> ENVIAR MENSAGEM
+                        </a>
+                    </div>
+                </section>
             </div>
-        `,(r=document.getElementById("btnExcluirFicha"))==null||r.addEventListener("click",async()=>{confirm(`Tem certeza que deseja remover ${i.nome} permanentemente?`)&&(await Mt.excluir(i.id),window.navegar("list"))}),window.lucide&&window.lucide.createIcons()}catch(n){console.error("Erro ao carregar detalhes:",n),e.innerHTML='<div class="fec-center-wrapper"><div class="error-msg-fec">Falha ao carregar perfil.</div></div>'}}async function BK(e){e.innerHTML='<div class="loading">Organizando calendário...</div>';try{const t=new Date,a=await Mt.listarTodos();let r=t.getMonth(),n=t.getFullYear();const i=()=>{var d,f;const s=new Date(n,r,1).getDay(),h=new Date(n,r+1,0).getDate(),c=new Date(n,r).toLocaleString("pt-BR",{month:"long"}),o=a.filter(u=>new Date(u.data_nascimento+"T00:00:00").getMonth()===r);let l="";for(let u=0;u<s;u++)l+='<div class="dia-vazio"></div>';for(let u=1;u<=h;u++){const v=o.filter(x=>new Date(x.data_nascimento+"T00:00:00").getDate()===u),p=u===t.getDate()&&r===t.getMonth()&&n===t.getFullYear();l+=`
+        `;const d=document.getElementById("btnMenuOpcoes"),f=document.getElementById("dropdownMenu");d==null||d.addEventListener("click",u=>{u.stopPropagation(),f==null||f.classList.toggle("active")}),document.addEventListener("click",()=>f==null?void 0:f.classList.remove("active")),(r=document.getElementById("btnExcluirFicha"))==null||r.addEventListener("click",async()=>{confirm(`Remover ${i.nome}?`)&&(await Mt.excluir(i.id),window.navegar("list"))}),window.lucide&&window.lucide.createIcons()}catch{e.innerHTML='<div class="fec-center-wrapper">Erro ao carregar.</div>'}}async function BK(e){e.innerHTML='<div class="loading">Organizando calendário...</div>';try{const t=new Date,a=await Mt.listarTodos();let r=t.getMonth(),n=t.getFullYear();const i=()=>{var d,f;const s=new Date(n,r,1).getDay(),h=new Date(n,r+1,0).getDate(),c=new Date(n,r).toLocaleString("pt-BR",{month:"long"}),o=a.filter(u=>new Date(u.data_nascimento+"T00:00:00").getMonth()===r);let l="";for(let u=0;u<s;u++)l+='<div class="dia-vazio"></div>';for(let u=1;u<=h;u++){const v=o.filter(x=>new Date(x.data_nascimento+"T00:00:00").getDate()===u),p=u===t.getDate()&&r===t.getMonth()&&n===t.getFullYear();l+=`
                     <div class="dia-card ${p?"hoje":""} ${v.length>0?"tem-evento":""}">
                         <span class="num-dia">${u}</span>
                         <div class="eventos-dia">
