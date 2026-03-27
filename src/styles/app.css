@@ -207,9 +207,9 @@ i[data-lucide] {
 
 /* MELHORIA NO BOTÃO DE SAIR */
 .btn-logout-minimal {
-    background: transparent; /* Remove o fundo */
+    background: transparent; /*Remove o fundo */
     border: 1px solid transparent; /* Mantém sem borda inicial */
-    color: var(--fec-red); /* Cor discreta para não distrair */
+    color: var(--fec-red)!important; /* Cor discreta para não distrair */
     width: 42px;
     height: 42px;
     border-radius: 12px;
