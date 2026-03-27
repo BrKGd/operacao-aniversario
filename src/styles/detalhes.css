@@ -1,226 +1,177 @@
-/* Wrapper principal que ocupa a tela inteira */
-.detalhes-main-wrapper.full-screen-detalhes {
-    padding: 0;
+.detalhes-page-wrapper {
     width: 100vw;
     min-height: 100vh;
-    background: #fff; /* Fundo branco para a tela toda */
     display: flex;
     flex-direction: column;
-    animation: slideInUpfec 0.4s ease-out; /* Animação do app */
+    background: #001f3f; /* Azul escuro da parte de baixo */
+}
+
+/* --- PARTE SUPERIOR (CLARA) --- */
+.section-hero-light {
+    background: #fdf2e9; /* Tom pastel da foto */
+    height: 50vh;
     position: relative;
-    overflow-x: hidden;
-}
-
-/* Cabeçalho Flutuante Fixo no Topo da Tela */
-.profile-floating-header.header-full-screen {
-    position: fixed; /* Fixo no topo da janela */
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 70px; /* Altura do header */
-    padding: 0 20px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.9); /* Fundo semi-transparente */
-    backdrop-filter: blur(5px); /* Efeito de desfoque */
-    z-index: 100; /* Garante que fique acima de tudo */
-    border-bottom: 1px solid #f1f5f9;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 40px;
 }
 
-.profile-floating-header button {
+.btn-back-absolute {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: white;
+    border: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    color: #001f3f;
     cursor: pointer;
-    transition: background 0.2s;
+    z-index: 10;
 }
 
-.btn-voltar-circle {
-    background: transparent;
-    color: var(--fec-blue); /* Identidade visual original */
-}
-
-.btn-voltar-circle:hover {
-    background: #f1f5f9;
-}
-
-.btn-edit-topo-circle {
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-.btn-edit-topo-circle:hover {
-    background: #e2e8f0;
-}
-
-/* Área Hero (Avatar e Nome) - Ajustada para Full Screen */
-.profile-hero.hero-full-screen {
-    text-align: center;
-    margin-top: 100px; /* Espaço para o header fixo */
-    margin-bottom: 30px;
-    padding: 0 20px;
-}
-
-.fec-avatar-profile.avatar-full-screen {
-    width: 120px; /* Um pouco maior na tela cheia */
-    height: 120px;
-    background: #f1f5f9;
-    border-radius: 50%;
-    margin: 0 auto 20px auto;
+.profile-image-container {
+    width: 280px;
+    height: 100%;
     display: flex;
+    align-items: flex-end;
+}
+
+.img-full-profile {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* --- CARD FLUTUANTE --- */
+.name-floating-card {
+    position: absolute;
+    bottom: -35px; /* Metade para fora */
+    width: 85%;
+    max-width: 400px;
+    background: #002d57; /* Azul do card na foto */
+    border-radius: 20px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: #cbd5e1;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    z-index: 20;
+}
+
+.name-info h1 {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.name-info span {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.btn-more-options {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Dropdown */
+.dropdown-options {
+    position: absolute;
+    right: 0;
+    top: 60px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    min-width: 150px;
     overflow: hidden;
 }
 
-.fec-perfil-nome.nome-full-screen {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 10px 0;
-    text-transform: capitalize;
-}
+.dropdown-options.active { display: flex; }
 
-.fec-perfil-badge.badge-full-screen {
-    display: inline-block;
-    background: var(--fec-red); /* Identidade visual original */
-    color: white;
-    padding: 5px 16px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Grid de Informações Básicas - Mais Largo */
-.info-inline-grid.grid-full-screen {
+.dropdown-options button {
+    padding: 12px 15px;
+    border: none;
+    background: white;
+    text-align: left;
     display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    padding: 20px;
-    background: #f8fafc; /* Fundo cinza para destacar contra a tela branca */
-    border-radius: 0; /* Quadrado para ocupar a largura toda */
-    margin-bottom: 30px;
-    width: 100%;
-}
-
-.info-inline-item {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 6px;
-    color: #475569;
+    gap: 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
 }
 
-.info-inline-item i {
-    width: 20px;
-    height: 20px;
-    color: #94a3b8;
+.dropdown-options button:hover { background: #f8fafc; }
+.dropdown-options button.delete-opt { color: #e11d48; }
+
+/* --- PARTE INFERIOR (ESCURA) --- */
+.section-details-dark {
+    padding: 60px 25px 30px 25px;
+    flex: 1;
+    color: #cbd5e1;
 }
 
-.info-inline-item p {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin: 0;
-    color: #1e293b;
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
-/* Área de Notas e Frase - Com Fundo para Destaque */
-.fec-perfil-notas.notas-full-screen {
-    margin-bottom: 40px;
-    padding: 0 20px;
-}
-
-.fec-perfil-notas label {
+.info-block label {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.8rem;
-    color: #64748b;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-
-.fec-notas-box.box-full-screen {
-    background: #f8fafc; /* Fundo cinza */
-    border: 1px solid #e2e8f0;
-    padding: 18px;
-    border-radius: 14px;
-    color: #334155;
-    font-style: italic;
     font-size: 1rem;
-    line-height: 1.6;
-    min-height: 100px;
+    color: #60a5fa; /* Azul claro para ícones */
+    font-weight: 600;
+    margin-bottom: 10px;
 }
 
-/* Ações de Rodapé - Empurradas para o final */
-.acoes-perfil-footer.footer-full-screen {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    align-items: center;
-    padding: 0 20px 30px 20px; /* Padding inferior */
-    width: 100%;
-}
+.info-block p { font-size: 1.1rem; color: white; margin: 0; }
+.info-block small { opacity: 0.6; }
 
-.fec-btn-whatsapp-full {
-    background: #25d366; /* Cor padrão Whatsapp */
-    color: white;
-    padding: 16px;
-    width: 100%;
-    border-radius: 16px;
-    text-align: center;
-    text-decoration: none;
+.days-badge {
+    color: #60a5fa;
     font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    font-size: 1rem;
 }
 
-.fec-btn-whatsapp-full:active {
-    transform: scale(0.98);
-}
-
-.fec-btn-whatsapp-full i {
-    width: 22px;
-    height: 22px;
-}
-
-/* Link de Exclusão (Danger) Discreto em Texto */
-.btn-text-danger {
-    background: transparent;
-    border: none;
-    color: #e11d48; /* Cor danger original */
-    font-size: 0.9rem;
+.notes-section label {
+    display: block;
+    margin-bottom: 15px;
     font-weight: 600;
-    cursor: pointer;
+}
+
+.notes-content {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.footer-actions {
+    margin-top: 40px;
+}
+
+.btn-whatsapp-modern {
+    background: #25d366;
+    color: white;
+    text-decoration: none;
+    padding: 16px;
+    border-radius: 16px;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 6px;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.btn-text-danger:hover {
-    opacity: 1;
-}
-
-.btn-text-danger i {
-    width: 18px;
-    height: 18px;
+    gap: 10px;
+    font-weight: bold;
 }
