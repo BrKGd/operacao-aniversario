@@ -121,7 +121,7 @@ function montarLayoutEstrutural() {
                         <i data-lucide="sparkles" class="header-icon-gold"></i>
                         <span class="app-title-header">leão festivo</span>
                     </div>
-                    <button id="btnLogoutTop" class="btn-logout-minimal">
+                    <button id="btnLogoutTop" title="Sair" class="btn-logout-minimal">
                         <i data-lucide="log-out"></i>
                     </button>
                 </div>

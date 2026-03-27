@@ -2,6 +2,8 @@ import '../styles/cadastro.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
 import { createIcons, icons } from 'lucide';
+// Importação necessária para gerar o Excel real (instale com: npm install xlsx)
+import * as XLSX from 'xlsx';
 
 export async function montarCadastro(container: HTMLElement, idEdicao?: string) {
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Preparando...</div></div>`;
@@ -16,12 +18,17 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const ehEdicao = !!(idEdicao && dadosEdicao);
         let imagemSelecionada = (dadosEdicao as any)?.imagem_url || '';
 
-        const avataresSementes = ['Mia', 'Jack', 'Aria', 'Noah', 'Zoe', 'Max', 'Luna', 'Caleb', 'Iris'];
+        const avataresSementes = [
+        'Easton','Every','Avery','Jordan','Parker','Quinn','Rowan','Skyler','Emerson','Finley',
+        'Charlie','Dakota','Harper','Reese','Riley','Sawyer','Taylor','Alex','Blake','Cameron',
+        'Drew','Elliot','Hayden','Jamie','Kai','Logan','Morgan','Noel','River','Sage',
+        'Shawn','Terry','Tyler','Adrian','Ashton','Bailey','Casey','Corey','Devon','Eden',
+        'Frankie','Gray','Hunter','Indigo','Jesse','Kendall','Lane','Micah','Nico','Oakley'
+        ];
 
         container.innerHTML = `
             <div class="fec-center-wrapper">
                 <div class="fec-form-wrapper">
-                    <!-- BOTÃO VOLTAR COM ESTILO MELHORADO -->
                     <button class="fec-btn-back-nav" id="btnVoltarForm" title="Voltar">
                         <i data-lucide="chevron-left"></i>
                     </button>
@@ -45,7 +52,18 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
 
                     <form id="formAniversario" class="fec-form-main">
                         <input type="hidden" id="imagem_url" value="${imagemSelecionada}">
-                        
+
+                        <!-- SEÇÃO DE IMPORTAÇÃO (ESTILIZADA VIA CSS) -->
+                        <div class="fec-import-actions">
+                            <span id="btnDownloadModelo" class="fec-import-icon-btn" title="Baixar planilha modelo (.xlsx)">
+                                <i data-lucide="download"></i>
+                            </span>
+                            <label for="inputPlanilha" class="fec-import-icon-btn" title="Selecionar planilha">
+                                <i data-lucide="paperclip"></i>
+                                <input type="file" id="inputPlanilha" accept=".xlsx, .xls" hidden>
+                            </label>
+                        </div>
+
                         <div class="fec-input-group-line">
                             <i data-lucide="user"></i>
                             <input type="text" id="nome" placeholder="Nome completo" required value="${dadosEdicao?.nome || ''}">
@@ -56,7 +74,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                             <input type="text" id="apelido" placeholder="Apelido" value="${(dadosEdicao as any)?.apelido || ''}">
                         </div>
 
-                        <!-- CAMPO WHATSAPP MAPEADO PARA A COLUNA TELEFONE -->
                         <div class="fec-input-group-line">
                             <i data-lucide="phone"></i>
                             <input type="tel" id="telefone" placeholder="WhatsApp (DDD + Número)" value="${(dadosEdicao as any)?.telefone || ''}">
@@ -80,7 +97,6 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                              <select id="categoria_id" required>
                                 <option value="" disabled ${!dadosEdicao ? 'selected' : ''}>Selecione o grupo</option>
                                 <option value="NOVA_CATEGORIA" style="font-weight: bold; color: #e63946;">+ Adicionar categoria</option>
-                                
                                 ${categorias.map(cat => `<option value="${cat.id}" ${dadosEdicao?.categoria_id === cat.id ? 'selected' : ''}>${cat.nome}</option>`).join('')}
                              </select>
                         </div>
@@ -100,9 +116,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                     <div class="drawer-handle"></div>
                     <div class="drawer-header">Escolha seu Avatar</div>
                     <div class="avatar-grid-scroll">
-                        <div class="avatar-circle-option" data-url="">
-                             <i data-lucide="user-minus"></i>
-                        </div>
+                        <div class="avatar-circle-option" data-url=""><i data-lucide="user-minus"></i></div>
                         ${avataresSementes.map(seed => {
                             const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
                             return `<img src="${url}" class="avatar-circle-option" data-url="${url}">`;
@@ -113,19 +127,43 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             </div>
         `;
 
-        // LÓGICA DE NAVEGAÇÃO
+        // --- LÓGICA DE DOWNLOAD EM .XLSX REAL ---
+        document.getElementById('btnDownloadModelo')?.addEventListener('click', () => {
+            // Definimos os dados com acentuação correta
+            const dados = [
+                { 
+                    "nome": "João Silva", 
+                    "apelido": "Jo", 
+                    "telefone": "71988887766", 
+                    "frase_exibicao": "Parabéns!", 
+                    "data_nascimento": "1990-05-20" 
+                }
+            ];
+
+            // Cria a planilha (Worksheet)
+            const ws = XLSX.utils.json_to_sheet(dados);
+            // Cria o livro (Workbook)
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Aniversariantes");
+
+            // Gera o arquivo e inicia o download
+            XLSX.writeFile(wb, "modelo_aniversariantes.xlsx");
+        });
+
+        // --- RESTANTE DAS FUNCIONALIDADES MANTIDAS ---
+        document.getElementById('inputPlanilha')?.addEventListener('change', (e: any) => {
+            const file = e.target.files[0];
+            if (file) alert(`Arquivo "${file.name}" carregado. Próximo passo: processar via XLSX.read().`);
+        });
+
         const selectCategoria = document.getElementById('categoria_id') as HTMLSelectElement;
         selectCategoria.addEventListener('change', () => {
             if (selectCategoria.value === "NOVA_CATEGORIA") {
-                if (typeof (window as any).navegar === 'function') {
-                    (window as any).navegar('categorias'); 
-                } else {
-                    window.location.hash = '#categorias';
-                }
+                if (typeof (window as any).navegar === 'function') (window as any).navegar('categorias'); 
+                else window.location.hash = '#categorias';
             }
         });
 
-        // --- LÓGICA DE AVATARES E UPLOAD ---
         const drawer = document.getElementById('avatarDrawer') as HTMLElement;
         const overlay = document.getElementById('drawerOverlay') as HTMLElement;
         const preview = document.getElementById('avatarPreview') as HTMLElement;
@@ -143,9 +181,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             el.addEventListener('click', () => {
                 const url = el.getAttribute('data-url') || '';
                 inputHidden.value = url;
-                preview.innerHTML = url 
-                    ? `<img src="${url}" class="img-preview-fec">` 
-                    : `<i data-lucide="user" class="avatar-icon-fec"></i>`;
+                preview.innerHTML = url ? `<img src="${url}" class="img-preview-fec">` : `<i data-lucide="user" class="avatar-icon-fec"></i>`;
                 toggleDrawer(false);
                 createIcons({ icons });
             });
@@ -169,10 +205,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             else window.location.hash = `#detalhes?id=${idEdicao}`;
         };
 
-        // LÓGICA DO BOTÃO VOLTAR
         document.getElementById('btnVoltarForm')?.addEventListener('click', () => {
-            if (ehEdicao) irParaDetalhes();
-            else window.history.back();
+            if (ehEdicao) irParaDetalhes(); else window.history.back();
         });
 
         document.getElementById('btnSecondaryAction')?.addEventListener('click', () => {
@@ -187,7 +221,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 const dados = {
                     nome: (document.getElementById('nome') as HTMLInputElement).value,
                     apelido: (document.getElementById('apelido') as HTMLInputElement).value,
-                    telefone: (document.getElementById('telefone') as HTMLInputElement).value, // Coluna correta
+                    telefone: (document.getElementById('telefone') as HTMLInputElement).value,
                     frase_exibicao: (document.getElementById('frase_exibicao') as HTMLInputElement).value,
                     data_nascimento: (document.getElementById('data_nascimento') as HTMLInputElement).value,
                     imagem_url: inputHidden.value,
@@ -210,9 +244,8 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
                 }
             } catch (err) { 
                 console.error(err);
-                alert("Erro ao salvar. Verifique se a coluna 'telefone' existe no banco."); 
-            }
-            finally { btn.disabled = false; }
+                alert("Erro ao salvar."); 
+            } finally { btn.disabled = false; }
         };
 
         createIcons({ icons });
