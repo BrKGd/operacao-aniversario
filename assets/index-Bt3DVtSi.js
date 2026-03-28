@@ -8920,7 +8920,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     `}
                 </div>
             </div>
-        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function qu(e,t){var a,r,n,i,s,h,c,o,l;if(!t){e.innerHTML='<div class="fec-center-wrapper">ID não encontrado.</div>';return}e.innerHTML='<div class="fec-center-wrapper"><div class="fec-loader-minimal">Aguarde...</div></div>';try{const[d,u]=await Promise.all([lt.listarTodos(),lt.listarCategorias()]),f=d.find(R=>R.id===t);if(!f){e.innerHTML='<div class="fec-center-wrapper">Integrante não localizado.</div>';return}const v=f.imagem_url,p=new Date(f.data_nascimento+"T00:00:00"),x=new Date;let M=x.getFullYear()-p.getFullYear();(x.getMonth()<p.getMonth()||x.getMonth()===p.getMonth()&&x.getDate()<p.getDate())&&M--,e.innerHTML=`
+        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function qu(e,t){var a,r,n,i,s,h,c,o,l;if(!t){e.innerHTML='<div class="fec-center-wrapper">ID não encontrado.</div>';return}e.innerHTML='<div class="fec-center-wrapper"><div class="fec-loader-minimal">Aguarde...</div></div>';try{const[d,u]=await Promise.all([lt.listarTodos(),lt.listarCategorias()]),f=d.find(R=>R.id===t);if(!f){e.innerHTML='<div class="fec-center-wrapper">Integrante não localizado.</div>';return}window.scrollTo(0,0);const v=f.imagem_url,p=new Date(f.data_nascimento+"T00:00:00"),x=new Date;let M=x.getFullYear()-p.getFullYear();(x.getMonth()<p.getMonth()||x.getMonth()===p.getMonth()&&x.getDate()<p.getDate())&&M--,e.innerHTML=`
             <div class="detalhes-page-wrapper">
                 <section class="section-hero-light">
                     <button class="btn-back-absolute" id="btn-voltar-list">
@@ -8994,19 +8994,20 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 </section>
             </div>
 
-            <!-- Drawer de Categorias com Auto-Save -->
+            <!-- Drawer Estilo BottomSheet Dark (À frente de tudo) -->
             <div class="drawer-overlay-premium" id="category-drawer" style="display: none;">
                 <div class="drawer-content-premium">
                     <div class="drawer-header-premium">
-                        <h2 class="drawer-title-premium">Selecionar Grupo</h2>
+                        <h2 class="drawer-title-premium">Escolha o Grupo</h2>
                         <button class="close-btn-drawer" id="close-category-drawer">
                             <i data-lucide="x"></i>
                         </button>
                     </div>
 
                     <div class="category-drawer-content">
-                        <button class="new-category-btn" id="btn-nova-categoria">
-                            <i data-lucide="plus"></i> Criar Nova Categoria
+                        <button class="new-category-btn" id="btn-nova-categoria" 
+                                style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.3); color: white;">
+                            <i data-lucide="plus"></i> Criar Novo Grupo
                         </button>
 
                         <div class="category-list-scroll">
@@ -9021,11 +9022,11 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                         </div>
                     </div>
                     <div class="drawer-footer-premium">
-                        <p style="font-size: 12px; color: #64748b; text-align: center;">A alteração é salva automaticamente ao selecionar.</p>
+                        <p>A alteração é salva automaticamente.</p>
                     </div>
                 </div>
             </div>
-        `;const y=document.getElementById("dropdownMenu"),m=document.getElementById("category-drawer");(r=document.getElementById("btn-voltar-list"))==null||r.addEventListener("click",()=>window.navegar("list")),(n=document.getElementById("btn-editar-perfil"))==null||n.addEventListener("click",()=>window.navegar("form",f.id)),(i=document.getElementById("btn-nova-categoria"))==null||i.addEventListener("click",()=>window.navegar("categorias")),(s=document.getElementById("btn-config-notificacoes"))==null||s.addEventListener("click",()=>window.navegar("notificacoes")),(h=document.getElementById("btnMenuOpcoes"))==null||h.addEventListener("click",R=>{R.stopPropagation(),y==null||y.classList.toggle("active")}),document.addEventListener("click",()=>y==null?void 0:y.classList.remove("active")),(c=document.getElementById("btn-abrir-drawer-cat"))==null||c.addEventListener("click",()=>{m&&(m.style.display="flex"),y==null||y.classList.remove("active")}),(o=document.getElementById("close-category-drawer"))==null||o.addEventListener("click",()=>{m&&(m.style.display="none")}),document.querySelectorAll(".auto-save-radio").forEach(R=>{R.addEventListener("change",async E=>{const D=E.target.value;if(D!==f.categoria_id)try{const L=document.querySelector(".category-list-scroll");L&&(L.style.opacity="0.5"),await lt.atualizar(f.id,{categoria_id:D}),m&&(m.style.display="none"),qu(e,t)}catch(L){alert("Erro ao atualizar categoria automaticamente."),console.error(L)}})}),(l=document.getElementById("btnExcluirFicha"))==null||l.addEventListener("click",async()=>{confirm(`Deseja realmente remover ${f.nome}?`)&&(await lt.excluir(f.id),window.navegar("list"))}),window.lucide&&window.lucide.createIcons()}catch(d){console.error(d),e.innerHTML='<div class="fec-center-wrapper">Erro ao carregar detalhes.</div>'}}async function BK(e){e.innerHTML='<div class="loading">Organizando calendário...</div>';try{const t=new Date,a=await lt.listarTodos();let r=t.getMonth(),n=t.getFullYear();const i=()=>{var d,u;const s=new Date(n,r,1).getDay(),h=new Date(n,r+1,0).getDate(),c=new Date(n,r).toLocaleString("pt-BR",{month:"long"}),o=a.filter(f=>new Date(f.data_nascimento+"T00:00:00").getMonth()===r);let l="";for(let f=0;f<s;f++)l+='<div class="dia-vazio"></div>';for(let f=1;f<=h;f++){const v=o.filter(x=>new Date(x.data_nascimento+"T00:00:00").getDate()===f),p=f===t.getDate()&&r===t.getMonth()&&n===t.getFullYear();l+=`
+        `;const y=document.getElementById("dropdownMenu"),m=document.getElementById("category-drawer");(r=document.getElementById("btn-voltar-list"))==null||r.addEventListener("click",()=>window.navegar("list")),(n=document.getElementById("btn-editar-perfil"))==null||n.addEventListener("click",()=>window.navegar("form",f.id)),(i=document.getElementById("btn-nova-categoria"))==null||i.addEventListener("click",()=>window.navegar("categorias")),(s=document.getElementById("btn-config-notificacoes"))==null||s.addEventListener("click",()=>window.navegar("notificacoes")),(h=document.getElementById("btnMenuOpcoes"))==null||h.addEventListener("click",R=>{R.stopPropagation(),y==null||y.classList.toggle("active")}),document.addEventListener("click",()=>y==null?void 0:y.classList.remove("active")),(c=document.getElementById("btn-abrir-drawer-cat"))==null||c.addEventListener("click",()=>{m&&(m.style.display="flex"),y==null||y.classList.remove("active")}),(o=document.getElementById("close-category-drawer"))==null||o.addEventListener("click",()=>{m&&(m.style.display="none")}),m==null||m.addEventListener("click",R=>{R.target===m&&(m.style.display="none")}),document.querySelectorAll(".auto-save-radio").forEach(R=>{R.addEventListener("change",async E=>{const D=E.target.value;if(D!==f.categoria_id)try{const L=document.querySelector(".category-list-scroll");L&&(L.style.opacity="0.5"),await lt.atualizar(f.id,{categoria_id:D}),m&&(m.style.display="none"),qu(e,t)}catch(L){alert("Erro ao atualizar categoria automaticamente."),console.error(L)}})}),(l=document.getElementById("btnExcluirFicha"))==null||l.addEventListener("click",async()=>{confirm(`Deseja realmente remover ${f.nome}?`)&&(await lt.excluir(f.id),window.navegar("list"))}),window.lucide&&window.lucide.createIcons()}catch(d){console.error(d),e.innerHTML='<div class="fec-center-wrapper">Erro ao carregar detalhes.</div>'}}async function BK(e){e.innerHTML='<div class="loading">Organizando calendário...</div>';try{const t=new Date,a=await lt.listarTodos();let r=t.getMonth(),n=t.getFullYear();const i=()=>{var d,u;const s=new Date(n,r,1).getDay(),h=new Date(n,r+1,0).getDate(),c=new Date(n,r).toLocaleString("pt-BR",{month:"long"}),o=a.filter(f=>new Date(f.data_nascimento+"T00:00:00").getMonth()===r);let l="";for(let f=0;f<s;f++)l+='<div class="dia-vazio"></div>';for(let f=1;f<=h;f++){const v=o.filter(x=>new Date(x.data_nascimento+"T00:00:00").getDate()===f),p=f===t.getDate()&&r===t.getMonth()&&n===t.getFullYear();l+=`
                     <div class="dia-card ${p?"hoje":""} ${v.length>0?"tem-evento":""}">
                         <span class="num-dia">${f}</span>
                         <div class="eventos-dia">
