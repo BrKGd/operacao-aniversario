@@ -24,6 +24,9 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
             return;
         }
 
+        // Garante que a tela comece no topo para imersão total
+        window.scrollTo(0, 0);
+
         const imagemPessoa = (pessoa as any).imagem_url;
         const dataNasc = new Date(pessoa.data_nascimento + 'T00:00:00');
         const hoje = new Date();
@@ -109,19 +112,20 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                 </section>
             </div>
 
-            <!-- Drawer de Categorias com Auto-Save -->
+            <!-- Drawer Estilo BottomSheet Dark (À frente de tudo) -->
             <div class="drawer-overlay-premium" id="category-drawer" style="display: none;">
                 <div class="drawer-content-premium">
                     <div class="drawer-header-premium">
-                        <h2 class="drawer-title-premium">Selecionar Grupo</h2>
+                        <h2 class="drawer-title-premium">Escolha o Grupo</h2>
                         <button class="close-btn-drawer" id="close-category-drawer">
                             <i data-lucide="x"></i>
                         </button>
                     </div>
 
                     <div class="category-drawer-content">
-                        <button class="new-category-btn" id="btn-nova-categoria">
-                            <i data-lucide="plus"></i> Criar Nova Categoria
+                        <button class="new-category-btn" id="btn-nova-categoria" 
+                                style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.3); color: white;">
+                            <i data-lucide="plus"></i> Criar Novo Grupo
                         </button>
 
                         <div class="category-list-scroll">
@@ -136,7 +140,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                         </div>
                     </div>
                     <div class="drawer-footer-premium">
-                        <p style="font-size: 12px; color: #64748b; text-align: center;">A alteração é salva automaticamente ao selecionar.</p>
+                        <p>A alteração é salva automaticamente.</p>
                     </div>
                 </div>
             </div>
@@ -167,6 +171,11 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         document.getElementById('close-category-drawer')?.addEventListener('click', () => {
             if (drawer) drawer.style.display = 'none';
         });
+        
+        // Fecha o drawer ao clicar no overlay (fora do conteúdo)
+        drawer?.addEventListener('click', (e) => {
+            if (e.target === drawer) drawer.style.display = 'none';
+        });
 
         // Lógica de AUTO-SAVE (Sem botão salvar)
         const radios = document.querySelectorAll('.auto-save-radio');
@@ -177,7 +186,6 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
 
                 if (novaCatId !== pessoa.categoria_id) {
                     try {
-                        // Feedback visual simples: escurecer a lista enquanto salva
                         const listScroll = document.querySelector('.category-list-scroll');
                         if (listScroll) (listScroll as HTMLElement).style.opacity = '0.5';
 
@@ -186,7 +194,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                         });
 
                         if (drawer) drawer.style.display = 'none';
-                        montarDetalhes(container, id); // Recarrega a UI
+                        montarDetalhes(container, id); // Recarrega a UI para atualizar o label no topo
                     } catch (err) {
                         alert('Erro ao atualizar categoria automaticamente.');
                         console.error(err);

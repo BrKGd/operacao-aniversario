@@ -1,4 +1,16 @@
 /* --- RESET E IMERSÃO FULL SCREEN --- */
+:root {
+    --fec-azul-vibrante: #003399;   
+    --fec-vermelho-vibrante: #ff0000; 
+    --fec-vermelho-dark: #cc0000;
+    --fec-branco: #ffffff;
+    --fec-cinza-texto: #43464a;
+    --fec-border: rgba(255, 255, 255, 0.2);
+    --fec-bg-overlay: rgba(0, 5, 20, 0.95);
+    --fec-shadow: rgba(0, 51, 153, 0.4);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -34,8 +46,9 @@ html, body {
     position: absolute;
     top: 25px;
     left: 20px;
-    background: white;
+    background: transparent !important;
     border: none;
+    color: var(--fec-azul-vibrante) !important;
     width: 48px;
     height: 48px;
     border-radius: 16px;
@@ -266,8 +279,8 @@ html, body {
 .drawer-content-premium {
     background: #ffffff;
     width: 100%;
-    max-width: 500px;
-    height: 92vh; /* Quase tela cheia para imersão mobile */
+    max-width: 100%;
+    height: 100%; /* Quase tela cheia para imersão mobile */
     border-radius: 32px 32px 0 0;
     display: flex;
     flex-direction: column;
