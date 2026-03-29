@@ -1,6 +1,6 @@
 import './styles/app.css'; 
 import { supabase } from './supabaseClient';
-import { createIcons, icons } from 'lucide'; // Ajustado para lucide-react ou lucide conforme seu projeto
+import { createIcons, icons } from 'lucide';
 
 // Importação das páginas
 import { montarTelaRegistro } from './pages/registros';

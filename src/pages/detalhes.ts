@@ -6,7 +6,10 @@ import { Aniversario, Categoria } from '../types';
 export async function montarDetalhes(container: HTMLElement, id?: string) {
     if (!id) return;
 
-    container.innerHTML = `<div class="fec-loader-minimal">Carregando...</div>`;
+    // Evita o "flash" branco se a página já estiver montada
+    if (!container.querySelector('.detalhes-page-wrapper')) {
+        container.innerHTML = `<div class="fec-loader-minimal">Carregando...</div>`;
+    }
 
     try {
         const [todos, categorias]: [Aniversario[], Categoria[]] = await Promise.all([
@@ -33,7 +36,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                     <div class="name-floating-card">
                         <div class="name-info">
                             <h1>${pessoa.apelido}</h1>
-                            <span>${pessoa.categorias?.nome || 'Sem Grupo'}</span>
+                            <span id="categoria-label">${pessoa.categorias?.nome || 'Sem Grupo'}</span>
                         </div>
                         <button class="btn-more-options" id="btn-abrir-menu"><i data-lucide="more-vertical"></i></button>
                         
@@ -79,11 +82,12 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                         </div>
                     </div>
                     <div class="category-drawer-content">
-                        <!-- Removida a opção Sem Grupo daqui -->
                         ${categorias.map(cat => `
                             <label class="category-item-radio">
                                 <span>${cat.nome}</span>
-                                <input type="radio" name="cat-option" value="${cat.id}" ${pessoa.categoria_id === cat.id ? 'checked' : ''} class="radio-save">
+                                <input type="radio" name="cat-option" value="${cat.id}" 
+                                    ${pessoa.categoria_id === cat.id ? 'checked' : ''} 
+                                    data-catnome="${cat.nome}" class="radio-save">
                             </label>
                         `).join('')}
                     </div>
@@ -91,42 +95,57 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
             </div>
         `;
 
+        // Função interna para garantir ícones
+        const inicializarIcones = () => {
+            if ((window as any).lucide) (window as any).lucide.createIcons();
+        };
+
         const dropdown = document.getElementById('dropdown-menu');
         const drawer = document.getElementById('drawer-categoria');
 
+        // Navegação básica
         document.getElementById('btn-voltar-list')?.addEventListener('click', () => (window as any).navegar('list'));
-        
+        document.getElementById('btn-ir-notificacoes')?.addEventListener('click', () => (window as any).navegar('notificacoes'));
+        document.getElementById('btn-nav-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
+        document.getElementById('btn-editar-perfil')?.addEventListener('click', () => (window as any).navegar('form', pessoa.id));
+
+        // Controle Dropdown
         document.getElementById('btn-abrir-menu')?.addEventListener('click', (e) => {
             e.stopPropagation();
             dropdown?.classList.toggle('active');
+            inicializarIcones();
         });
         document.addEventListener('click', () => dropdown?.classList.remove('active'));
 
+        // Controle Drawer
         const fecharDrawer = () => drawer?.classList.remove('active');
-        document.getElementById('btn-abrir-drawer')?.addEventListener('click', () => drawer?.classList.add('active'));
+        document.getElementById('btn-abrir-drawer')?.addEventListener('click', () => {
+            drawer?.classList.add('active');
+            inicializarIcones();
+        });
         drawer?.addEventListener('click', (e) => { if (e.target === drawer) fecharDrawer(); });
 
-        //| Navegar para Notificações
-        document.getElementById('btn-ir-notificacoes')?.addEventListener('click', () => (window as any).navegar('notificacoes'));
-
-        document.getElementById('btn-nav-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
-
+        // --- TROCA DE CATEGORIA (SOLUÇÃO DOS ÍCONES) ---
         document.querySelectorAll('.radio-save').forEach(radio => {
             radio.addEventListener('change', async (e) => {
-                const val = (e.target as HTMLInputElement).value;
-                const novaCatId = val === "" ? undefined : val;
+                const target = e.target as HTMLInputElement;
+                const novaCatId = target.value;
+                const novaCatNome = target.getAttribute('data-catnome');
 
-                // Fecha IMEDIATAMENTE
+                // 1. Atualiza apenas o texto na tela (Ícones continuam vivos!)
+                const label = document.getElementById('categoria-label');
+                if (label && novaCatNome) label.innerText = novaCatNome;
+
                 fecharDrawer();
 
+                // 2. Salva no banco silenciosamente
                 await aniversarioService.atualizar(pessoa.id!, { categoria_id: novaCatId });
                 
-                // Recarrega a tela para atualizar o nome do grupo no card
-                setTimeout(() => montarDetalhes(container, id), 300); 
+                // NOTA: Não chamamos montarDetalhes novamente para não resetar o HTML e perder os ícones.
             });
         });
 
-        document.getElementById('btn-editar-perfil')?.addEventListener('click', () => (window as any).navegar('form', pessoa.id));
+        // Excluir
         document.getElementById('btn-excluir-integrante')?.addEventListener('click', async () => {
             if (confirm(`Deseja remover ${pessoa.nome}?`)) {
                 await aniversarioService.excluir(pessoa.id!);
@@ -134,7 +153,10 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
             }
         });
 
-        if ((window as any).lucide) (window as any).lucide.createIcons();
+        // Renderização inicial dos ícones
+        inicializarIcones();
+        // Garantia para navegadores lentos
+        setTimeout(inicializarIcones, 100);
 
     } catch (error) {
         console.error("Erro:", error);
