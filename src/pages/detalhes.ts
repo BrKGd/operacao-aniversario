@@ -38,10 +38,9 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                         <button class="btn-more-options" id="btn-abrir-menu"><i data-lucide="more-vertical"></i></button>
                         
                         <div class="dropdown-options" id="dropdown-menu">
-                            <button id="btn-editar-perfil"><i data-lucide="edit-3"></i> Editar Perfil</button>
-                            <button id="btn-abrir-drawer"><i data-lucide="layers"></i> Mudar Grupo</button>
+                            <button id="btn-editar-perfil"><i data-lucide="user-round-pen"></i> Editar Perfil</button>
+                            <button id="btn-abrir-drawer"><i data-lucide="bookmark"></i> Mudar Grupo</button>
                             <button id="btn-ir-notificacoes"><i data-lucide="bell"></i> Notificações</button>
-                            <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
                             <button class="delete-opt" id="btn-excluir-integrante"><i data-lucide="trash-2"></i> Excluir</button>
                         </div>
                     </div>
@@ -50,16 +49,16 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                 <section class="section-details-white">
                     <div class="info-row">
                         <div class="info-block">
-                            <label>ANIVERSÁRIO</label>
+                            <label>Aniversário</label>
                             <p>${dataNasc.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'})}</p>
                         </div>
                         <div class="days-badge">${idade} ANOS</div>
                     </div>
                     <div class="info-block" style="margin-bottom: 20px;">
-                        <label>CONTATO</label>
+                        <label>Whatsapp</label>
                         <p>${pessoa.telefone || 'Não informado'}</p>
                     </div>
-                    <label>NOTAS</label>
+                    <label>Detalhes</label>
                     <div class="notes-content">${(pessoa as any).frase_exibicao || 'Sem observações.'}</div>
                     
                     <a href="${gerarLinkWhatsapp(pessoa.nome, pessoa.telefone || '')}" target="_blank" class="btn-whatsapp-modern">
@@ -106,6 +105,9 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         const fecharDrawer = () => drawer?.classList.remove('active');
         document.getElementById('btn-abrir-drawer')?.addEventListener('click', () => drawer?.classList.add('active'));
         drawer?.addEventListener('click', (e) => { if (e.target === drawer) fecharDrawer(); });
+
+        //| Navegar para Notificações
+        document.getElementById('btn-ir-notificacoes')?.addEventListener('click', () => (window as any).navegar('notificacoes'));
 
         document.getElementById('btn-nav-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
 
