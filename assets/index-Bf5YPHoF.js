@@ -8887,40 +8887,71 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 </div>
                 <div id="drawerOverlay" class="drawer-overlay"></div>
             </div>
-        `;const p=document.getElementById("telefone"),x=document.getElementById("categoria_id"),M=document.getElementById("inputFoto"),y=document.getElementById("imagem_url"),m=document.getElementById("avatarPreview");M==null||M.addEventListener("change",E=>{var L;const D=(L=E.target.files)==null?void 0:L[0];if(D){if(!D.type.startsWith("image/")){qe.show({title:"Erro",message:"Selecione um arquivo de imagem.",type:"error"});return}const W=new FileReader;W.onload=V=>{var Z;const H=(Z=V.target)==null?void 0:Z.result;y.value=H,m.innerHTML=`<img src="${H}" class="img-preview-fec">`,ya({icons:y1})},W.readAsDataURL(D)}}),x.addEventListener("change",()=>{x.value==="NOVA_CATEGORIA"&&(x.value="",typeof window.navegar=="function"?window.navegar("categorias"):window.location.hash="#categorias")}),p.addEventListener("input",()=>{let E=p.value.replace(/\D/g,"");E.length>11&&(E=E.substring(0,11)),E.length>0&&(E=E.replace(/^(\d{2})(\d)/g,"($1) $2"),E=E.replace(/(\d{5})(\d)/,"$1-$2")),p.value=E}),(a=document.getElementById("btnDownloadModelo"))==null||a.addEventListener("click",()=>{const E=d&&l?[{nome:l.nome,apelido:l.apelido||"",telefone:l.telefone||"",frase_exibicao:l.frase_exibicao||"",data_nascimento:l.data_nascimento}]:[{nome:"Exemplo Nome",apelido:"Apelido",telefone:"71999998888",frase_exibicao:"Feliz Aniversário!",data_nascimento:"1995-10-30"}],_=m1.json_to_sheet(E),D=m1.book_new();m1.book_append_sheet(D,_,"Dados");const L=d?`export_${l==null?void 0:l.nome.replace(/\s/g,"_")}.xlsx`:"modelo_aniversariantes.xlsx";SK(D,L)}),(r=document.getElementById("inputPlanilha"))==null||r.addEventListener("change",async E=>{const _=E.target.files[0],D=x.value;if(!D||D==="NOVA_CATEGORIA"){await qe.show({title:"Atenção",message:"Selecione um grupo antes de importar.",type:"info"}),E.target.value="";return}if(_){const L=new FileReader;L.onload=async W=>{var V;try{const H=(V=W.target)==null?void 0:V.result,Z=ii(H,{type:"binary"}),oe=Z.SheetNames.length>0?Z.SheetNames[0]:null;if(oe&&Z.Sheets[oe]){const ne=m1.sheet_to_json(Z.Sheets[oe]);if(ne.length>0&&await qe.show({title:"Importar Planilha",message:`Deseja importar ${ne.length} registros para este grupo?`,type:"confirm",confirmText:"Sim, importar"})){qe.showLoading(`Processando ${ne.length} aniversariantes...`);for(const he of ne)await lt.adicionar({nome:he.nome||"Sem Nome",apelido:he.apelido||"",telefone:String(he.telefone||"").replace(/\D/g,""),frase_exibicao:he.frase_exibicao||"",data_nascimento:u(he.data_nascimento),categoria_id:D,imagem_url:""});qe.close(),await qe.show({title:"Sucesso!",message:"Importação concluída com êxito.",type:"success"}),typeof window.navegar=="function"&&window.navegar("list")}}}catch{qe.close(),qe.show({title:"Erro",message:"Não foi possível processar a planilha.",type:"error"})}},L.readAsBinaryString(_)}});const b=()=>{typeof window.navegar=="function"?window.navegar("detalhes",t):window.location.hash=`#detalhes?id=${t}`},P=E=>{const _=document.getElementById("avatarDrawer"),D=document.getElementById("drawerOverlay");_==null||_.classList.toggle("active",E),D==null||D.classList.toggle("active",E)};(n=document.getElementById("btnAbrirGaleria"))==null||n.addEventListener("click",()=>P(!0)),(i=document.getElementById("drawerOverlay"))==null||i.addEventListener("click",()=>P(!1)),document.querySelectorAll(".avatar-circle-option").forEach(E=>{E.addEventListener("click",()=>{const _=E.getAttribute("data-url")||"";y.value=_,m.innerHTML=_?`<img src="${_}" class="img-preview-fec">`:'<i data-lucide="user" class="avatar-icon-fec"></i>',P(!1),ya({icons:y1})})}),document.getElementById("formAniversario").onsubmit=async E=>{E.preventDefault(),qe.showLoading("Salvando informações...");try{const _={nome:document.getElementById("nome").value,apelido:document.getElementById("apelido").value,telefone:document.getElementById("telefone").value.replace(/\D/g,""),frase_exibicao:document.getElementById("frase_exibicao").value,data_nascimento:document.getElementById("data_nascimento").value,imagem_url:y.value,categoria_id:x.value};d&&t?await lt.atualizar(t,_):await lt.adicionar(_),qe.close(),await qe.show({message:"Salvo com sucesso!",type:"success"}),d?b():typeof window.navegar=="function"&&window.navegar("list")}catch{qe.close(),qe.show({title:"Erro ao salvar",message:"Verifique sua conexão e tente novamente.",type:"error"})}},(s=document.getElementById("btnVoltarForm"))==null||s.addEventListener("click",()=>{d?b():window.history.back()}),(h=document.getElementById("btnSecondaryAction"))==null||h.addEventListener("click",()=>{d?b():document.getElementById("formAniversario").reset()}),ya({icons:y1})}catch{e.innerHTML="Erro ao carregar."}}async function HK(e){e.innerHTML='<div class="loading">Sincronizando alertas...</div>';try{const t=new Date,r=(await lt.listarTodos()).filter(n=>{const i=new Date(n.data_nascimento+"T00:00:00"),h=new Date(t.getFullYear(),i.getMonth(),i.getDate()).getTime()-t.getTime(),c=Math.ceil(h/(1e3*60*60*24));return c>=0&&c<=3}).sort((n,i)=>{const s=new Date(n.data_nascimento+"T00:00:00"),h=new Date(i.data_nascimento+"T00:00:00");return s.getDate()-h.getDate()});e.innerHTML=`
+        `;const p=document.getElementById("telefone"),x=document.getElementById("categoria_id"),M=document.getElementById("inputFoto"),y=document.getElementById("imagem_url"),m=document.getElementById("avatarPreview");M==null||M.addEventListener("change",E=>{var L;const D=(L=E.target.files)==null?void 0:L[0];if(D){if(!D.type.startsWith("image/")){qe.show({title:"Erro",message:"Selecione um arquivo de imagem.",type:"error"});return}const W=new FileReader;W.onload=V=>{var Z;const H=(Z=V.target)==null?void 0:Z.result;y.value=H,m.innerHTML=`<img src="${H}" class="img-preview-fec">`,ya({icons:y1})},W.readAsDataURL(D)}}),x.addEventListener("change",()=>{x.value==="NOVA_CATEGORIA"&&(x.value="",typeof window.navegar=="function"?window.navegar("categorias"):window.location.hash="#categorias")}),p.addEventListener("input",()=>{let E=p.value.replace(/\D/g,"");E.length>11&&(E=E.substring(0,11)),E.length>0&&(E=E.replace(/^(\d{2})(\d)/g,"($1) $2"),E=E.replace(/(\d{5})(\d)/,"$1-$2")),p.value=E}),(a=document.getElementById("btnDownloadModelo"))==null||a.addEventListener("click",()=>{const E=d&&l?[{nome:l.nome,apelido:l.apelido||"",telefone:l.telefone||"",frase_exibicao:l.frase_exibicao||"",data_nascimento:l.data_nascimento}]:[{nome:"Exemplo Nome",apelido:"Apelido",telefone:"71999998888",frase_exibicao:"Feliz Aniversário!",data_nascimento:"1995-10-30"}],_=m1.json_to_sheet(E),D=m1.book_new();m1.book_append_sheet(D,_,"Dados");const L=d?`export_${l==null?void 0:l.nome.replace(/\s/g,"_")}.xlsx`:"modelo_aniversariantes.xlsx";SK(D,L)}),(r=document.getElementById("inputPlanilha"))==null||r.addEventListener("change",async E=>{const _=E.target.files[0],D=x.value;if(!D||D==="NOVA_CATEGORIA"){await qe.show({title:"Atenção",message:"Selecione um grupo antes de importar.",type:"info"}),E.target.value="";return}if(_){const L=new FileReader;L.onload=async W=>{var V;try{const H=(V=W.target)==null?void 0:V.result,Z=ii(H,{type:"binary"}),oe=Z.SheetNames.length>0?Z.SheetNames[0]:null;if(oe&&Z.Sheets[oe]){const ne=m1.sheet_to_json(Z.Sheets[oe]);if(ne.length>0&&await qe.show({title:"Importar Planilha",message:`Deseja importar ${ne.length} registros para este grupo?`,type:"confirm",confirmText:"Sim, importar"})){qe.showLoading(`Processando ${ne.length} aniversariantes...`);for(const he of ne)await lt.adicionar({nome:he.nome||"Sem Nome",apelido:he.apelido||"",telefone:String(he.telefone||"").replace(/\D/g,""),frase_exibicao:he.frase_exibicao||"",data_nascimento:u(he.data_nascimento),categoria_id:D,imagem_url:""});qe.close(),await qe.show({title:"Sucesso!",message:"Importação concluída com êxito.",type:"success"}),typeof window.navegar=="function"&&window.navegar("list")}}}catch{qe.close(),qe.show({title:"Erro",message:"Não foi possível processar a planilha.",type:"error"})}},L.readAsBinaryString(_)}});const b=()=>{typeof window.navegar=="function"?window.navegar("detalhes",t):window.location.hash=`#detalhes?id=${t}`},P=E=>{const _=document.getElementById("avatarDrawer"),D=document.getElementById("drawerOverlay");_==null||_.classList.toggle("active",E),D==null||D.classList.toggle("active",E)};(n=document.getElementById("btnAbrirGaleria"))==null||n.addEventListener("click",()=>P(!0)),(i=document.getElementById("drawerOverlay"))==null||i.addEventListener("click",()=>P(!1)),document.querySelectorAll(".avatar-circle-option").forEach(E=>{E.addEventListener("click",()=>{const _=E.getAttribute("data-url")||"";y.value=_,m.innerHTML=_?`<img src="${_}" class="img-preview-fec">`:'<i data-lucide="user" class="avatar-icon-fec"></i>',P(!1),ya({icons:y1})})}),document.getElementById("formAniversario").onsubmit=async E=>{E.preventDefault(),qe.showLoading("Salvando informações...");try{const _={nome:document.getElementById("nome").value,apelido:document.getElementById("apelido").value,telefone:document.getElementById("telefone").value.replace(/\D/g,""),frase_exibicao:document.getElementById("frase_exibicao").value,data_nascimento:document.getElementById("data_nascimento").value,imagem_url:y.value,categoria_id:x.value};d&&t?await lt.atualizar(t,_):await lt.adicionar(_),qe.close(),await qe.show({message:"Salvo com sucesso!",type:"success"}),d?b():typeof window.navegar=="function"&&window.navegar("list")}catch{qe.close(),qe.show({title:"Erro ao salvar",message:"Verifique sua conexão e tente novamente.",type:"error"})}},(s=document.getElementById("btnVoltarForm"))==null||s.addEventListener("click",()=>{d?b():window.history.back()}),(h=document.getElementById("btnSecondaryAction"))==null||h.addEventListener("click",()=>{d?b():document.getElementById("formAniversario").reset()}),ya({icons:y1})}catch{e.innerHTML="Erro ao carregar."}}async function HK(e){e.innerHTML='<div class="loading">Sincronizando alertas...</div>';try{const t=new Date;t.setHours(0,0,0,0);const r=(await lt.listarTodos()).filter(n=>{const i=new Date(n.data_nascimento+"T00:00:00"),s=new Date(t.getFullYear(),i.getMonth(),i.getDate());s<t&&s.setFullYear(t.getFullYear()+1);const h=s.getTime()-t.getTime(),c=Math.ceil(h/(1e3*60*60*24));return c===0||c===1||c===7}).sort((n,i)=>{const s=new Date(n.data_nascimento+"T00:00:00"),h=new Date(i.data_nascimento+"T00:00:00");return s.getMonth()-h.getMonth()||s.getDate()-h.getDate()});e.innerHTML=`
             <div class="notificacoes-container">
                 <div class="notif-header">
-                    <h2><i data-lucide="bell"></i> Central de Alertas</h2>
-                    <p>Não deixe nenhum integrante sem o parabéns oficial.</p>
+                    <button class="btn-back-minimal" onclick="window.navegar('list')">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <h2>Configurações de Alerta</h2>
                 </div>
 
+                <!-- Seção de Configurações -->
+                <section class="notif-settings-card">
+                    <div class="settings-row">
+                        <div>
+                            <span class="settings-label">Notificações Ativas</span>
+                            <p class="settings-sub">Receber alertas no celular</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked id="switch-notif">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row">
+                        <div>
+                            <span class="settings-label">Horário do Alerta</span>
+                            <p class="settings-sub">Momento do disparo</p>
+                        </div>
+                        <input type="time" class="time-input" value="09:00">
+                    </div>
+
+                    <div class="settings-group-checks">
+                        <label class="check-item">
+                            <input type="checkbox" checked> 7 dias antes (Planejamento)
+                        </label>
+                        <label class="check-item">
+                            <input type="checkbox" checked> 1 dia antes
+                        </label>
+                        <label class="check-item">
+                            <input type="checkbox" checked> No dia do evento
+                        </label>
+                    </div>
+                </section>
+
+                <div class="notif-section-title">Próximos Alertas</div>
+
                 <div class="notif-lista">
-                    ${r.length>0?r.map(n=>{var h;const i=new Date(n.data_nascimento+"T00:00:00"),s=i.getDate()===t.getDate()&&i.getMonth()===t.getMonth();return`
-                            <div class="card-notif ${s?"status-hoje":""}">
-                                <div class="notif-icon">
-                                    ${s?"🎂":"⏳"}
-                                </div>
+                    ${r.length>0?r.map(n=>{var l;const i=new Date(n.data_nascimento+"T00:00:00"),s=new Date(t.getFullYear(),i.getMonth(),i.getDate()),h=Math.ceil((s.getTime()-t.getTime())/864e5);let c=`${h} dias`,o="";return h===0?(c="HOJE",o="status-hoje"):h===1?(c="AMANHÃ",o="status-amanha"):(c="EM 7 DIAS",o="status-planejamento"),`
+                            <div class="card-notif ${o}">
+                                <div class="notif-badge-time">${c}</div>
                                 <div class="notif-content">
                                     <div class="notif-nome">${n.nome}</div>
-                                    <div class="notif-desc">
-                                        ${s?"<strong>Faz aniversário hoje!</strong>":`Aniversário em ${i.getDate()}/${i.getMonth()+1}`}
-                                    </div>
-                                    <div class="notif-categoria-tag">${((h=n.categorias)==null?void 0:h.nome)||"Geral"}</div>
+                                    <div class="notif-desc">${i.getDate()}/${i.getMonth()+1} • ${((l=n.categorias)==null?void 0:l.nome)||"Geral"}</div>
                                 </div>
-                                <a href="${E1(n.nome,n.telefone||"")}" 
-                                   target="_blank" class="btn-notif-action">
-                                    <i data-lucide="send"></i>
+                                <a href="${E1(n.nome,n.telefone||"")}" target="_blank" class="btn-notif-whatsapp">
+                                    <i data-lucide="message-circle"></i>
                                 </a>
                             </div>
                         `}).join(""):`
                         <div class="notif-vazia">
-                            <i data-lucide="check-circle-2"></i>
-                            <p>Tudo em dia! Nenhuma notificação urgente para os próximos 3 dias.</p>
+                            <p>Nenhum alerta para os períodos configurados.</p>
                         </div>
                     `}
                 </div>
             </div>
-        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro em Notificações:",t),e.innerHTML='<div class="error-msg">Erro ao carregar notificações.</div>'}}async function NK(e,t){var a,r,n,i,s,h,c,o;if(t){e.querySelector(".detalhes-page-wrapper")||(e.innerHTML='<div class="fec-loader-minimal">Carregando...</div>');try{const[l,d]=await Promise.all([lt.listarTodos(),lt.listarCategorias()]),f=l.find(b=>b.id===t);if(!f)return;const u=new Date(f.data_nascimento+"T00:00:00"),v=new Date;let p=v.getFullYear()-u.getFullYear();v<new Date(v.getFullYear(),u.getMonth(),u.getDate())&&p--,e.innerHTML=`
+        `,window.lucide&&window.lucide.createIcons()}catch(t){console.error("Erro:",t)}}async function NK(e,t){var a,r,n,i,s,h,c,o;if(t){e.querySelector(".detalhes-page-wrapper")||(e.innerHTML='<div class="fec-loader-minimal">Carregando...</div>');try{const[l,d]=await Promise.all([lt.listarTodos(),lt.listarCategorias()]),f=l.find(b=>b.id===t);if(!f)return;const u=new Date(f.data_nascimento+"T00:00:00"),v=new Date;let p=v.getFullYear()-u.getFullYear();v<new Date(v.getFullYear(),u.getMonth(),u.getDate())&&p--,e.innerHTML=`
             <div class="detalhes-page-wrapper">
                 <section class="section-hero-light">
                     <button class="btn-back-absolute" id="btn-voltar-list"><i data-lucide="arrow-left"></i></button>
