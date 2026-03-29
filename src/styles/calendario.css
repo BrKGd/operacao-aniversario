@@ -1,96 +1,220 @@
-.calendario-container {
-    padding: 15px;
-    background: #f8fafc;
-    min-height: 100vh;
+/* calendario.css - Versão Moderna, Compacta e Sem Tema Dark */
+:root {
+    --fec-bg: #f8fafc;
+    --fec-card-white: #ffffff;
+    --fec-text-main: #0f172a;
+    --fec-text-sub: #64748b;
+    --fec-primary: #6366f1; /* Indigo Moderno */
+    --fec-primary-light: #eff6ff;
+    --fec-event-bg: #fff1f2;
+    --fec-event-color: #e11d48;
+    --fec-hoje-border: #3b82f6;
+    --fec-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --fec-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
+.calendario-container {
+    padding: 12px; /* Reduzido para ser mais compacto */
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--fec-bg);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--fec-text-main);
+}
+
+/* HEADER LIMPO E COMPACTO */
 .cal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    background: var(--fec-dark-blue);
-    padding: 15px;
-    border-radius: 12px;
-    color: white;
+    padding: 5px;
+    background: transparent;
+}
+
+.cal-header h2 {
+    font-size: 1.1rem; /* Reduzido de 1.4rem */
+    font-weight: 800;
+    color: var(--fec-text-main);
+    letter-spacing: -0.5px;
+    text-transform: capitalize;
 }
 
 .btn-cal {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    padding: 5px;
-    border-radius: 8px;
+    background: var(--fec-card-white);
+    border: 1px solid #e2e8f0;
+    color: var(--fec-text-main);
+    width: 34px; /* Reduzido de 42px */
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--fec-shadow-sm);
 }
 
+.btn-cal:hover {
+    background: var(--fec-primary);
+    color: white;
+    border-color: var(--fec-primary);
+    transform: translateY(-2px);
+}
+
+/* GRADE DE DIAS COMPACTA */
 .dias-semana {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: #94a3b8;
+    font-size: 0.65rem; /* Reduzido */
+    font-weight: 700;
+    color: var(--fec-text-sub);
     margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
 .grade-dias {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+    gap: 8px; /* Reduzido de 12px */
 }
-
-.num-dia { font-size: 0.9rem; font-weight: 600; }
 
 .dia-card {
     aspect-ratio: 1/1;
-    background: white;
-    border-radius: 8px;
+    background: var(--fec-card-white);
+    border-radius: 12px; /* Reduzido de 16px */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.dia-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--fec-shadow-md);
+    z-index: 2;
+}
+
+/* STATUS DOS DIAS */
 .dia-card.hoje {
-    border: 2px solid var(--fec-red);
+    background: #f0f7ff;
+    border: 1.5px solid var(--fec-hoje-border);
+}
+
+.label-hoje {
+    position: absolute;
+    top: -7px;
+    background: var(--fec-hoje-border);
+    color: white;
+    font-size: 0.45rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 800;
 }
 
 .dia-card.tem-evento {
-    background: #fff1f2;
+    background: var(--fec-event-bg);
 }
 
-.ponto-niver {
-    width: 6px;
-    height: 6px;
-    background: var(--fec-red);
+.dia-card.selecionado {
+    border: 2px solid var(--fec-primary);
+    background: var(--fec-primary-light);
+}
+
+.num-dia { 
+    font-size: 0.95rem; /* Reduzido de 1.1rem */
+    font-weight: 700; 
+}
+
+/* MINI AVATARES DENTRO DO CARD */
+.container-avatares-dia {
+    display: flex;
+    justify-content: center;
+    margin-top: 3px;
+}
+
+.avatar-mini {
+    width: 16px; /* Reduzido de 20px */
+    height: 16px;
     border-radius: 50%;
-    margin: 1px;
+    border: 1.5px solid white;
+    margin-left: -6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.legenda-lista {
-    margin-top: 30px;
+.avatar-mini:first-child { margin-left: 0; }
+
+.badge-mais {
+    width: 16px;
+    height: 16px;
+    background: var(--fec-text-sub);
+    color: white;
+    font-size: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -6px;
+    border: 1.5px solid white;
+}
+
+/* LISTA DE ANIVERSARIANTES COMPACTA */
+.legenda-lista { margin-top: 25px; }
+
+.secao-titulo {
+    font-size: 0.95rem; /* Reduzido de 1.1rem */
+    font-weight: 800;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .item-legenda {
     display: flex;
     align-items: center;
-    background: white;
-    padding: 12px;
-    border-radius: 10px;
+    background: var(--fec-card-white);
+    padding: 12px; /* Reduzido de 16px */
+    border-radius: 16px; /* Reduzido de 20px */
     margin-bottom: 8px;
-    gap: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    gap: 12px;
+    border: 1px solid #f1f5f9;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.item-legenda strong {
-    color: var(--fec-red);
-    min-width: 25px;
+.item-legenda:active { transform: scale(0.97); }
+
+.foto-lista {
+    width: 40px; /* Reduzido de 48px */
+    height: 40px;
+    border-radius: 10px;
+    object-fit: cover;
 }
 
-.item-legenda span {
-    flex: 1;
-    font-size: 0.9rem;
+.info-niver { flex: 1; }
+.info-niver strong { display: block; font-size: 0.85rem; color: var(--fec-text-main); }
+.info-niver span { font-size: 0.75rem; color: var(--fec-text-sub); }
+
+.btn-zap-cal {
+    color: #16a34a;
+    background: #f0fdf4;
+    border: none;
+    width: 34px; /* Reduzido de 40px */
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.dia-vazio {
+    aspect-ratio: 1/1;
 }
