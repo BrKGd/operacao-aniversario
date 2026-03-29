@@ -125,5 +125,59 @@ export const aniversarioService = {
       console.error('Erro ao remover registro:', error.message);
       throw error;
     }
+  },
+
+  // 🔔 NOVAS FUNÇÕES PARA A TABELA 'NOTIFICACOES'
+  async listarNotificacoes() {
+    const { data, error } = await supabase
+      .from('notificacoes')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao buscar notificações:', error.message);
+      return [];
+    }
+    return data || [];
+  },
+
+  async salvarNotificacao(notificacao: { dias: number; hora: string; alvo: string }) {
+    // 1. Busca o utilizador atual autenticado
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.error('Utilizador não autenticado');
+      throw new Error('Você precisa estar logado para salvar notificações.');
+    }
+
+    // 2. Insere os dados incluindo o user_id
+    const { data, error } = await supabase
+      .from('notificacoes')
+      .insert([
+        { 
+          ...notificacao, 
+          user_id: user.id // ✅ Aqui garantimos o preenchimento
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao salvar notificação:', error.message);
+      throw error;
+    }
+    return data;
+  },
+
+  async excluirNotificacao(id: string) {
+    const { error } = await supabase
+      .from('notificacoes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao excluir notificação:', error.message);
+      throw error;
+    }
   }
 };
