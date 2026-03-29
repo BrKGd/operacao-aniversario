@@ -1,168 +1,43 @@
-.notificacoes-container {
-    padding: 20px;
-    background: #f8fafc;
-    min-height: 100vh;
+/* Layout Principal (Foto 1) */
+.notif-page-light { padding: 20px; background: #fff; min-height: 100vh; }
+.notif-header-simple { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+.notif-header-simple h1 { font-size: 1.5rem; color: #001a2c; font-weight: 600; margin: 0; }
+
+.notif-section-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin: 25px 0 10px; }
+
+.settings-item { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid #f1f5f9; }
+.settings-info span { color: #001a2c; font-weight: 500; }
+.settings-info p { color: #64748b; font-size: 0.85rem; margin-top: 2px; }
+
+/* Lista de Antecedência (Foto 2) */
+.alerta-config-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #f1f5f9; }
+.btn-delete-notif { background: transparent; border: none; color: #94a3b8; cursor: pointer; }
+
+.btn-add-notif-row {
+    width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+    padding: 25px 0; background: transparent; border: none; color: #4da3b0; font-weight: 500; cursor: pointer;
 }
 
-.notif-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
+/* Modais (Fotos 3 e 4) */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 26, 44, 0.8); display: none; align-items: center; justify-content: center; z-index: 2000;
 }
+.modal-overlay.active { display: flex; }
 
-.notif-header h2 {
-    font-size: 1.25rem;
-    color: #1e293b;
-    margin: 0;
-}
+.modal-box { background: #003049; width: 85%; max-width: 320px; border-radius: 12px; padding: 25px; color: white; }
+.modal-box h3 { text-align: center; font-size: 1.1rem; font-weight: 400; margin-bottom: 25px; }
 
-/* Card de Configurações */
-.notif-settings-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    margin-bottom: 30px;
-}
+.picker-container { border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; text-align: center; }
+.picker-item { padding: 10px; font-size: 1.1rem; }
+.picker-item.opaco { opacity: 0.3; }
+.picker-item.selected { font-weight: bold; border-top: 1px solid #4da3b0; border-bottom: 1px solid #4da3b0; }
 
-.settings-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
+.time-inputs-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 20px 0; }
+.time-field { background: #1a3a4e; padding: 10px; border-radius: 8px; text-align: center; width: 70px; border: 1px solid transparent; }
+.time-field.active { border-color: #4da3b0; }
+.time-field input { background: transparent; border: none; color: white; font-size: 2rem; width: 100%; text-align: center; outline: none; }
+.time-field label { font-size: 0.65rem; color: #8fa3ad; display: block; }
 
-.settings-label {
-    display: block;
-    font-weight: 600;
-    color: #334155;
-}
-
-.settings-sub {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin: 0;
-}
-
-/* Estilo do Switch */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-}
-
-.switch input { opacity: 0; width: 0; height: 0; }
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #e2e8f0;
-    transition: .4s;
-    border-radius: 34px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px; width: 18px;
-    left: 3px; bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-input:checked + .slider { background-color: #25d366; }
-input:checked + .slider:before { transform: translateX(20px); }
-
-.time-input {
-    border: 1px solid #e2e8f0;
-    padding: 8px;
-    border-radius: 8px;
-    font-family: inherit;
-    color: #334155;
-}
-
-.settings-group-checks {
-    border-top: 1px solid #f1f5f9;
-    padding-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.check-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    color: #475569;
-}
-
-/* Listagem de Alertas */
-.notif-section-title {
-    font-weight: bold;
-    color: #64748b;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-}
-
-.card-notif {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    gap: 15px;
-    border: 1px solid #f1f5f9;
-}
-
-.notif-badge-time {
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 4px 8px;
-    border-radius: 6px;
-    min-width: 70px;
-    text-align: center;
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-.status-hoje { border-left: 4px solid #ef4444; background: #fef2f2; }
-.status-hoje .notif-badge-time { background: #ef4444; color: white; }
-
-.status-amanha { border-left: 4px solid #f59e0b; }
-.status-amanha .notif-badge-time { background: #f59e0b; color: white; }
-
-.status-planejamento { border-left: 4px solid #3b82f6; }
-
-.btn-notif-whatsapp {
-    margin-left: auto;
-    color: #25d366;
-    background: #f0fdf4;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-back-minimal{
-    position: absolute;
-    background: transparent; /*Remove o fundo */
-    border: 1px solid transparent; /* Mantém sem borda inicial */
-    color: var(--fec-azul-vibrante)!important; /* Cor discreta para não distrair */
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
-}
+.modal-actions, .modal-actions-time { display: flex; justify-content: flex-end; gap: 20px; margin-top: 20px; }
+.btn-modal-cancel, .btn-modal-ok { background: transparent; border: none; color: #4da3b0; font-weight: bold; cursor: pointer; }

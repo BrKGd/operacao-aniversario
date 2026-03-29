@@ -3,115 +3,171 @@ import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
 import { Aniversario } from '../types';
 
+// Estado local para gerenciar as telas e alertas
+let telaAtual: 'principal' | 'antecedencia' = 'principal';
+let alertasConfigurados = [{ id: '1', dias: 1, hora: '11:00', alvo: 'Todos os contatos' }];
+
 export async function montarNotificacoes(container: HTMLElement) {
-    container.innerHTML = `<div class="loading">Sincronizando alertas...</div>`;
+    
+    const render = async () => {
+        if (telaAtual === 'principal') {
+            await renderPrincipal();
+        } else {
+            renderAntecedencia();
+        }
+    };
 
-    try {
+    // --- TELA 1: CONFIGURAÇÕES E PRÓXIMOS ALERTAS ---
+    const renderPrincipal = async () => {
+        container.innerHTML = `<div class="fec-loader-minimal">Carregando...</div>`;
+        const todos = await aniversarioService.listarTodos();
         const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        const todos: Aniversario[] = await aniversarioService.listarTodos();
+        hoje.setHours(0,0,0,0);
 
-        // Lógica de filtragem para 7 dias, 1 dia e No dia
-        const alertas = todos.filter((p: Aniversario) => {
+        const proximos = todos.filter(p => {
             const d = new Date(p.data_nascimento + 'T00:00:00');
-            const dataNiverEsteAno = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
-            
-            // Ajuste para viradas de ano
-            if (dataNiverEsteAno < hoje) dataNiverEsteAno.setFullYear(hoje.getFullYear() + 1);
-
-            const diffTime = dataNiverEsteAno.getTime() - hoje.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            // Retorna quem está nos intervalos solicitados
-            return diffDays === 0 || diffDays === 1 || diffDays === 7;
-        }).sort((a, b) => {
-            const da = new Date(a.data_nascimento + 'T00:00:00');
-            const db = new Date(b.data_nascimento + 'T00:00:00');
-            return da.getMonth() - db.getMonth() || da.getDate() - db.getDate();
+            const niver = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
+            if (niver < hoje) niver.setFullYear(hoje.getFullYear() + 1);
+            const diff = Math.ceil((niver.getTime() - hoje.getTime()) / 86400000);
+            return diff <= 7;
         });
 
         container.innerHTML = `
-            <div class="notificacoes-container">
-                <div class="notif-header">
-                    <button class="btn-back-minimal" onclick="window.navegar('list')">
-                        <i data-lucide="arrow-left"></i>
-                    </button>
-                    <h2>Configurações de Alerta</h2>
-                </div>
+            <div class="notif-page-light">
+                <header class="notif-header-simple">
+                    <button class="btn-back-minimal" id="btn-voltar-app"><i data-lucide="chevron-left"></i></button>
+                    <h1>Notificações</h1>
+                </header>
 
-                <!-- Seção de Configurações -->
-                <section class="notif-settings-card">
-                    <div class="settings-row">
-                        <div>
-                            <span class="settings-label">Notificações Ativas</span>
-                            <p class="settings-sub">Receber alertas no celular</p>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" checked id="switch-notif">
-                            <span class="slider round"></span>
-                        </label>
+                <div class="notif-section-label">CONFIGURAÇÕES</div>
+                <section class="notif-settings-list">
+                    <div class="settings-item">
+                        <div class="settings-info"><span>Hora da Notificação</span><p>11:00</p></div>
                     </div>
-
-                    <div class="settings-row">
-                        <div>
-                            <span class="settings-label">Horário do Alerta</span>
-                            <p class="settings-sub">Momento do disparo</p>
+                    <div class="settings-item clickable" id="ir-antecedencia">
+                        <div class="settings-info">
+                            <span>Notifique-me com antecedência</span>
+                            <p>${alertasConfigurados.length} alerta(s) configurado(s)</p>
                         </div>
-                        <input type="time" class="time-input" value="09:00">
+                        <i data-lucide="chevron-right" class="arrow-sutil"></i>
                     </div>
-
-                    <div class="settings-group-checks">
-                        <label class="check-item">
-                            <input type="checkbox" checked> 7 dias antes (Planejamento)
-                        </label>
-                        <label class="check-item">
-                            <input type="checkbox" checked> 1 dia antes
-                        </label>
-                        <label class="check-item">
-                            <input type="checkbox" checked> No dia do evento
-                        </label>
+                    <div class="settings-item clickable" id="btn-sons">
+                        <div class="settings-info"><span>Sons</span><p>Padrão do sistema</p></div>
                     </div>
                 </section>
 
-                <div class="notif-section-title">Próximos Alertas</div>
-
-                <div class="notif-lista">
-                    ${alertas.length > 0 ? alertas.map((p: Aniversario) => {
-                        const d = new Date(p.data_nascimento + 'T00:00:00');
-                        const niverAno = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
-                        const diff = Math.ceil((niverAno.getTime() - hoje.getTime()) / (86400000));
-                        
-                        let label = `${diff} dias`;
-                        let classe = '';
-                        
-                        if (diff === 0) { label = 'HOJE'; classe = 'status-hoje'; }
-                        else if (diff === 1) { label = 'AMANHÃ'; classe = 'status-amanha'; }
-                        else { label = 'EM 7 DIAS'; classe = 'status-planejamento'; }
-
-                        return `
-                            <div class="card-notif ${classe}">
-                                <div class="notif-badge-time">${label}</div>
-                                <div class="notif-content">
-                                    <div class="notif-nome">${p.nome}</div>
-                                    <div class="notif-desc">${d.getDate()}/${d.getMonth() + 1} • ${p.categorias?.nome || 'Geral'}</div>
-                                </div>
-                                <a href="${gerarLinkWhatsapp(p.nome, p.telefone || '')}" target="_blank" class="btn-notif-whatsapp">
-                                    <i data-lucide="message-circle"></i>
-                                </a>
+                <div class="notif-section-label">PRÓXIMOS ALERTAS</div>
+                <section class="alertas-list">
+                    ${proximos.map(p => `
+                        <div class="alerta-item">
+                            <div class="alerta-corpo">
+                                <span class="alerta-nome">${p.nome}</span>
+                                <p class="alerta-data">${p.data_nascimento.split('-').reverse().slice(0,2).join('/')}</p>
                             </div>
-                        `;
-                    }).join('') : `
-                        <div class="notif-vazia">
-                            <p>Nenhum alerta para os períodos configurados.</p>
+                            <a href="${gerarLinkWhatsapp(p.nome, p.telefone || '')}" target="_blank" class="alerta-btn">
+                                <i data-lucide="message-circle"></i>
+                            </a>
                         </div>
-                    `}
+                    `).join('')}
+                </section>
+            </div>
+        `;
+        setupEvents();
+    };
+
+    // --- TELA 2: LISTA DE ANTECEDÊNCIA (IGUAL À FOTO) ---
+    const renderAntecedencia = () => {
+        container.innerHTML = `
+            <div class="notif-page-light">
+                <header class="notif-header-simple">
+                    <button class="btn-back-minimal" id="voltar-principal"><i data-lucide="chevron-left"></i></button>
+                    <h1>Notifique-me com antecedência</h1>
+                </header>
+
+                <section class="config-alertas-list">
+                    ${alertasConfigurados.map(alerta => `
+                        <div class="alerta-config-item">
+                            <div class="alerta-config-info">
+                                <span>${alerta.dias} dia${alerta.dias > 1 ? 's' : ''} antes às ${alerta.hora}</span>
+                                <p>${alerta.alvo}</p>
+                            </div>
+                            <button class="btn-delete-notif" data-id="${alerta.id}"><i data-lucide="trash-2"></i></button>
+                        </div>
+                    `).join('')}
+                    
+                    <button class="btn-add-notif-row" id="abrir-modal-dias">
+                        Adicionar notificação <i data-lucide="plus-circle"></i>
+                    </button>
+                </section>
+            </div>
+
+            <div class="modal-overlay" id="modal-dias">
+                <div class="modal-box">
+                    <h3>Defina quantos dias</h3>
+                    <div class="picker-container">
+                        <div class="picker-item opaco">30</div>
+                        <div class="picker-item selected">1</div>
+                        <div class="picker-item opaco">2</div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancelar</button>
+                        <button class="btn-modal-ok" id="btn-ir-hora">OK</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-hora">
+                <div class="modal-box time-picker">
+                    <span class="time-label">HORA DA NOTIFICAÇÃO</span>
+                    <div class="time-inputs-row">
+                        <div class="time-field active"><input type="number" value="08"><label>Hora</label></div>
+                        <span class="time-separator">:</span>
+                        <div class="time-field"><input type="number" value="23"><label>Minuto</label></div>
+                    </div>
+                    <div class="modal-actions-time">
+                        <i data-lucide="clock" class="icon-clock-modal"></i>
+                        <div class="right-actions">
+                            <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').classList.remove('active')">CANCELAR</button>
+                            <button class="btn-modal-ok" id="btn-finalizar-notif">OK</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
+        setupEvents();
+    };
 
+    const setupEvents = () => {
         if ((window as any).lucide) (window as any).lucide.createIcons();
 
-    } catch (error) {
-        console.error('Erro:', error);
-    }
+        // Navegação entre telas
+        document.getElementById('ir-antecedencia')?.addEventListener('click', () => { telaAtual = 'antecedencia'; render(); });
+        document.getElementById('voltar-principal')?.addEventListener('click', () => { telaAtual = 'principal'; render(); });
+        document.getElementById('btn-voltar-app')?.addEventListener('click', () => (window as any).navegar('list'));
+
+        // Lógica dos Modais
+        document.getElementById('abrir-modal-dias')?.addEventListener('click', () => document.getElementById('modal-dias')?.classList.add('active'));
+        
+        document.getElementById('btn-ir-hora')?.addEventListener('click', () => {
+            document.getElementById('modal-dias')?.classList.remove('active');
+            document.getElementById('modal-hora')?.classList.add('active');
+        });
+
+        document.getElementById('btn-finalizar-notif')?.addEventListener('click', () => {
+            alertasConfigurados.push({ id: Date.now().toString(), dias: 1, hora: '08:23', alvo: 'Todos os contatos' });
+            document.getElementById('modal-hora')?.classList.remove('active');
+            render();
+        });
+
+        // Excluir
+        document.querySelectorAll('.btn-delete-notif').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = (e.currentTarget as HTMLElement).dataset.id;
+                alertasConfigurados = alertasConfigurados.filter(a => a.id !== id);
+                render();
+            });
+        });
+    };
+
+    await render();
 }
