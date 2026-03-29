@@ -1,6 +1,7 @@
 import '../styles/notificacoes.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
+import { modalAlerta } from '../utils/modalAlertas';
 import { 
     createIcons, 
     ChevronLeft, 
@@ -9,16 +10,17 @@ import {
     Trash2, 
     PlusCircle, 
     Clock,
-    Plus 
+    Plus,
+    Music
 } from 'lucide';
 
 let telaAtual: 'principal' | 'antecedencia' = 'principal';
 let alertasConfigurados: any[] = [];
 let categoriasDisponiveis: any[] = [];
+let somSelecionado = 'Padrão';
 
 export async function montarNotificacoes(container: HTMLElement) {
     
-    // Função para buscar dados do banco sem travar a tela
     const atualizarDadosEmBackground = async () => {
         const [alertas, categorias] = await Promise.all([
             aniversarioService.listarNotificacoes(),
@@ -28,9 +30,17 @@ export async function montarNotificacoes(container: HTMLElement) {
         categoriasDisponiveis = categorias;
     };
 
+    const obterNomesCategorias = (idsSelecionados: any[]) => {
+        if (!idsSelecionados || idsSelecionados.length === 0) return "";
+        const nomes = categoriasDisponiveis
+            .filter(cat => idsSelecionados.includes(cat.id))
+            .map(cat => cat.nome);
+        return nomes.length > 0 ? nomes.join(', ') : "Grupos não encontrados";
+    };
+
     const executarLucide = () => {
         createIcons({
-            icons: { ChevronLeft, ChevronRight, MessageCircle, Trash2, PlusCircle, Clock, Plus },
+            icons: { ChevronLeft, ChevronRight, MessageCircle, Trash2, PlusCircle, Clock, Plus, Music },
             nameAttr: 'data-lucide',
             root: container 
         });
@@ -47,7 +57,6 @@ export async function montarNotificacoes(container: HTMLElement) {
 
     // --- TELA 1: PRINCIPAL ---
     const renderPrincipal = async () => {
-        // Na primeira carga, mostramos o loader. Nas atualizações de background, não.
         if (alertasConfigurados.length === 0) {
             container.innerHTML = `<div class="fec-loader-minimal">Carregando...</div>`;
             await atualizarDadosEmBackground();
@@ -84,6 +93,13 @@ export async function montarNotificacoes(container: HTMLElement) {
                         </div>
                         <i data-lucide="chevron-right"></i>
                     </div>
+                    <div class="settings-item clickable" id="abrir-modal-sons">
+                        <div class="settings-info">
+                            <span>Som da Notificação</span>
+                            <p>Atual: ${somSelecionado}</p>
+                        </div>
+                        <i data-lucide="music"></i>
+                    </div>
                 </section>
 
                 <div class="notif-section-label">PRÓXIMOS ALERTAS</div>
@@ -100,6 +116,24 @@ export async function montarNotificacoes(container: HTMLElement) {
                         </div>
                     `).join('') : '<p style="padding:20px; color:#666;">Nenhum alerta para os próximos 7 dias.</p>'}
                 </section>
+            </div>
+
+            <div class="modal-overlay" id="modal-sons">
+                <div class="modal-box">
+                    <h3>Sons do Dispositivo</h3>
+                    <div class="grupos-selection-list">
+                        ${['Padrão', 'Alegre', 'Sino', 'Digital', 'Suave'].map(som => `
+                            <label class="radio-option">
+                                <input type="radio" name="som-op" value="${som}" ${som === somSelecionado ? 'checked' : ''}>
+                                <span class="radio-mark"></span> ${som}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-modal-cancel" id="close-sons">Cancelar</button>
+                        <button class="btn-modal-ok" id="btn-salvar-som">Salvar</button>
+                    </div>
+                </div>
             </div>
         `;
         setupEvents();
@@ -119,7 +153,9 @@ export async function montarNotificacoes(container: HTMLElement) {
                         <div class="alerta-config-item">
                             <div class="alerta-config-info">
                                 <span>${alerta.dias} dia${alerta.dias > 1 ? 's' : ''} antes às ${alerta.hora.substring(0,5)}</span>
-                                <p>${alerta.alvo}${alerta.grupos_especificos?.length > 0 ? ': ' + alerta.grupos_especificos.join(', ') : ''}</p>
+                                <p>${alerta.alvo === 'Grupos selecionados' 
+                                    ? 'Grupos: ' + obterNomesCategorias(alerta.grupos_especificos) 
+                                    : 'Todos os contatos'}</p>
                             </div>
                             <button class="btn-delete-notif" data-id="${alerta.id}"><i data-lucide="trash-2"></i></button>
                         </div>
@@ -173,19 +209,20 @@ export async function montarNotificacoes(container: HTMLElement) {
                             <span class="radio-mark"></span> Todos os contatos
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="alvo" value="Grupos selecionados">
+                            <input type="radio" name="alvo" value="Grupos selecionados" id="radio-especificos">
                             <span class="radio-mark"></span> Grupos selecionados
                         </label>
                     </div>
 
-                    <div id="lista-categorias-checkbox" class="categorias-check-container" style="display:none; margin-top: 15px; max-height: 200px; overflow-y: auto;">
+                    <div id="lista-categorias-checkbox" class="categorias-check-container" style="display:none; margin-top: 15px;">
                         ${categoriasDisponiveis.map(cat => `
-                            <label class="check-option" style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
-                                <input type="checkbox" value="${cat.nome}" class="cat-check">
-                                <span>${cat.nome}</span>
+                            <label class="check-option">
+                                <input type="checkbox" value="${cat.id}" class="cat-check">
+                                <span class="check-box"></span> 
+                                <span class="category-name">${cat.nome}</span>
                             </label>
                         `).join('')}
-                        <button class="btn-ir-categorias" id="go-to-categorias" style="margin-top: 10px; background: none; border: 1px dashed #ccc; width: 100%; padding: 8px; border-radius: 8px; color: #666; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                        <button class="btn-ir-categorias" id="go-to-categorias">
                             <i data-lucide="plus" style="width: 14px;"></i> Gerenciar Grupos
                         </button>
                     </div>
@@ -201,13 +238,20 @@ export async function montarNotificacoes(container: HTMLElement) {
     };
 
     const setupEvents = () => {
-        // Navegação entre telas
         document.getElementById('ir-antecedencia')?.addEventListener('click', () => { telaAtual = 'antecedencia'; render(); });
         document.getElementById('voltar-principal')?.addEventListener('click', () => { telaAtual = 'principal'; render(); });
         document.getElementById('btn-voltar-app')?.addEventListener('click', () => (window as any).navegar('list'));
         document.getElementById('go-to-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
 
-        // Mostrar/Esconder categorias
+        document.getElementById('abrir-modal-sons')?.addEventListener('click', () => document.getElementById('modal-sons')?.classList.add('active'));
+        document.getElementById('btn-salvar-som')?.addEventListener('click', () => {
+            const radio = document.querySelector('input[name="som-op"]:checked') as HTMLInputElement;
+            somSelecionado = radio.value;
+            document.getElementById('modal-sons')?.classList.remove('active');
+            modalAlerta.show({ message: `Som "${somSelecionado}" definido!`, type: 'success' });
+            render();
+        });
+
         document.querySelectorAll('input[name="alvo"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 const containerCats = document.getElementById('lista-categorias-checkbox');
@@ -218,7 +262,6 @@ export async function montarNotificacoes(container: HTMLElement) {
             });
         });
 
-        // Modais
         document.getElementById('abrir-modal-dias')?.addEventListener('click', () => document.getElementById('modal-dias')?.classList.add('active'));
         document.getElementById('btn-ir-hora')?.addEventListener('click', () => {
             document.getElementById('modal-dias')?.classList.remove('active');
@@ -231,53 +274,71 @@ export async function montarNotificacoes(container: HTMLElement) {
             executarLucide();
         });
 
-        // ✅ SALVAR EM BACKGROUND
         document.getElementById('btn-salvar-notif')?.addEventListener('click', async () => {
             const btn = (document.getElementById('btn-salvar-notif') as HTMLButtonElement);
-            btn.disabled = true; // Evita cliques duplos
-
             const h = (document.getElementById('h-val') as HTMLInputElement).value.padStart(2, '0');
             const m = (document.getElementById('m-val') as HTMLInputElement).value.padStart(2, '0');
             const alvo = (document.querySelector('input[name="alvo"]:checked') as HTMLInputElement).value;
             const checks = document.querySelectorAll('.cat-check:checked');
-            const grupos = Array.from(checks).map(c => (c as HTMLInputElement).value);
+            const gruposIds = Array.from(checks).map(c => (c as HTMLInputElement).value);
+
+            if (alvo === 'Grupos selecionados' && gruposIds.length === 0) {
+                modalAlerta.show({ message: "Selecione ao menos um grupo!", type: 'warning' });
+                return;
+            }
+
+            btn.disabled = true;
+            modalAlerta.showLoading("Salvando...");
 
             try {
                 await aniversarioService.salvarNotificacao({
-                    dias: 1, // Aqui você pode capturar do seletor de dias se desejar
+                    dias: 1, 
                     hora: `${h}:${m}:00`,
                     alvo: alvo,
-                    grupos_especificos: grupos
+                    grupos_especificos: alvo === 'Grupos selecionados' ? gruposIds : []
                 } as any);
                 
-                // Fecha o modal imediatamente para dar sensação de velocidade
+                modalAlerta.close();
                 document.getElementById('modal-grupos')?.classList.remove('active');
-                
-                // Atualiza os dados e a tela sem "piscar"
                 await atualizarDadosEmBackground();
                 render();
+                modalAlerta.show({ message: "Configuração salva!", type: 'success' });
             } catch (err) {
                 btn.disabled = false;
-                alert("Erro ao salvar.");
+                modalAlerta.show({ message: "Erro ao salvar.", type: 'error' });
             }
         });
 
-        // ✅ EXCLUIR EM BACKGROUND
+        // ✅ CORREÇÃO DO ERRO 'CLOSEST': Capturamos o ID e a Linha ANTES do AWAIT
         document.querySelectorAll('.btn-delete-notif').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const id = (e.currentTarget as HTMLElement).dataset.id;
-                if (id) {
-                    const row = (e.currentTarget as HTMLElement).closest('.alerta-config-item') as HTMLElement;
-                    if (row) row.style.opacity = '0.5'; // Feedback visual de exclusão iniciada
+                const target = e.currentTarget as HTMLElement;
+                const id = target.dataset.id;
+                const row = target.closest('.alerta-config-item') as HTMLElement;
 
-                    await aniversarioService.excluirNotificacao(id);
-                    await atualizarDadosEmBackground();
-                    render();
+                if (id && row) {
+                    const confirmar = await modalAlerta.show({
+                        message: "Deseja excluir esta configuração de alerta?",
+                        type: 'confirm',
+                        confirmText: 'Excluir'
+                    });
+
+                    if (confirmar) {
+                        row.style.opacity = '0.5';
+                        try {
+                            await aniversarioService.excluirNotificacao(id);
+                            await atualizarDadosEmBackground();
+                            render();
+                        } catch (err) {
+                            row.style.opacity = '1';
+                            modalAlerta.show({ message: "Erro ao excluir.", type: 'error' });
+                        }
+                    }
                 }
             });
         });
 
-        ['dias', 'hora', 'grupos'].forEach(m => {
+        ['dias', 'hora', 'grupos', 'sons'].forEach(m => {
             document.getElementById(`close-${m}`)?.addEventListener('click', () => {
                 document.getElementById(`modal-${m}`)?.classList.remove('active');
             });

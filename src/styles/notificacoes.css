@@ -1,7 +1,12 @@
-/* ==========================================================================
-   CONTAINER PRINCIPAL E GERAL
-   ========================================================================== */
-   .notif-page-light, .notificacoes-container {
+/* --- RESET E IDENTIDADE VISUAL --- */
+:root {
+    --fec-azul-vibrante: #003399;   
+    --fec-vermelho-vibrante: #ff0000; 
+    --fec-bg-dark: #001f3f;
+    --fec-shadow: rgba(0, 31, 63, 0.2);
+}
+
+.notif-page-light, .notificacoes-container {
     padding: 20px;
     background: #f8fafc;
     min-height: 100vh;
@@ -27,9 +32,9 @@
 
 /* BOTÃO VOLTAR MINIMALISTA */
 .btn-back-minimal {
-    background: rgba(77, 163, 176, 0.1);
-    border: 1px solid rgba(77, 163, 176, 0.2); 
-    color: #4da3b0 !important;
+    background: transparent;
+    border: none; 
+    color: var(--fec-azul-vibrante)!important;
     width: 40px;
     height: 40px;
     border-radius: 12px;
@@ -41,41 +46,38 @@
     flex-shrink: 0;
 }
 
-/* Estilização da Scrollbar para navegadores WebKit (Chrome, Edge, Safari) */
-
-/* 1. Largura da barra */
-::-webkit-scrollbar {
-    width: 8px; /* Largura da barra vertical */
-    height: 8px; /* Altura da barra horizontal */
-}
-
-/* 2. Fundo da barra (Track) */
-::-webkit-scrollbar-track {
-    background: #001a2c; /* Cor de fundo (ajuste para o azul do seu modal) */
-    border-radius: 10px;
-}
-
-/* 3. O pino/alça que desliza (Thumb) */
-::-webkit-scrollbar-thumb {
-    background: #4da3b0; /* Cor da alça (o azul vibrante dos seus botões) */
-    border-radius: 10px;
-    border: 2px solid #001a2c; /* Cria um espaçamento visual entre a alça e a borda */
-}
-
-/* 4. Cor ao passar o mouse na alça */
-::-webkit-scrollbar-thumb:hover {
-    background: #3a8a96; /* Um tom mais escuro para o efeito hover */
-}
-
-/* 5. Para Firefox (que usa propriedades diferentes) */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: #4da3b0 #001a2c;
-}
-
 .btn-back-minimal:hover {
     background: rgba(77, 163, 176, 0.2);
     transform: translateX(-3px);
+}
+
+/* ==========================================================================
+   SCROLLBAR PERSONALIZADA (WEBKIT)
+   ========================================================================== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #001a2c; /* Fundo combinando com o modal */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4da3b0; /* Azul vibrante principal */
+    border-radius: 10px;
+    border: 2px solid #001a2c; /* Espaçamento interno */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3a8a96;
+}
+
+/* Suporte para Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #4da3b0 #001a2c;
 }
 
 /* ==========================================================================
@@ -126,7 +128,6 @@
     margin: 2px 0 0;
 }
 
-/* LISTAGEM DE PRÓXIMOS ALERTAS (FEED) */
 .alertas-list {
     display: flex;
     flex-direction: column;
@@ -158,7 +159,7 @@
 }
 
 /* ==========================================================================
-   TELA 2: ANTECEDÊNCIA E CRUD
+   TELA 2: ANTECEDÊNCIA E LISTAGEM
    ========================================================================== */
 .alerta-config-item {
     display: flex;
@@ -169,7 +170,7 @@
     margin-bottom: 10px;
     border-radius: 12px;
     border: 1px solid #f1f5f9;
-    transition: opacity 0.3s ease; /* Para o efeito de background ao excluir */
+    transition: opacity 0.3s ease;
 }
 
 .alerta-config-info span { font-weight: 600; color: #334155; display: block; }
@@ -255,38 +256,66 @@
 .time-field label { font-size: 0.6rem; color: #8fa3ad; display: block; margin-top: 4px; }
 .time-separator { font-size: 2rem; font-weight: 300; color: #4da3b0; }
 
-/* SELEÇÃO DE GRUPOS / CATEGORIAS */
+/* SELEÇÃO DE GRUPOS / CATEGORIAS (CORREÇÃO DE VISIBILIDADE) */
 .grupos-selection-list { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
 
 .radio-option, .check-option {
     display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 0.95rem; color: #fff;
     padding: 10px; border-radius: 8px; transition: background 0.2s;
 }
-.radio-option:hover { background: rgba(255,255,255,0.05); }
+.radio-option:hover, .check-option:hover { background: rgba(255,255,255,0.05); }
 
+/* Esconde inputs originais */
 .radio-option input, .check-option input { display: none; }
 
-.radio-mark, .check-box {
+/* Radio Mark */
+.radio-mark {
     width: 22px; height: 22px; border: 2px solid #4da3b0; border-radius: 50%;
     position: relative; flex-shrink: 0;
 }
-.check-box { border-radius: 6px; }
 
-/* Estados Marcados */
+/* Check Box (Ajustado para aparecer no tema escuro) */
+.check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #4da3b0;
+    border-radius: 4px;
+    display: inline-block;
+    position: relative;
+    flex-shrink: 0;
+    background: transparent;
+}
+
+/* Check Marcado */
 .radio-option input:checked + .radio-mark::after {
     content: ""; position: absolute; top: 4px; left: 4px; width: 10px; height: 10px;
     background: #4da3b0; border-radius: 50%;
 }
-.check-option input:checked + .check-box { background: #4da3b0; }
+
+.check-option input:checked + .check-box {
+    background: #4da3b0;
+}
+
 .check-option input:checked + .check-box::after {
-    content: "✓"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    color: #003049; font-size: 0.8rem; font-weight: bold;
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #003049; /* Cor do fundo do modal para o ícone */
+    font-size: 14px;
+    font-weight: bold;
 }
 
 /* CONTAINER DINÂMICO DE CATEGORIAS */
 .categorias-check-container {
     padding: 10px 5px 10px 15px;
     margin-bottom: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .btn-ir-categorias {

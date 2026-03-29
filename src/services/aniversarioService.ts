@@ -85,10 +85,17 @@ export const aniversarioService = {
     }
   },
 
+  // ✅ ATUALIZADO: Incluindo novas colunas de controle de notificação
   async adicionar(aniversario: Omit<Aniversario, 'id' | 'created_at' | 'categorias'>): Promise<Aniversario | null> {
     const { data, error } = await supabase
       .from('aniversarios')
-      .insert([aniversario])
+      .insert([
+        {
+          ...aniversario,
+          notificacoes_ativas: (aniversario as any).notificacoes_ativas ?? true, // Default ativo
+          id_notificacao: (aniversario as any).id_notificacao || null
+        }
+      ])
       .select()
       .single();
 
@@ -99,8 +106,10 @@ export const aniversarioService = {
     return data;
   },
 
+  // ✅ ATUALIZADO: Suporte para atualizar status de notificação e vínculo
   async atualizar(id: string, dados: Partial<Aniversario>): Promise<Aniversario | null> {
     const { categorias, ...dadosParaEnvio } = dados as any;
+    
     const { data, error } = await supabase
       .from('aniversarios')
       .update(dadosParaEnvio)
@@ -141,7 +150,8 @@ export const aniversarioService = {
     return data || [];
   },
 
-  async salvarNotificacao(notificacao: { dias: number; hora: string; alvo: string }) {
+  // ✅ ATUALIZADO: Agora aceita 'grupos_especificos' como array de IDs
+  async salvarNotificacao(notificacao: { dias: number; hora: string; alvo: string; grupos_especificos?: string[] }) {
     // 1. Busca o utilizador atual autenticado
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -150,13 +160,13 @@ export const aniversarioService = {
       throw new Error('Você precisa estar logado para salvar notificações.');
     }
 
-    // 2. Insere os dados incluindo o user_id
+    // 2. Insere os dados incluindo o user_id e os grupos selecionados
     const { data, error } = await supabase
       .from('notificacoes')
       .insert([
         { 
           ...notificacao, 
-          user_id: user.id // ✅ Aqui garantimos o preenchimento
+          user_id: user.id 
         }
       ])
       .select()
