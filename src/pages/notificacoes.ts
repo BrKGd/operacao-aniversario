@@ -12,13 +12,13 @@ import {
     Clock,
     Plus,
     Music,
-    Volume2
+    Volume2 // Adicionado para o ícone de som nativo
 } from 'lucide';
 
 let telaAtual: 'principal' | 'antecedencia' = 'principal';
 let alertasConfigurados: any[] = [];
 let categoriasDisponiveis: any[] = [];
-let somSelecionadoNome = 'Padrão do Sistema';
+let somSelecionado = 'Padrão do Sistema'; // Nome inicial ajustado
 
 export async function montarNotificacoes(container: HTMLElement) {
     
@@ -56,6 +56,7 @@ export async function montarNotificacoes(container: HTMLElement) {
         executarLucide();
     };
 
+    // --- TELA 1: PRINCIPAL ---
     const renderPrincipal = async () => {
         if (alertasConfigurados.length === 0) {
             container.innerHTML = `<div class="fec-loader-minimal">Carregando...</div>`;
@@ -81,7 +82,7 @@ export async function montarNotificacoes(container: HTMLElement) {
                     <h1>Notificações</h1>
                 </header>
 
-                <div class="notif-section-label">CONFIGURAÇÕES DO DISPOSITIVO</div>
+                <div class="notif-section-label">CONFIGURAÇÕES</div>
                 <section class="notif-settings-list">
                     <div class="settings-item">
                         <div class="settings-info"><span>Hora da Notificação</span><p>Global: 08:00</p></div>
@@ -93,11 +94,11 @@ export async function montarNotificacoes(container: HTMLElement) {
                         </div>
                         <i data-lucide="chevron-right"></i>
                     </div>
-                    
+
                     <div class="settings-item clickable" id="abrir-seletor-nativo">
                         <div class="settings-info">
                             <span>Som da Notificação</span>
-                            <p id="txt-som-atual">Atual: ${somSelecionadoNome}</p>
+                            <p id="label-som-atual">Atual: ${somSelecionado}</p>
                         </div>
                         <i data-lucide="volume-2"></i>
                     </div>
@@ -116,19 +117,20 @@ export async function montarNotificacoes(container: HTMLElement) {
                                 <i data-lucide="message-circle"></i>
                             </a>
                         </div>
-                    `).join('') : '<p style="padding:20px; color:#666;">Nenhum alerta próximo.</p>'}
+                    `).join('') : '<p style="padding:20px; color:#666;">Nenhum alerta para os próximos 7 dias.</p>'}
                 </section>
             </div>
         `;
         setupEvents();
     };
 
+    // --- TELA 2: ANTECEDÊNCIA ---
     const renderAntecedencia = () => {
         container.innerHTML = `
             <div class="notif-page-light">
                 <header class="notif-header-simple">
                     <button class="btn-back-minimal" id="voltar-principal"><i data-lucide="chevron-left"></i></button>
-                    <h1>Antecedência</h1>
+                    <h1>Notifique-me com antecedência</h1>
                 </header>
 
                 <section class="config-alertas-list">
@@ -150,9 +152,72 @@ export async function montarNotificacoes(container: HTMLElement) {
                 </section>
             </div>
 
-            <div class="modal-overlay" id="modal-dias"><div class="modal-box"><h3>Dias antes</h3><div class="picker-container"><div class="picker-item selected" data-value="1">1</div></div><div class="modal-actions"><button class="btn-modal-cancel" id="close-dias">Cancelar</button><button class="btn-modal-ok" id="btn-ir-hora">OK</button></div></div></div>
-            <div class="modal-overlay" id="modal-hora"><div class="modal-box time-picker"><span class="time-label">HORA</span><div class="time-inputs-row"><div class="time-field active"><input type="number" id="h-val" value="08"></div><span>:</span><div class="time-field"><input type="number" id="m-val" value="00"></div></div><div class="modal-actions-time"><div class="right-actions"><button class="btn-modal-cancel" id="close-hora">CANCELAR</button><button class="btn-modal-ok" id="btn-ir-grupos">OK</button></div></div></div></div>
-            <div class="modal-overlay" id="modal-grupos"><div class="modal-box"><h3>Ativar para:</h3><div class="grupos-selection-list"><label class="radio-option"><input type="radio" name="alvo" value="Todos os contatos" checked><span class="radio-mark"></span> Todos</label><label class="radio-option"><input type="radio" name="alvo" value="Grupos selecionados"><span class="radio-mark"></span> Grupos</label></div><div class="modal-actions"><button class="btn-modal-cancel" id="close-grupos">Cancelar</button><button class="btn-modal-ok" id="btn-salvar-notif">OK</button></div></div></div>
+            <div class="modal-overlay" id="modal-dias">
+                <div class="modal-box">
+                    <h3>Defina quantos dias</h3>
+                    <div class="picker-container">
+                        <div class="picker-item opaco">30</div>
+                        <div class="picker-item selected" data-value="1">1</div>
+                        <div class="picker-item opaco">2</div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-modal-cancel" id="close-dias">Cancelar</button>
+                        <button class="btn-modal-ok" id="btn-ir-hora">OK</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-hora">
+                <div class="modal-box time-picker">
+                    <span class="time-label">HORA DA NOTIFICAÇÃO</span>
+                    <div class="time-inputs-row">
+                        <div class="time-field active"><input type="number" id="h-val" value="08"><label>Hora</label></div>
+                        <span class="time-separator">:</span>
+                        <div class="time-field"><input type="number" id="m-val" value="00"><label>Minuto</label></div>
+                    </div>
+                    <div class="modal-actions-time">
+                        <i data-lucide="clock" class="icon-clock-modal"></i>
+                        <div class="right-actions">
+                            <button class="btn-modal-cancel" id="close-hora">CANCELAR</button>
+                            <button class="btn-modal-ok" id="btn-ir-grupos">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-grupos">
+                <div class="modal-box">
+                    <h3>Ativar para:</h3>
+                    <div class="grupos-selection-list">
+                        <label class="radio-option">
+                            <input type="radio" name="alvo" value="Todos os contatos" checked>
+                            <span class="radio-mark"></span> Todos os contatos
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="alvo" value="Grupos selecionados" id="radio-especificos">
+                            <span class="radio-mark"></span> Grupos selecionados
+                        </label>
+                    </div>
+
+                    <div id="lista-categorias-checkbox" class="categorias-check-container" style="display:none; margin-top: 15px;">
+                        ${categoriasDisponiveis.map(cat => `
+                            <label class="check-option">
+                                <input type="checkbox" value="${cat.id}" class="cat-check">
+                                <span class="check-box"></span> 
+                                <span class="category-name">${cat.nome}</span>
+                            </label>
+                        `).join('')}
+                        <button class="btn-ir-categorias" id="go-to-categorias">
+                            <i data-lucide="plus" style="width: 14px;"></i> Gerenciar Grupos
+                        </button>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn-modal-cancel" id="close-grupos">Cancelar</button>
+                        <button class="btn-modal-ok" id="btn-salvar-notif">OK</button>
+                    </div>
+                </div>
+            </div>
         `;
         setupEvents();
     };
@@ -161,38 +226,89 @@ export async function montarNotificacoes(container: HTMLElement) {
         document.getElementById('ir-antecedencia')?.addEventListener('click', () => { telaAtual = 'antecedencia'; render(); });
         document.getElementById('voltar-principal')?.addEventListener('click', () => { telaAtual = 'principal'; render(); });
         document.getElementById('btn-voltar-app')?.addEventListener('click', () => (window as any).navegar('list'));
+        document.getElementById('go-to-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
 
-        // --- LÓGICA DO SELETOR NATIVO ---
+        // --- EVENTO DE SOM NATIVO (SELETOR DO SISTEMA) ---
         const btnSom = document.getElementById('abrir-seletor-nativo');
         const inputSom = document.getElementById('input-audio-nativo') as HTMLInputElement;
 
-        btnSom?.addEventListener('click', () => inputSom?.click());
+        btnSom?.addEventListener('click', () => inputSom.click());
 
-        inputSom?.addEventListener('change', async () => {
+        inputSom?.addEventListener('change', () => {
             if (inputSom.files && inputSom.files[0]) {
-                const arquivo = inputSom.files[0];
-                somSelecionadoNome = arquivo.name;
-                
-                // Opcional: Aqui você pode converter o arquivo para Base64 se precisar salvar o áudio localmente no IndexedDB/SQLite
-                modalAlerta.show({ 
-                    message: `Som "${somSelecionadoNome}" selecionado!`, 
-                    type: 'success' 
-                });
+                somSelecionado = inputSom.files[0].name;
+                modalAlerta.show({ message: `Som "${somSelecionado}" selecionado!`, type: 'success' });
                 render();
             }
         });
 
-        // --- LÓGICA DE EXCLUSÃO (CORRIGIDA) ---
+        document.querySelectorAll('input[name="alvo"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const containerCats = document.getElementById('lista-categorias-checkbox');
+                if (containerCats) {
+                    containerCats.style.display = (e.target as HTMLInputElement).value === 'Grupos selecionados' ? 'block' : 'none';
+                    executarLucide();
+                }
+            });
+        });
+
+        document.getElementById('abrir-modal-dias')?.addEventListener('click', () => document.getElementById('modal-dias')?.classList.add('active'));
+        document.getElementById('btn-ir-hora')?.addEventListener('click', () => {
+            document.getElementById('modal-dias')?.classList.remove('active');
+            document.getElementById('modal-hora')?.classList.add('active');
+            executarLucide();
+        });
+        document.getElementById('btn-ir-grupos')?.addEventListener('click', () => {
+            document.getElementById('modal-hora')?.classList.remove('active');
+            document.getElementById('modal-grupos')?.classList.add('active');
+            executarLucide();
+        });
+
+        document.getElementById('btn-salvar-notif')?.addEventListener('click', async () => {
+            const btn = (document.getElementById('btn-salvar-notif') as HTMLButtonElement);
+            const h = (document.getElementById('h-val') as HTMLInputElement).value.padStart(2, '0');
+            const m = (document.getElementById('m-val') as HTMLInputElement).value.padStart(2, '0');
+            const alvo = (document.querySelector('input[name="alvo"]:checked') as HTMLInputElement).value;
+            const checks = document.querySelectorAll('.cat-check:checked');
+            const gruposIds = Array.from(checks).map(c => (c as HTMLInputElement).value);
+
+            if (alvo === 'Grupos selecionados' && gruposIds.length === 0) {
+                modalAlerta.show({ message: "Selecione ao menos um grupo!", type: 'warning' });
+                return;
+            }
+
+            btn.disabled = true;
+            modalAlerta.showLoading("Salvando...");
+
+            try {
+                await aniversarioService.salvarNotificacao({
+                    dias: 1, 
+                    hora: `${h}:${m}:00`,
+                    alvo: alvo,
+                    grupos_especificos: alvo === 'Grupos selecionados' ? gruposIds : []
+                } as any);
+                
+                modalAlerta.close();
+                document.getElementById('modal-grupos')?.classList.remove('active');
+                await atualizarDadosEmBackground();
+                render();
+                modalAlerta.show({ message: "Configuração salva!", type: 'success' });
+            } catch (err) {
+                btn.disabled = false;
+                modalAlerta.show({ message: "Erro ao salvar.", type: 'error' });
+            }
+        });
+
+        // ✅ CORREÇÃO DO ERRO 'CLOSEST': Capturamos os dados ANTES do await do modal
         document.querySelectorAll('.btn-delete-notif').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                // Captura imediata das referências antes de qualquer await
-                const currentBtn = e.currentTarget as HTMLElement;
-                const id = currentBtn.dataset.id;
-                const row = currentBtn.closest('.alerta-config-item') as HTMLElement;
+                const target = e.currentTarget as HTMLElement;
+                const id = target.dataset.id;
+                const row = target.closest('.alerta-config-item') as HTMLElement;
 
                 if (id && row) {
                     const confirmar = await modalAlerta.show({
-                        message: "Deseja excluir esta notificação?",
+                        message: "Deseja excluir esta configuração de alerta?",
                         type: 'confirm',
                         confirmText: 'Excluir'
                     });
@@ -210,42 +326,6 @@ export async function montarNotificacoes(container: HTMLElement) {
                     }
                 }
             });
-        });
-
-        // --- SALVAMENTO ---
-        document.getElementById('btn-salvar-notif')?.addEventListener('click', async () => {
-            const h = (document.getElementById('h-val') as HTMLInputElement).value.padStart(2, '0');
-            const m = (document.getElementById('m-val') as HTMLInputElement).value.padStart(2, '0');
-            const alvo = (document.querySelector('input[name="alvo"]:checked') as HTMLInputElement).value;
-
-            modalAlerta.showLoading("Salvando...");
-            try {
-                await aniversarioService.salvarNotificacao({
-                    dias: 1, 
-                    hora: `${h}:${m}:00`,
-                    alvo: alvo,
-                    grupos_especificos: [] 
-                } as any);
-                
-                modalAlerta.close();
-                telaAtual = 'antecedencia';
-                await atualizarDadosEmBackground();
-                render();
-                modalAlerta.show({ message: "Configuração salva!", type: 'success' });
-            } catch (err) {
-                modalAlerta.show({ message: "Erro ao salvar.", type: 'error' });
-            }
-        });
-
-        // Eventos básicos de modais
-        document.getElementById('abrir-modal-dias')?.addEventListener('click', () => document.getElementById('modal-dias')?.classList.add('active'));
-        document.getElementById('btn-ir-hora')?.addEventListener('click', () => {
-            document.getElementById('modal-dias')?.classList.remove('active');
-            document.getElementById('modal-hora')?.classList.add('active');
-        });
-        document.getElementById('btn-ir-grupos')?.addEventListener('click', () => {
-            document.getElementById('modal-hora')?.classList.remove('active');
-            document.getElementById('modal-grupos')?.classList.add('active');
         });
 
         ['dias', 'hora', 'grupos'].forEach(m => {
