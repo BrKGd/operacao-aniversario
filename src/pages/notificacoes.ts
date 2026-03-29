@@ -1,7 +1,7 @@
 import '../styles/notificacoes.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
-import { modalAlerta } from '../utils/modalAlertas';
+import { modalAlerta } from '../utils/modalAlertas'; // Importado
 import { 
     createIcons, 
     ChevronLeft, 
@@ -12,13 +12,13 @@ import {
     Clock,
     Plus,
     Music,
-    Upload // Ícone para upload
+    Volume2
 } from 'lucide';
 
 let telaAtual: 'principal' | 'antecedencia' = 'principal';
 let alertasConfigurados: any[] = [];
 let categoriasDisponiveis: any[] = [];
-let somSelecionado = 'Padrão';
+let somSelecionado = 'Padrão do Sistema';
 
 export async function montarNotificacoes(container: HTMLElement) {
     
@@ -41,7 +41,7 @@ export async function montarNotificacoes(container: HTMLElement) {
 
     const executarLucide = () => {
         createIcons({
-            icons: { ChevronLeft, ChevronRight, MessageCircle, Trash2, PlusCircle, Clock, Plus, Music, Upload },
+            icons: { ChevronLeft, ChevronRight, MessageCircle, Trash2, PlusCircle, Clock, Plus, Music, Volume2 },
             nameAttr: 'data-lucide',
             root: container 
         });
@@ -94,14 +94,15 @@ export async function montarNotificacoes(container: HTMLElement) {
                         </div>
                         <i data-lucide="chevron-right"></i>
                     </div>
-                    
-                    <div class="settings-item clickable" id="abrir-modal-sons">
+
+                    <div class="settings-item clickable" id="btn-escolher-som">
                         <div class="settings-info">
                             <span>Som da Notificação</span>
-                            <p id="label-som-atual">Atual: ${somSelecionado}</p>
+                            <p id="label-som">${somSelecionado}</p>
                         </div>
-                        <i data-lucide="music"></i>
+                        <i data-lucide="volume-2"></i>
                     </div>
+                    <input type="file" id="input-som-sistema" accept="audio/*" style="display:none;">
                 </section>
 
                 <div class="notif-section-label">PRÓXIMOS ALERTAS</div>
@@ -118,26 +119,6 @@ export async function montarNotificacoes(container: HTMLElement) {
                         </div>
                     `).join('') : '<p style="padding:20px; color:#666;">Nenhum alerta para os próximos 7 dias.</p>'}
                 </section>
-            </div>
-
-            <div class="modal-overlay" id="modal-sons">
-                <div class="modal-box">
-                    <h3>Som da Notificação</h3>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Escolha um arquivo de áudio do seu dispositivo.</p>
-                    
-                    <div class="file-select-container">
-                        <input type="file" id="input-file-som" accept="audio/*" style="display: none;">
-                        <button class="btn-upload-file" id="btn-trigger-file">
-                            <i data-lucide="upload"></i> Escolher Arquivo
-                        </button>
-                        <div id="file-name-preview" style="margin-top: 10px; font-weight: bold; color: #333;">${somSelecionado}</div>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button class="btn-modal-cancel" id="close-sons">Cancelar</button>
-                        <button class="btn-modal-ok" id="btn-salvar-som">Confirmar</button>
-                    </div>
-                </div>
             </div>
         `;
         setupEvents();
@@ -243,34 +224,26 @@ export async function montarNotificacoes(container: HTMLElement) {
         document.getElementById('voltar-principal')?.addEventListener('click', () => { telaAtual = 'principal'; render(); });
         document.getElementById('btn-voltar-app')?.addEventListener('click', () => (window as any).navegar('list'));
 
-        // --- EVENTOS DE SOM (DISPOSITIVO) ---
-        const btnFile = document.getElementById('btn-trigger-file');
-        const inputFile = document.getElementById('input-file-som') as HTMLInputElement;
-        const previewNome = document.getElementById('file-name-preview');
+        // --- LÓGICA DE SOM DO SISTEMA ---
+        const btnSom = document.getElementById('btn-escolher-som');
+        const inputSom = document.getElementById('input-som-sistema') as HTMLInputElement;
 
-        document.getElementById('abrir-modal-sons')?.addEventListener('click', () => document.getElementById('modal-sons')?.classList.add('active'));
+        btnSom?.addEventListener('click', () => {
+            inputSom.click(); // Abre o seletor nativo do sistema
+        });
 
-        btnFile?.addEventListener('click', () => inputFile?.click());
-
-        inputFile?.addEventListener('change', () => {
-            if (inputFile.files && inputFile.files[0]) {
-                const nomeArquivo = inputFile.files[0].name;
-                if (previewNome) previewNome.innerText = nomeArquivo;
+        inputSom?.addEventListener('change', () => {
+            if (inputSom.files && inputSom.files[0]) {
+                somSelecionado = inputSom.files[0].name;
+                modalAlerta.show({ 
+                    message: `Som "${somSelecionado}" definido com sucesso!`, 
+                    type: 'success' 
+                });
+                render();
             }
         });
 
-        document.getElementById('btn-salvar-som')?.addEventListener('click', () => {
-            if (inputFile.files && inputFile.files[0]) {
-                somSelecionado = inputFile.files[0].name;
-                modalAlerta.show({ message: `Som "${somSelecionado}" selecionado!`, type: 'success' });
-            } else {
-                somSelecionado = 'Padrão';
-            }
-            document.getElementById('modal-sons')?.classList.remove('active');
-            render();
-        });
-
-        // --- EVENTOS DE ANTECEDÊNCIA (SALVAMENTO) ---
+        // --- LÓGICA DE SALVAMENTO ---
         document.getElementById('btn-salvar-notif')?.addEventListener('click', async () => {
             const btn = (document.getElementById('btn-salvar-notif') as HTMLButtonElement);
             const h = (document.getElementById('h-val') as HTMLInputElement).value.padStart(2, '0');
@@ -280,12 +253,12 @@ export async function montarNotificacoes(container: HTMLElement) {
             const gruposIds = Array.from(checks).map(c => (c as HTMLInputElement).value);
 
             if (alvo === 'Grupos selecionados' && gruposIds.length === 0) {
-                modalAlerta.show({ message: "Selecione ao menos um grupo!", type: 'warning' });
+                modalAlerta.show({ message: "Selecione pelo menos um grupo!", type: 'warning' });
                 return;
             }
 
             btn.disabled = true;
-            modalAlerta.showLoading("Salvando...");
+            modalAlerta.showLoading("Salvando configurações...");
 
             try {
                 await aniversarioService.salvarNotificacao({
@@ -299,43 +272,38 @@ export async function montarNotificacoes(container: HTMLElement) {
                 document.getElementById('modal-grupos')?.classList.remove('active');
                 await atualizarDadosEmBackground();
                 render();
-                modalAlerta.show({ message: "Configuração salva!", type: 'success' });
+                modalAlerta.show({ message: "Notificação configurada!", type: 'success' });
             } catch (err) {
                 btn.disabled = false;
                 modalAlerta.show({ message: "Erro ao salvar.", type: 'error' });
             }
         });
 
-        // ✅ CORREÇÃO DO ERRO 'CLOSEST' CONFORME ANTERIOR
+        // ✅ CORREÇÃO DO ERRO 'CLOSEST': Capturamos a referência ANTES do await do modal
         document.querySelectorAll('.btn-delete-notif').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const target = e.currentTarget as HTMLElement;
-                const id = target.dataset.id;
-                const row = target.closest('.alerta-config-item') as HTMLElement;
+                const elementoClicado = e.currentTarget as HTMLElement;
+                const id = elementoClicado.dataset.id;
+                const linhaParaRemover = elementoClicado.closest('.alerta-config-item') as HTMLElement;
 
-                if (id && row) {
-                    const confirmar = await modalAlerta.show({
-                        message: "Deseja excluir este alerta?",
+                if (id && linhaParaRemover) {
+                    const confirmou = await modalAlerta.show({
+                        message: "Deseja realmente excluir este alerta?",
                         type: 'confirm',
                         confirmText: 'Excluir'
                     });
 
-                    if (confirmar) {
-                        row.style.opacity = '0.5';
-                        try {
-                            await aniversarioService.excluirNotificacao(id);
-                            await atualizarDadosEmBackground();
-                            render();
-                        } catch (err) {
-                            row.style.opacity = '1';
-                            modalAlerta.show({ message: "Erro ao excluir.", type: 'error' });
-                        }
+                    if (confirmou) {
+                        linhaParaRemover.style.opacity = '0.5';
+                        await aniversarioService.excluirNotificacao(id);
+                        await atualizarDadosEmBackground();
+                        render();
                     }
                 }
             });
         });
 
-        ['dias', 'hora', 'grupos', 'sons'].forEach(m => {
+        ['dias', 'hora', 'grupos'].forEach(m => {
             document.getElementById(`close-${m}`)?.addEventListener('click', () => {
                 document.getElementById(`modal-${m}`)?.classList.remove('active');
             });
