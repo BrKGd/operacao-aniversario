@@ -8969,20 +8969,50 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 <div class="modal-box time-picker">
                     <span class="time-label">HORA DA NOTIFICAÇÃO</span>
                     <div class="time-inputs-row">
-                        <div class="time-field active"><input type="number" value="08"><label>Hora</label></div>
+                        <div class="time-field active"><input type="number" id="input-h" value="08"><label>Hora</label></div>
                         <span class="time-separator">:</span>
-                        <div class="time-field"><input type="number" value="23"><label>Minuto</label></div>
+                        <div class="time-field"><input type="number" id="input-m" value="23"><label>Minuto</label></div>
                     </div>
                     <div class="modal-actions-time">
                         <i data-lucide="clock" class="icon-clock-modal"></i>
                         <div class="right-actions">
                             <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').classList.remove('active')">CANCELAR</button>
-                            <button class="btn-modal-ok" id="btn-finalizar-notif">OK</button>
+                            <button class="btn-modal-ok" id="btn-ir-grupos">OK</button>
                         </div>
                     </div>
                 </div>
             </div>
-        `,n()},n=()=>{var i,s,h,c,o,l;window.lucide&&window.lucide.createIcons(),(i=document.getElementById("ir-antecedencia"))==null||i.addEventListener("click",()=>{Fn="antecedencia",t()}),(s=document.getElementById("voltar-principal"))==null||s.addEventListener("click",()=>{Fn="principal",t()}),(h=document.getElementById("btn-voltar-app"))==null||h.addEventListener("click",()=>window.navegar("list")),(c=document.getElementById("abrir-modal-dias"))==null||c.addEventListener("click",()=>{var d;return(d=document.getElementById("modal-dias"))==null?void 0:d.classList.add("active")}),(o=document.getElementById("btn-ir-hora"))==null||o.addEventListener("click",()=>{var d,f;(d=document.getElementById("modal-dias"))==null||d.classList.remove("active"),(f=document.getElementById("modal-hora"))==null||f.classList.add("active")}),(l=document.getElementById("btn-finalizar-notif"))==null||l.addEventListener("click",()=>{var d;r0.push({id:Date.now().toString(),dias:1,hora:"08:23",alvo:"Todos os contatos"}),(d=document.getElementById("modal-hora"))==null||d.classList.remove("active"),t()}),document.querySelectorAll(".btn-delete-notif").forEach(d=>{d.addEventListener("click",f=>{const u=f.currentTarget.dataset.id;r0=r0.filter(v=>v.id!==u),t()})})};await t()}async function VK(e,t){var a,r,n,i,s,h,c,o;if(t){e.querySelector(".detalhes-page-wrapper")||(e.innerHTML='<div class="fec-loader-minimal">Carregando...</div>');try{const[l,d]=await Promise.all([lt.listarTodos(),lt.listarCategorias()]),f=l.find(b=>b.id===t);if(!f)return;const u=new Date(f.data_nascimento+"T00:00:00"),v=new Date;let p=v.getFullYear()-u.getFullYear();v<new Date(v.getFullYear(),u.getMonth(),u.getDate())&&p--,e.innerHTML=`
+
+            <div class="modal-overlay" id="modal-grupos">
+                <div class="modal-box">
+                    <h3>Ativar para:</h3>
+                    <div class="grupos-selection-list">
+                        <label class="radio-option">
+                            <input type="radio" name="alvo-notif" value="Todos os contatos" checked>
+                            <span class="radio-mark"></span>
+                            Todos os contatos
+                        </label>
+                        
+                        <label class="radio-option">
+                            <input type="radio" name="alvo-notif" value="Grupos selecionados">
+                            <span class="radio-mark"></span>
+                            Grupos selecionados
+                        </label>
+
+                        <div class="sub-checkboxes">
+                            <label class="check-option"><input type="checkbox"> Amigos</label>
+                            <label class="check-option"><input type="checkbox"> Família</label>
+                            <label class="check-option"><input type="checkbox"> Trabalho</label>
+                            <label class="check-option"><input type="checkbox"> Igreja</label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancelar</button>
+                        <button class="btn-modal-ok" id="btn-finalizar-notif">OK</button>
+                    </div>
+                </div>
+            </div>
+        `,n()},n=()=>{var i,s,h,c,o,l,d;window.lucide&&window.lucide.createIcons(),(i=document.getElementById("ir-antecedencia"))==null||i.addEventListener("click",()=>{Fn="antecedencia",t()}),(s=document.getElementById("voltar-principal"))==null||s.addEventListener("click",()=>{Fn="principal",t()}),(h=document.getElementById("btn-voltar-app"))==null||h.addEventListener("click",()=>window.navegar("list")),(c=document.getElementById("abrir-modal-dias"))==null||c.addEventListener("click",()=>{var f;(f=document.getElementById("modal-dias"))==null||f.classList.add("active")}),(o=document.getElementById("btn-ir-hora"))==null||o.addEventListener("click",()=>{var f,u;(f=document.getElementById("modal-dias"))==null||f.classList.remove("active"),(u=document.getElementById("modal-hora"))==null||u.classList.add("active")}),(l=document.getElementById("btn-ir-grupos"))==null||l.addEventListener("click",()=>{var f,u;(f=document.getElementById("modal-hora"))==null||f.classList.remove("active"),(u=document.getElementById("modal-grupos"))==null||u.classList.add("active")}),(d=document.getElementById("btn-finalizar-notif"))==null||d.addEventListener("click",()=>{var v;const f=document.getElementById("input-h").value.padStart(2,"0"),u=document.getElementById("input-m").value.padStart(2,"0");r0.push({id:Date.now().toString(),dias:1,hora:`${f}:${u}`,alvo:"Todos os contatos"}),(v=document.getElementById("modal-grupos"))==null||v.classList.remove("active"),t()}),document.querySelectorAll(".btn-delete-notif").forEach(f=>{f.addEventListener("click",u=>{const v=u.currentTarget.dataset.id;r0=r0.filter(p=>p.id!==v),t()})})};await t()}async function VK(e,t){var a,r,n,i,s,h,c,o;if(t){e.querySelector(".detalhes-page-wrapper")||(e.innerHTML='<div class="fec-loader-minimal">Carregando...</div>');try{const[l,d]=await Promise.all([lt.listarTodos(),lt.listarCategorias()]),f=l.find(b=>b.id===t);if(!f)return;const u=new Date(f.data_nascimento+"T00:00:00"),v=new Date;let p=v.getFullYear()-u.getFullYear();v<new Date(v.getFullYear(),u.getMonth(),u.getDate())&&p--,e.innerHTML=`
             <div class="detalhes-page-wrapper">
                 <section class="section-hero-light">
                     <button class="btn-back-absolute" id="btn-voltar-list"><i data-lucide="arrow-left"></i></button>
