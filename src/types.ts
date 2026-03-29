@@ -18,6 +18,7 @@ export interface Aniversario {
   id: string;               // UUID gerado pelo Supabase
   created_at?: string;      // Data de criação automática
   nome: string;             // Nome do aniversariante
+  apelido: string; 
   data_nascimento: string;  // Formato YYYY-MM-DD
   telefone?: string;        // Opcional: (85) 9....
   observacoes?: string;     // Opcional: Algum detalhe extra
