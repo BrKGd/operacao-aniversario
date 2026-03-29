@@ -45,7 +45,7 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
             <div class="fec-center-wrapper">
                 <div class="fec-form-wrapper">
                     <button class="fec-btn-back-nav" id="btnVoltarForm" title="Voltar">
-                        <i data-lucide="chevron-left"></i>
+                        <i data-lucide="arrow-left"></i>
                     </button>
 
                     <header class="fec-form-header">
