@@ -75,7 +75,7 @@ export async function montarNotificacoes(container: HTMLElement) {
         setupEvents();
     };
 
-    // --- TELA 2: LISTA DE ANTECEDÊNCIA (IGUAL À FOTO) ---
+    // --- TELA 2: LISTA DE ANTECEDÊNCIA ---
     const renderAntecedencia = () => {
         container.innerHTML = `
             <div class="notif-page-light">
@@ -120,16 +120,46 @@ export async function montarNotificacoes(container: HTMLElement) {
                 <div class="modal-box time-picker">
                     <span class="time-label">HORA DA NOTIFICAÇÃO</span>
                     <div class="time-inputs-row">
-                        <div class="time-field active"><input type="number" value="08"><label>Hora</label></div>
+                        <div class="time-field active"><input type="number" id="input-h" value="08"><label>Hora</label></div>
                         <span class="time-separator">:</span>
-                        <div class="time-field"><input type="number" value="23"><label>Minuto</label></div>
+                        <div class="time-field"><input type="number" id="input-m" value="23"><label>Minuto</label></div>
                     </div>
                     <div class="modal-actions-time">
                         <i data-lucide="clock" class="icon-clock-modal"></i>
                         <div class="right-actions">
                             <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').classList.remove('active')">CANCELAR</button>
-                            <button class="btn-modal-ok" id="btn-finalizar-notif">OK</button>
+                            <button class="btn-modal-ok" id="btn-ir-grupos">OK</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-grupos">
+                <div class="modal-box">
+                    <h3>Ativar para:</h3>
+                    <div class="grupos-selection-list">
+                        <label class="radio-option">
+                            <input type="radio" name="alvo-notif" value="Todos os contatos" checked>
+                            <span class="radio-mark"></span>
+                            Todos os contatos
+                        </label>
+                        
+                        <label class="radio-option">
+                            <input type="radio" name="alvo-notif" value="Grupos selecionados">
+                            <span class="radio-mark"></span>
+                            Grupos selecionados
+                        </label>
+
+                        <div class="sub-checkboxes">
+                            <label class="check-option"><input type="checkbox"> Amigos</label>
+                            <label class="check-option"><input type="checkbox"> Família</label>
+                            <label class="check-option"><input type="checkbox"> Trabalho</label>
+                            <label class="check-option"><input type="checkbox"> Igreja</label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').classList.remove('active')">Cancelar</button>
+                        <button class="btn-modal-ok" id="btn-finalizar-notif">OK</button>
                     </div>
                 </div>
             </div>
@@ -145,17 +175,33 @@ export async function montarNotificacoes(container: HTMLElement) {
         document.getElementById('voltar-principal')?.addEventListener('click', () => { telaAtual = 'principal'; render(); });
         document.getElementById('btn-voltar-app')?.addEventListener('click', () => (window as any).navegar('list'));
 
-        // Lógica dos Modais
-        document.getElementById('abrir-modal-dias')?.addEventListener('click', () => document.getElementById('modal-dias')?.classList.add('active'));
+        // Lógica dos Modais (Sequencial)
+        document.getElementById('abrir-modal-dias')?.addEventListener('click', () => {
+            document.getElementById('modal-dias')?.classList.add('active');
+        });
         
         document.getElementById('btn-ir-hora')?.addEventListener('click', () => {
             document.getElementById('modal-dias')?.classList.remove('active');
             document.getElementById('modal-hora')?.classList.add('active');
         });
 
-        document.getElementById('btn-finalizar-notif')?.addEventListener('click', () => {
-            alertasConfigurados.push({ id: Date.now().toString(), dias: 1, hora: '08:23', alvo: 'Todos os contatos' });
+        document.getElementById('btn-ir-grupos')?.addEventListener('click', () => {
             document.getElementById('modal-hora')?.classList.remove('active');
+            document.getElementById('modal-grupos')?.classList.add('active');
+        });
+
+        document.getElementById('btn-finalizar-notif')?.addEventListener('click', () => {
+            const h = (document.getElementById('input-h') as HTMLInputElement).value.padStart(2, '0');
+            const m = (document.getElementById('input-m') as HTMLInputElement).value.padStart(2, '0');
+            
+            alertasConfigurados.push({ 
+                id: Date.now().toString(), 
+                dias: 1, 
+                hora: `${h}:${m}`, 
+                alvo: 'Todos os contatos' 
+            });
+            
+            document.getElementById('modal-grupos')?.classList.remove('active');
             render();
         });
 

@@ -1,43 +1,276 @@
-/* Layout Principal (Foto 1) */
-.notif-page-light { padding: 20px; background: #fff; min-height: 100vh; }
-.notif-header-simple { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-.notif-header-simple h1 { font-size: 1.5rem; color: #001a2c; font-weight: 600; margin: 0; }
-
-.notif-section-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin: 25px 0 10px; }
-
-.settings-item { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid #f1f5f9; }
-.settings-info span { color: #001a2c; font-weight: 500; }
-.settings-info p { color: #64748b; font-size: 0.85rem; margin-top: 2px; }
-
-/* Lista de Antecedência (Foto 2) */
-.alerta-config-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #f1f5f9; }
-.btn-delete-notif { background: transparent; border: none; color: #94a3b8; cursor: pointer; }
-
-.btn-add-notif-row {
-    width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 8px;
-    padding: 25px 0; background: transparent; border: none; color: #4da3b0; font-weight: 500; cursor: pointer;
+/* CONTAINER PRINCIPAL E GERAL */
+.notif-page-light, .notificacoes-container {
+    padding: 20px;
+    background: #f8fafc;
+    min-height: 100vh;
+    font-family: sans-serif;
 }
 
-/* Modais (Fotos 3 e 4) */
+/* HEADER COM BOTÃO VOLTAR ALINHADO */
+.notif-header, .notif-header-simple {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.notif-header h2, .notif-header-simple h1 {
+    font-size: 1.25rem;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* BOTÃO VOLTAR MINIMALISTA */
+.btn-back-minimal {
+    position: relative;
+    background: rgba(77, 163, 176, 0.1); /* Tom de azul vibrante sutil */
+    border: 1px solid rgba(77, 163, 176, 0.2); 
+    color: #4da3b0 !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-back-minimal:hover {
+    background: rgba(77, 163, 176, 0.2);
+    transform: translateX(-3px);
+}
+
+/* SEÇÕES E RÓTULOS */
+.notif-section-label, .notif-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    margin: 25px 0 10px;
+}
+
+/* CARD E ITENS DE CONFIGURAÇÃO (TELA 1) */
+.notif-settings-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    margin-bottom: 30px;
+}
+
+.settings-item, .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.settings-item:last-child { border-bottom: none; }
+
+.settings-info span, .settings-label {
+    display: block;
+    font-weight: 600;
+    color: #334155;
+    font-size: 1rem;
+}
+
+.settings-info p, .settings-sub {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 2px 0 0;
+}
+
+/* ESTILO DO SWITCH (TELA PRINCIPAL) */
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #e2e8f0; transition: .4s; border-radius: 34px;
+}
+.slider:before {
+    position: absolute; content: ""; height: 18px; width: 18px;
+    left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
+}
+input:checked + .slider { background-color: #25d366; }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* TELA DE ANTECEDÊNCIA (LISTA DE ALERTAS CONFIGURADOS) */
+.alerta-config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.btn-delete-notif {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.btn-add-notif-row {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding: 25px 0;
+    background: transparent;
+    border: none;
+    color: #4da3b0;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* LISTAGEM DE ANIVERSARIANTES (PRÓXIMOS ALERTAS) */
+.card-notif, .alerta-item {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 15px;
+    border: 1px solid #f1f5f9;
+}
+
+.notif-badge-time {
+    font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px;
+    min-width: 70px; text-align: center; background: #f1f5f9; color: #64748b;
+}
+
+.status-hoje { border-left: 4px solid #ef4444; background: #fef2f2; }
+.status-hoje .notif-badge-time { background: #ef4444; color: white; }
+
+.status-amanha { border-left: 4px solid #f59e0b; }
+.status-amanha .notif-badge-time { background: #f59e0b; color: white; }
+
+.btn-notif-whatsapp, .alerta-btn {
+    margin-left: auto;
+    color: #25d366;
+    background: #f0fdf4;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* MODAIS DE SELEÇÃO (PICKERS - ESTILO FOTO DARK MODAL) */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 26, 44, 0.8); display: none; align-items: center; justify-content: center; z-index: 2000;
+    background: rgba(0, 26, 44, 0.8);
+    display: none; align-items: center; justify-content: center; z-index: 2000;
 }
 .modal-overlay.active { display: flex; }
 
-.modal-box { background: #003049; width: 85%; max-width: 320px; border-radius: 12px; padding: 25px; color: white; }
-.modal-box h3 { text-align: center; font-size: 1.1rem; font-weight: 400; margin-bottom: 25px; }
+.modal-box {
+    background: #003049;
+    width: 85%;
+    max-width: 320px;
+    border-radius: 12px;
+    padding: 25px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 
-.picker-container { border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; text-align: center; }
-.picker-item { padding: 10px; font-size: 1.1rem; }
+.modal-box h3 {
+    text-align: center; font-size: 1.1rem; font-weight: 400; margin-bottom: 25px;
+}
+
+/* PICKER DE DIAS */
+.picker-container {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+}
+.picker-item { padding: 10px; font-size: 1.1rem; color: white; }
 .picker-item.opaco { opacity: 0.3; }
-.picker-item.selected { font-weight: bold; border-top: 1px solid #4da3b0; border-bottom: 1px solid #4da3b0; }
+.picker-item.selected { 
+    font-weight: bold; 
+    border-top: 1px solid #4da3b0; 
+    border-bottom: 1px solid #4da3b0; 
+}
 
-.time-inputs-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 20px 0; }
-.time-field { background: #1a3a4e; padding: 10px; border-radius: 8px; text-align: center; width: 70px; border: 1px solid transparent; }
-.time-field.active { border-color: #4da3b0; }
-.time-field input { background: transparent; border: none; color: white; font-size: 2rem; width: 100%; text-align: center; outline: none; }
-.time-field label { font-size: 0.65rem; color: #8fa3ad; display: block; }
+/* TIME PICKER (MODAL HORA) */
+.time-label { font-size: 0.65rem; letter-spacing: 1px; color: #8fa3ad; display: block; margin-bottom: 15px; }
+.time-inputs-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
 
+.time-field { background: #1a3a4e; padding: 10px; border-radius: 8px; text-align: center; width: 70px; }
+.time-field.active { border: 1px solid #4da3b0; }
+.time-field input { 
+    background: transparent; border: none; color: white; font-size: 2rem; 
+    width: 100%; text-align: center; outline: none; 
+}
+.time-field label { font-size: 0.6rem; color: #8fa3ad; display: block; }
+.time-separator { font-size: 2rem; font-weight: bold; color: white; }
+
+/* SELEÇÃO DE GRUPOS (MODAL GRUPOS) */
+.grupos-selection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #fff;
+}
+.radio-option input { display: none; }
+.radio-mark {
+    width: 20px; height: 20px;
+    border: 2px solid #4da3b0;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+}
+.radio-option input:checked + .radio-mark::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 10px; height: 10px;
+    background: #4da3b0;
+    border-radius: 50%;
+}
+
+.sub-checkboxes {
+    margin-left: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0.8;
+}
+
+.check-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #fff;
+}
+.check-option input {
+    accent-color: #4da3b0;
+    width: 16px;
+    height: 16px;
+}
+
+/* AÇÕES DOS MODAIS */
 .modal-actions, .modal-actions-time { display: flex; justify-content: flex-end; gap: 20px; margin-top: 20px; }
-.btn-modal-cancel, .btn-modal-ok { background: transparent; border: none; color: #4da3b0; font-weight: bold; cursor: pointer; }
+.btn-modal-cancel, .btn-modal-ok {
+    background: transparent; border: none; 
+    color: #4da3b0; font-weight: bold; cursor: pointer; font-size: 0.9rem;
+}
+.icon-clock-modal { color: white; width: 22px; margin-right: auto; }
