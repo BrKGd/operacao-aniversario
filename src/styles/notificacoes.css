@@ -14,6 +14,20 @@
     color: #334155;
 }
 
+.btn-upload-file {
+    background: #f0f0f0;
+    border: 2px dashed #ccc;
+    padding: 20px;
+    width: 100%;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #555;
+    cursor: pointer;
+}
+
 /* HEADER COM BOTÃO VOLTAR */
 .notif-header, .notif-header-simple {
     display: flex;

@@ -11,7 +11,8 @@ import {
     PlusCircle, 
     Clock,
     Plus,
-    Music
+    Music,
+    Upload // Ícone para upload
 } from 'lucide';
 
 let telaAtual: 'principal' | 'antecedencia' = 'principal';
@@ -40,7 +41,7 @@ export async function montarNotificacoes(container: HTMLElement) {
 
     const executarLucide = () => {
         createIcons({
-            icons: { ChevronLeft, ChevronRight, MessageCircle, Trash2, PlusCircle, Clock, Plus, Music },
+            icons: { ChevronLeft, ChevronRight, MessageCircle, Trash2, PlusCircle, Clock, Plus, Music, Upload },
             nameAttr: 'data-lucide',
             root: container 
         });
@@ -93,10 +94,11 @@ export async function montarNotificacoes(container: HTMLElement) {
                         </div>
                         <i data-lucide="chevron-right"></i>
                     </div>
+                    
                     <div class="settings-item clickable" id="abrir-modal-sons">
                         <div class="settings-info">
                             <span>Som da Notificação</span>
-                            <p>Atual: ${somSelecionado}</p>
+                            <p id="label-som-atual">Atual: ${somSelecionado}</p>
                         </div>
                         <i data-lucide="music"></i>
                     </div>
@@ -120,18 +122,20 @@ export async function montarNotificacoes(container: HTMLElement) {
 
             <div class="modal-overlay" id="modal-sons">
                 <div class="modal-box">
-                    <h3>Sons do Dispositivo</h3>
-                    <div class="grupos-selection-list">
-                        ${['Padrão', 'Alegre', 'Sino', 'Digital', 'Suave'].map(som => `
-                            <label class="radio-option">
-                                <input type="radio" name="som-op" value="${som}" ${som === somSelecionado ? 'checked' : ''}>
-                                <span class="radio-mark"></span> ${som}
-                            </label>
-                        `).join('')}
+                    <h3>Som da Notificação</h3>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Escolha um arquivo de áudio do seu dispositivo.</p>
+                    
+                    <div class="file-select-container">
+                        <input type="file" id="input-file-som" accept="audio/*" style="display: none;">
+                        <button class="btn-upload-file" id="btn-trigger-file">
+                            <i data-lucide="upload"></i> Escolher Arquivo
+                        </button>
+                        <div id="file-name-preview" style="margin-top: 10px; font-weight: bold; color: #333;">${somSelecionado}</div>
                     </div>
+
                     <div class="modal-actions">
                         <button class="btn-modal-cancel" id="close-sons">Cancelar</button>
-                        <button class="btn-modal-ok" id="btn-salvar-som">Salvar</button>
+                        <button class="btn-modal-ok" id="btn-salvar-som">Confirmar</button>
                     </div>
                 </div>
             </div>
@@ -222,9 +226,6 @@ export async function montarNotificacoes(container: HTMLElement) {
                                 <span class="category-name">${cat.nome}</span>
                             </label>
                         `).join('')}
-                        <button class="btn-ir-categorias" id="go-to-categorias">
-                            <i data-lucide="plus" style="width: 14px;"></i> Gerenciar Grupos
-                        </button>
                     </div>
 
                     <div class="modal-actions">
@@ -241,39 +242,35 @@ export async function montarNotificacoes(container: HTMLElement) {
         document.getElementById('ir-antecedencia')?.addEventListener('click', () => { telaAtual = 'antecedencia'; render(); });
         document.getElementById('voltar-principal')?.addEventListener('click', () => { telaAtual = 'principal'; render(); });
         document.getElementById('btn-voltar-app')?.addEventListener('click', () => (window as any).navegar('list'));
-        document.getElementById('go-to-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
+
+        // --- EVENTOS DE SOM (DISPOSITIVO) ---
+        const btnFile = document.getElementById('btn-trigger-file');
+        const inputFile = document.getElementById('input-file-som') as HTMLInputElement;
+        const previewNome = document.getElementById('file-name-preview');
 
         document.getElementById('abrir-modal-sons')?.addEventListener('click', () => document.getElementById('modal-sons')?.classList.add('active'));
+
+        btnFile?.addEventListener('click', () => inputFile?.click());
+
+        inputFile?.addEventListener('change', () => {
+            if (inputFile.files && inputFile.files[0]) {
+                const nomeArquivo = inputFile.files[0].name;
+                if (previewNome) previewNome.innerText = nomeArquivo;
+            }
+        });
+
         document.getElementById('btn-salvar-som')?.addEventListener('click', () => {
-            const radio = document.querySelector('input[name="som-op"]:checked') as HTMLInputElement;
-            somSelecionado = radio.value;
+            if (inputFile.files && inputFile.files[0]) {
+                somSelecionado = inputFile.files[0].name;
+                modalAlerta.show({ message: `Som "${somSelecionado}" selecionado!`, type: 'success' });
+            } else {
+                somSelecionado = 'Padrão';
+            }
             document.getElementById('modal-sons')?.classList.remove('active');
-            modalAlerta.show({ message: `Som "${somSelecionado}" definido!`, type: 'success' });
             render();
         });
 
-        document.querySelectorAll('input[name="alvo"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const containerCats = document.getElementById('lista-categorias-checkbox');
-                if (containerCats) {
-                    containerCats.style.display = (e.target as HTMLInputElement).value === 'Grupos selecionados' ? 'block' : 'none';
-                    executarLucide();
-                }
-            });
-        });
-
-        document.getElementById('abrir-modal-dias')?.addEventListener('click', () => document.getElementById('modal-dias')?.classList.add('active'));
-        document.getElementById('btn-ir-hora')?.addEventListener('click', () => {
-            document.getElementById('modal-dias')?.classList.remove('active');
-            document.getElementById('modal-hora')?.classList.add('active');
-            executarLucide();
-        });
-        document.getElementById('btn-ir-grupos')?.addEventListener('click', () => {
-            document.getElementById('modal-hora')?.classList.remove('active');
-            document.getElementById('modal-grupos')?.classList.add('active');
-            executarLucide();
-        });
-
+        // --- EVENTOS DE ANTECEDÊNCIA (SALVAMENTO) ---
         document.getElementById('btn-salvar-notif')?.addEventListener('click', async () => {
             const btn = (document.getElementById('btn-salvar-notif') as HTMLButtonElement);
             const h = (document.getElementById('h-val') as HTMLInputElement).value.padStart(2, '0');
@@ -309,7 +306,7 @@ export async function montarNotificacoes(container: HTMLElement) {
             }
         });
 
-        // ✅ CORREÇÃO DO ERRO 'CLOSEST': Capturamos o ID e a Linha ANTES do AWAIT
+        // ✅ CORREÇÃO DO ERRO 'CLOSEST' CONFORME ANTERIOR
         document.querySelectorAll('.btn-delete-notif').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const target = e.currentTarget as HTMLElement;
@@ -318,7 +315,7 @@ export async function montarNotificacoes(container: HTMLElement) {
 
                 if (id && row) {
                     const confirmar = await modalAlerta.show({
-                        message: "Deseja excluir esta configuração de alerta?",
+                        message: "Deseja excluir este alerta?",
                         type: 'confirm',
                         confirmText: 'Excluir'
                     });
