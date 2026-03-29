@@ -51,12 +51,18 @@ export async function montarCalendario(container: HTMLElement) {
                 const niversDoDia = niversMes.filter(n => new Date(n.data_nascimento + 'T00:00:00').getDate() === dia);
                 const ehHoje = dia === hoje.getDate() && mesVisualizado === hoje.getMonth() && anoVisualizado === hoje.getFullYear();
                 
+                // Lógica de Tooltip: Agrupa os nomes caso existam aniversariantes no dia
+                const textoTooltip = niversDoDia.length > 0 
+                    ? `Aniversariantes:\n${niversDoDia.map(n => n.nome).join('\n')}` 
+                    : '';
+
                 // Usando UI-Avatars para suprir a falta do campo 'foto' na interface
                 const getAvatarUrl = (nome: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=6366f1&color=fff&bold=true`;
 
                 diasHtml += `
                     <div class="dia-card ${ehHoje ? 'hoje' : ''} ${niversDoDia.length > 0 ? 'tem-evento' : ''} ${dia === diaSelecionado ? 'selecionado' : ''}" 
-                         data-dia="${dia}">
+                         data-dia="${dia}"
+                         ${textoTooltip ? `data-tooltip="${textoTooltip}"` : ''}>
                         ${ehHoje ? '<span class="label-hoje">HOJE</span>' : ''}
                         <span class="num-dia">${dia}</span>
                         <div class="container-avatares-dia">

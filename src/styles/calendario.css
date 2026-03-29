@@ -164,6 +164,59 @@
     border: 1.5px solid white;
 }
 
+/* --- ESTILO DO TOOLTIP --- */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #1e293b;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    white-space: pre; /* Respeita as quebras de linha \n */
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    line-height: 1.4;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Seta do tooltip */
+[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1e293b;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* LISTA DE ANIVERSARIANTES COMPACTA */
 .legenda-lista { margin-top: 25px; }
 
