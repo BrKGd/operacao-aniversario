@@ -101,7 +101,7 @@ export async function montarDashboard(container: HTMLElement) {
                             <div class="hero-card-stacked" style="--index: ${index}; --total: ${aniversariantesHoje.length}">
                                 <span class="hero-tag">Hoje é o dia de</span>
                                 <div class="hero-main-info">
-                                    <div class="hero-avatar-wrapper">
+                                    <div class="hero-avatar-wrapper" onclick="window.navegar('detalhes', '${p.id}')">
                                         <img src="${p.imagem_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nome || 'U')}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
                                         <div class="hero-crown">👑</div>
                                     </div>
@@ -161,7 +161,7 @@ export async function montarDashboard(container: HTMLElement) {
                                 <div class="atleta-info-main">
                                     <span class="atleta-nome">${p.nome || 'Contato'}</span>
                                     <span class="atleta-status">
-                                        Em ${p.diffDays} ${p.diffDays === 1 ? 'dia' : 'dias'} faz ${p.idadeNova} anos
+                                        Em ${p.diffDays} ${p.diffDays === 1 ? 'dia' : 'dias'}, faz ${p.idadeNova} anos
                                     </span>
                                 </div>
                                 <div class="atleta-action">

@@ -115,7 +115,7 @@
 
 .hero-avatar-wrapper {
     position: relative;
-    width: 150px; height: 150px;
+    width: 130px; height: 150px;
     flex-shrink: 0;
 }
 
@@ -171,8 +171,9 @@
 }
 
 .btn-parabens-hero {
-    width: auto; /* Deixe o width auto ou um valor fixo menor para caber na direita */
-    min-width: 60%; 
+    width: auto; 
+    min-width: 40%;
+    height: 50px; 
     background: #25d366;
     color: white;
     border: none;
