@@ -3,6 +3,7 @@ import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
 import { Aniversario, Categoria } from '../types';
+import { modalAlerta } from '../utils/modalAlertas';
 
 export async function montarDetalhes(container: HTMLElement, id?: string) {
     if (!id) return;
@@ -66,7 +67,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                     <div class="notes-content">${(pessoa as any).frase_exibicao || 'Sem observações.'}</div>
                     
                     <a href="${gerarLinkWhatsapp(pessoa.nome, pessoa.telefone || '')}" target="_blank" class="btn-whatsapp-modern">
-                        <img src="${whatsappIcon}" alt="WhatsApp" style="width: 30px; height: 30px;"></i> ENVIAR MENSAGEM
+                        <img src="${whatsappIcon}" alt="WhatsApp" style="width: 30px; height: 30px;"> ENVIAR MENSAGEM
                     </a>
                 </section>
             </div>
@@ -126,40 +127,67 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         });
         drawer?.addEventListener('click', (e) => { if (e.target === drawer) fecharDrawer(); });
 
-        // --- TROCA DE CATEGORIA (SOLUÇÃO DOS ÍCONES) ---
+        // --- TROCA DE CATEGORIA (SOLUÇÃO DOS ÍCONES COM FEEDBACK) ---
         document.querySelectorAll('.radio-save').forEach(radio => {
             radio.addEventListener('change', async (e) => {
                 const target = e.target as HTMLInputElement;
                 const novaCatId = target.value;
                 const novaCatNome = target.getAttribute('data-catnome');
 
-                // 1. Atualiza apenas o texto na tela (Ícones continuam vivos!)
                 const label = document.getElementById('categoria-label');
                 if (label && novaCatNome) label.innerText = novaCatNome;
 
                 fecharDrawer();
 
-                // 2. Salva no banco silenciosamente
-                await aniversarioService.atualizar(pessoa.id!, { categoria_id: novaCatId });
-                
-                // NOTA: Não chamamos montarDetalhes novamente para não resetar o HTML e perder os ícones.
+                try {
+                    await aniversarioService.atualizar(pessoa.id!, { categoria_id: novaCatId });
+                    modalAlerta.show({
+                        message: 'Grupo atualizado com sucesso!',
+                        type: 'success',
+                        confirmText: 'OK'
+                    });
+                } catch (error) {
+                    modalAlerta.show({
+                        title: 'Erro',
+                        message: 'Não foi possível atualizar o grupo.',
+                        type: 'error'
+                    });
+                }
             });
         });
 
-        // Excluir
+        // --- EXCLUIR COM MODAL ALERTAS ---
         document.getElementById('btn-excluir-integrante')?.addEventListener('click', async () => {
-            if (confirm(`Deseja remover ${pessoa.nome}?`)) {
-                await aniversarioService.excluir(pessoa.id!);
-                (window as any).navegar('list');
+            const confirmou = await modalAlerta.show({
+                title: 'Excluir Integrante',
+                message: `Deseja remover ${pessoa.nome}? Esta ação não poderá ser desfeita.`,
+                type: 'confirm',
+                confirmText: 'Sim, excluir',
+                cancelText: 'Cancelar'
+            });
+
+            if (confirmou) {
+                modalAlerta.showLoading('Removendo integrante...');
+                try {
+                    await aniversarioService.excluir(pessoa.id!);
+                    modalAlerta.close();
+                    (window as any).navegar('list');
+                } catch (error) {
+                    modalAlerta.show({
+                        title: 'Erro ao excluir',
+                        message: 'Ocorreu um problema ao tentar excluir o registro.',
+                        type: 'error'
+                    });
+                }
             }
         });
 
         // Renderização inicial dos ícones
         inicializarIcones();
-        // Garantia para navegadores lentos
         setTimeout(inicializarIcones, 100);
 
     } catch (error) {
         console.error("Erro:", error);
+        container.innerHTML = `<div class="error-msg">Erro ao carregar detalhes.</div>`;
     }
 }
