@@ -8600,7 +8600,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     <div class="hero-stack-container" id="heroStack" style="touch-action: pan-y;">
                         ${i?r.map((s,c)=>{const h=tr.length>0?tr[Math.floor(Math.random()*tr.length)]:null,o=(h==null?void 0:h.conteudo)||"Desejamos um excelente dia e um feliz aniversário!";return`
                             <div class="hero-card-stacked" style="--index: ${c}; --total: ${r.length}">
-                                <span class="hero-tag">HOJE É O DIA DELE(A)</span>
+                                <span class="hero-tag">Hoje é o dia de</span>
                                 <div class="hero-main-info">
                                     <div class="hero-avatar-wrapper">
                                         <img src="${s.imagem_url||`https://ui-avatars.com/api/?name=${encodeURIComponent(s.nome||"U")}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
