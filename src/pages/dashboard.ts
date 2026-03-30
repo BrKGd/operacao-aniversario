@@ -167,8 +167,11 @@ function inicializarStack() {
     if (!stack) return;
 
     let isDragging = false;
-    let startX = 0; // Mudado para X
+    let startX = 0;
+    let startY = 0;
     let moveX = 0;
+    let moveY = 0;
+    let gestureDirection: 'horizontal' | 'vertical' | null = null;
 
     let cards = Array.from(stack.querySelectorAll('.hero-card-stacked')) as HTMLElement[];
     if (cards.length <= 1) return;
@@ -177,42 +180,46 @@ function inicializarStack() {
         cards.forEach((card, index) => {
             card.style.transition = isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease';
             
-            // O index 0 é o card central (Destaque)
-            // Calculamos o deslocamento lateral (offset)
-            const sideOffset = 40; // Distância entre os cards laterais
-            const rotationY = index * 45; // Ângulo de rotação lateral
-            const translateX = index * sideOffset;
-            const translateZ = index * -100; // Afasta os cards de trás
+            // Layout Base: O primeiro (index 0) é o destaque
+            const scale = Math.max(0.7, 1 - (index * 0.1));
+            const translateZ = index * -100;
+            const translateY = index * 10; // Leve empilhamento vertical natural
             
-            // Escala: O primeiro é 1.0, os próximos diminuem
-            const scale = Math.max(0.6, 1 - (index * 0.15)); 
-
             card.style.zIndex = (cards.length - index).toString();
-            
-            // Aplicamos a transformação:
-            // 1. TranslateX para mover para o lado
-            // 2. TranslateZ para profundidade
-            // 3. RotateY para angulação lateral
-            card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${-rotationY}deg) scale(${scale})`;
-            
-            // Opacidade progressiva
             card.style.opacity = index > 2 ? '0' : (1 - index * 0.3).toString();
+            
+            // Transformação Padrão (Sem arrastar)
+            card.style.transform = `translateZ(${translateZ}px) translateY(${translateY}px) scale(${scale})`;
         });
     };
 
-    const handleStart = (clientX: number) => {
+    const handleStart = (clientX: number, clientY: number) => {
         isDragging = true;
         startX = clientX;
+        startY = clientY;
+        gestureDirection = null;
     };
 
-    const handleMove = (clientX: number) => {
+    const handleMove = (clientX: number, clientY: number) => {
         if (!isDragging) return;
-        moveX = clientX - startX;
         
-        if (cards[0]) {
-            // Preview do movimento lateral no card principal
-            const rotation = moveX / 10;
-            cards[0].style.transform = `translateX(${moveX * 0.5}px) rotateY(${rotation}deg) scale(1.02)`;
+        moveX = clientX - startX;
+        moveY = clientY - startY;
+
+        // Detectar direção no início do gesto
+        if (!gestureDirection && (Math.abs(moveX) > 10 || Math.abs(moveY) > 10)) {
+            gestureDirection = Math.abs(moveX) > Math.abs(moveY) ? 'horizontal' : 'vertical';
+        }
+
+        const mainCard = cards[0];
+        if (!mainCard) return;
+
+        if (gestureDirection === 'horizontal') {
+            const rotY = moveX / 10;
+            mainCard.style.transform = `translateX(${moveX * 0.4}px) rotateY(${rotY}deg) scale(1.05)`;
+        } else if (gestureDirection === 'vertical') {
+            const rotX = -moveY / 10;
+            mainCard.style.transform = `translateY(${moveY * 0.4}px) rotateX(${rotX}deg) scale(1.05)`;
         }
     };
 
@@ -220,31 +227,38 @@ function inicializarStack() {
         if (!isDragging) return;
         isDragging = false;
 
-        const threshold = 50;
-        if (Math.abs(moveX) > threshold) {
+        const threshold = 70;
+        let mudou = false;
+
+        if (gestureDirection === 'horizontal' && Math.abs(moveX) > threshold) {
+            // Logica Horizontal
             if (moveX > 0) {
-                // Swipe para Direita: traz o último para frente
                 const last = cards.pop();
-                if (last) {
-                    cards.unshift(last);
-                    stack.prepend(last);
-                }
+                if (last) { cards.unshift(last); stack.prepend(last); }
             } else {
-                // Swipe para Esquerda: manda o primeiro para trás
                 const first = cards.shift();
-                if (first) {
-                    cards.push(first);
-                    stack.appendChild(first);
-                }
+                if (first) { cards.push(first); stack.appendChild(first); }
             }
+            mudou = true;
+        } else if (gestureDirection === 'vertical' && Math.abs(moveY) > threshold) {
+            // Logica Vertical
+            if (moveY > 0) {
+                const last = cards.pop();
+                if (last) { cards.unshift(last); stack.prepend(last); }
+            } else {
+                const first = cards.shift();
+                if (first) { cards.push(first); stack.appendChild(first); }
+            }
+            mudou = true;
         }
-        
+
         moveX = 0;
+        moveY = 0;
         aplicarTransformacoes3D();
     };
 
-    stack.addEventListener('pointerdown', (e) => handleStart(e.clientX));
-    window.addEventListener('pointermove', (e) => handleMove(e.clientX));
+    stack.addEventListener('pointerdown', (e) => handleStart(e.clientX, e.clientY));
+    window.addEventListener('pointermove', (e) => handleMove(e.clientX, e.clientY));
     window.addEventListener('pointerup', handleEnd);
     stack.addEventListener('dragstart', (e) => e.preventDefault());
 
