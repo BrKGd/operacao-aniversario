@@ -21,7 +21,7 @@ import {
     Filter
 } from 'lucide';
 
-// Objeto centralizado com todos os ícones usados nesta tela para evitar erros de "icon not found"
+// Objeto centralizado com todos os ícones usados nesta tela
 const DASHBOARD_ICONS = { 
     Send, TrendingUp, Calendar, MessageCircle, ChevronRight, Star,
     Sparkles, LogOut, LayoutGrid, Contact2, Plus, CalendarHeart, Settings2, User, X, Filter
@@ -81,7 +81,7 @@ export async function montarDashboard(container: HTMLElement) {
                 </header>
 
                 <section class="hero-section">
-                    <div class="hero-stack-container" id="heroStack">
+                    <div class="hero-stack-container" id="heroStack" style="touch-action: pan-y;">
                         ${temAniversariante ? aniversariantesHoje.map((p, index) => {
                             const templateSorteado = templatesGlobais.length > 0 
                                 ? templatesGlobais[Math.floor(Math.random() * templatesGlobais.length)]
@@ -187,7 +187,7 @@ export async function montarDashboard(container: HTMLElement) {
             </div>
         `;
 
-        // Funções Globais expostas para o HTML
+        // Funções Globais
         (window as any).enviarZapDireto = (tel: string, msg: string) => {
             if (!tel) return alert("Telefone não cadastrado.");
             window.open(`https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
@@ -201,7 +201,6 @@ export async function montarDashboard(container: HTMLElement) {
 
             if (drawer && list && pillsContainer && targetNome) {
                 targetNome.innerText = `Para ${nome.split(' ')[0]}`;
-                
                 const tiposMensagens = [...new Set(templatesGlobais.map(t => t.tipo))].sort();
                 let tipoAtivo: string | null = null;
 
@@ -221,8 +220,6 @@ export async function montarDashboard(container: HTMLElement) {
                             </div>
                         </div>
                     `).join('');
-                    
-                    // CORREÇÃO: Sempre passar todos os ícones para o Lucide não se perder
                     createIcons({ icons: DASHBOARD_ICONS });
                 };
 
@@ -246,7 +243,6 @@ export async function montarDashboard(container: HTMLElement) {
 
                 renderPills();
                 renderTemplates(null);
-                
                 drawer.classList.add('active');
             }
         };
@@ -255,7 +251,6 @@ export async function montarDashboard(container: HTMLElement) {
             document.getElementById('drawer-mensagem-dash')?.classList.remove('active');
         };
 
-        // Renderização inicial dos ícones
         createIcons({ icons: DASHBOARD_ICONS });
 
         if (temAniversariante) {
@@ -292,56 +287,58 @@ function inicializarStack() {
             
             card.style.zIndex = (cards.length - index).toString();
             card.style.opacity = index > 2 ? '0' : (1 - index * 0.3).toString();
-            
             card.style.transform = `translateZ(${translateZ}px) translateY(${translateY}px) scale(${scale})`;
         });
     };
 
-    const handleStart = (clientX: number, clientY: number) => {
+    const handleStart = (e: PointerEvent) => {
+        // Se o clique for em um botão dentro do card, não inicia o swipe
+        if ((e.target as HTMLElement).closest('button')) return;
+        
         isDragging = true;
-        startX = clientX;
-        startY = clientY;
+        startX = e.clientX;
+        startY = e.clientY;
         gestureDirection = null;
+        
+        // Evita que o navegador tente arrastar a imagem ou texto
+        stack.style.userSelect = 'none';
     };
 
-    const handleMove = (clientX: number, clientY: number) => {
+    const handleMove = (e: PointerEvent) => {
         if (!isDragging) return;
         
-        moveX = clientX - startX;
-        moveY = clientY - startY;
+        moveX = e.clientX - startX;
+        moveY = e.clientY - startY;
 
+        // Detecta a direção predominante do gesto
         if (!gestureDirection && (Math.abs(moveX) > 10 || Math.abs(moveY) > 10)) {
             gestureDirection = Math.abs(moveX) > Math.abs(moveY) ? 'horizontal' : 'vertical';
         }
 
-        const mainCard = cards[0];
-        if (!mainCard) return;
-
+        // SE o gesto for predominantemente HORIZONTAL, bloqueamos o scroll da tela e movemos o card
         if (gestureDirection === 'horizontal') {
-            const rotY = moveX / 10;
-            mainCard.style.transform = `translateX(${moveX * 0.4}px) rotateY(${rotY}deg) scale(1.05)`;
-        } else if (gestureDirection === 'vertical') {
-            const rotX = -moveY / 10;
-            mainCard.style.transform = `translateY(${moveY * 0.4}px) rotateX(${rotX}deg) scale(1.05)`;
-        }
+            if (e.cancelable) e.preventDefault(); // Impede scroll da página
+            e.stopPropagation();
+
+            const mainCard = cards[0];
+            if (mainCard) {
+                const rotY = moveX / 15;
+                mainCard.style.transform = `translateX(${moveX * 0.8}px) rotateY(${rotY}deg) scale(1.05)`;
+            }
+        } 
+        // Se for vertical e o usuário moveu pouco, ainda não decidimos. 
+        // Se for vertical e mover muito, o isDragging será cancelado pelo comportamento natural do navegador ou handleEnd
     };
 
     const handleEnd = () => {
         if (!isDragging) return;
         isDragging = false;
+        stack.style.userSelect = 'auto';
 
-        const threshold = 70;
+        const threshold = 100;
 
         if (gestureDirection === 'horizontal' && Math.abs(moveX) > threshold) {
             if (moveX > 0) {
-                const last = cards.pop();
-                if (last) { cards.unshift(last); stack.prepend(last); }
-            } else {
-                const first = cards.shift();
-                if (first) { cards.push(first); stack.appendChild(first); }
-            }
-        } else if (gestureDirection === 'vertical' && Math.abs(moveY) > threshold) {
-            if (moveY > 0) {
                 const last = cards.pop();
                 if (last) { cards.unshift(last); stack.prepend(last); }
             } else {
@@ -352,12 +349,18 @@ function inicializarStack() {
 
         moveX = 0;
         moveY = 0;
+        gestureDirection = null;
         aplicarTransformacoes3D();
     };
 
-    stack.addEventListener('pointerdown', (e) => handleStart(e.clientX, e.clientY));
-    window.addEventListener('pointermove', (e) => handleMove(e.clientX, e.clientY));
+    // Eventos específicos no stack para capturar o início
+    stack.addEventListener('pointerdown', handleStart);
+    
+    // Eventos globais para garantir que o movimento continue mesmo se sair do stack
+    window.addEventListener('pointermove', handleMove, { passive: false });
     window.addEventListener('pointerup', handleEnd);
+    window.addEventListener('pointercancel', handleEnd);
+    
     stack.addEventListener('dragstart', (e) => e.preventDefault());
 
     aplicarTransformacoes3D();
