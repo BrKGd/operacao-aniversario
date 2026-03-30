@@ -8620,8 +8620,10 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                             <div class="hero-card-stacked empty">
                                 <span class="hero-tag">SEM EVENTOS</span>
                                 <div class="hero-empty-state">
-                                    <i data-lucide="user" class="icon-empty"></i>
-                                    <p>Tudo tranquilo por aqui hoje.</p>
+                                    <div style="text-align: center; padding: 20px;">
+                                        <i data-lucide="user" style="width: 40px; height: 40px; opacity: 0.2; margin-bottom: 10px;"></i>
+                                        <p>Tudo tranquilo por aqui hoje.</p>
+                                    </div>
                                 </div>
                             </div>
                         `}
@@ -8653,14 +8655,14 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                                 </div>
                             </div>
                         `}).join(""):`
-                            <div class="dash-empty-list">
+                            <div class="dash-empty-list" style="text-align:center; padding: 40px; color: #94a3b8; font-size: 0.9rem;">
                                 <p>Sem eventos previstos para esta semana.</p>
                             </div>
                         `}
                     </div>
                 </section>
             </div>
-        `,Pt({icons:{Send:Nd,TrendingUp:zd,Calendar:Ad,MessageCircle:C0,ChevronRight:Y1,Star:ki,Sparkles:F0,LogOut:en,LayoutGrid:Q1,Contact2:b0,Plus:G0,CalendarHeart:J1,Settings2:tn,User:Si}}),c&&BI()}catch(t){console.error("Erro no Dashboard:",t),e.innerHTML='<div class="error-msg">Erro ao carregar informações.</div>'}}function BI(){const e=document.getElementById("heroStack");if(!e)return;const t=e.querySelectorAll(".hero-card-stacked");let a,r,n,i;t.forEach(s=>{s.addEventListener("touchstart",c=>{a=c.touches[0].clientX,r=c.touches[0].clientY,s.style.transition="none"}),s.addEventListener("touchmove",c=>{n=c.touches[0].clientX-a,i=c.touches[0].clientY-r;const h=n/10;s.style.transform=`translate(${n}px, ${i}px) rotate(${h}deg)`}),s.addEventListener("touchend",()=>{if(s.style.transition="all 0.5s cubic-bezier(0.23, 1, 0.32, 1)",Math.abs(n)>120)s.style.transform=`translate(${n*2}px, ${i}px) rotate(${n/5}deg)`,s.style.opacity="0",setTimeout(()=>s.remove(),500);else{const c=s.style.getPropertyValue("--index"),h=1-c*.05,o=c*12;s.style.transform=`translateY(${o}px) scale(${h})`}n=0})})}async function Gd(e){var t;e.innerHTML='<div class="loading-state">Buscando elenco...</div>';try{const a=await $e.listarTodos(),r=s=>{const c=new Date;c.setHours(0,0,0,0);const h=new Date(s),o=new Date(c.getFullYear(),h.getMonth(),h.getDate());o<c&&o.setFullYear(c.getFullYear()+1);const l=o.getTime()-c.getTime(),d=Math.ceil(l/(1e3*60*60*24)),f=o.getFullYear()-h.getFullYear();return{dias:d,idade:f,dataFormatada:`${h.getDate().toString().padStart(2,"0")}/${(h.getMonth()+1).toString().padStart(2,"0")}`}},n=(s="")=>{const c=a.filter(o=>o.nome.toLowerCase().includes(s.toLowerCase()));return c.length===0?'<div class="no-data">Nenhum integrante encontrado.</div>':c.map(o=>({...o,info:r(o.data_nascimento)})).sort((o,l)=>o.info.dias-l.info.dias).map(o=>{var l;return`
+        `,Pt({icons:{Send:Nd,TrendingUp:zd,Calendar:Ad,MessageCircle:C0,ChevronRight:Y1,Star:ki,Sparkles:F0,LogOut:en,LayoutGrid:Q1,Contact2:b0,Plus:G0,CalendarHeart:J1,Settings2:tn,User:Si}}),c&&BI()}catch(t){console.error("Erro no Dashboard:",t),e.innerHTML='<div class="error-msg">Erro ao carregar informações.</div>'}}function BI(){const e=document.getElementById("heroStack");if(!e)return;let t=!1,a=0,r=0;const n=Array.from(e.querySelectorAll(".hero-card-stacked"));if(n.length===0)return;const i=()=>{n.forEach((o,l)=>{o.style.transition="all 0.5s cubic-bezier(0.23, 1, 0.32, 1)";const d=Math.max(.8,1-l*.05),f=l*12,u=15-l*2;o.style.zIndex=(n.length-l).toString(),o.style.transform=`translateY(${f}px) scale(${d}) rotate(${u}deg)`,o.style.opacity=l>3?"0":"1"})},s=o=>{t=!0,a=o;const l=n[0];l&&(l.style.transition="none")},c=o=>{if(!t)return;r=o-a;const l=n[0];if(l){const d=15+r/10;l.style.transform=`translateY(${r}px) scale(1) rotate(${d}deg)`}},h=()=>{if(!(!t||(t=!1,!n[0]))){if(Math.abs(r)>70){const l=n.shift();l&&(n.push(l),e.appendChild(l))}r=0,i()}};e.addEventListener("pointerdown",o=>s(o.clientY)),window.addEventListener("pointermove",o=>c(o.clientY)),window.addEventListener("pointerup",h),e.addEventListener("dragstart",o=>o.preventDefault()),i()}async function Gd(e){var t;e.innerHTML='<div class="loading-state">Buscando elenco...</div>';try{const a=await $e.listarTodos(),r=s=>{const c=new Date;c.setHours(0,0,0,0);const h=new Date(s),o=new Date(c.getFullYear(),h.getMonth(),h.getDate());o<c&&o.setFullYear(c.getFullYear()+1);const l=o.getTime()-c.getTime(),d=Math.ceil(l/(1e3*60*60*24)),f=o.getFullYear()-h.getFullYear();return{dias:d,idade:f,dataFormatada:`${h.getDate().toString().padStart(2,"0")}/${(h.getMonth()+1).toString().padStart(2,"0")}`}},n=(s="")=>{const c=a.filter(o=>o.nome.toLowerCase().includes(s.toLowerCase()));return c.length===0?'<div class="no-data">Nenhum integrante encontrado.</div>':c.map(o=>({...o,info:r(o.data_nascimento)})).sort((o,l)=>o.info.dias-l.info.dias).map(o=>{var l;return`
                 <div class="card-aniversario">
                     <div class="info-principal" onclick="window.navegar('detalhes', '${o.id}')">
                         <div class="avatar-box">
