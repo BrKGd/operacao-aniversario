@@ -1,4 +1,4 @@
-/* dashboard.css - Upgrade Moderno e Corporativo com Efeito Stack Circular */
+/* dashboard.css - Upgrade Moderno e Corporativo com Efeito Stack Circular 3D */
 .dash-container {
     padding: 16px;
     max-width: 500px;
@@ -44,21 +44,23 @@
     border: 1px solid #e2e8f0;
 }
 
-/* CONTAINER DA PILHA */
+/* CONTAINER DA PILHA (HERO SECTION) */
 .hero-section {
-    perspective: 1200px;
-    height: 280px; 
+    /* Perspective crucial para o efeito 3D. Valor mais alto = menos distorção. */
+    perspective: 1500px; 
+    height: 320px; /* Altura aumentada para acomodar a rotação 3D */
     margin-bottom: 30px;
     position: relative;
     display: flex;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-start; /* Alinha no topo para a roda girar para baixo */
 }
 
 .hero-stack-container {
     position: relative;
     width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
+    height: 220px; /* Altura do card base */
+    transform-style: preserve-3d; /* Necessário para filhos 3D */
     cursor: grab;
     touch-action: none; /* Crucial para o PointerEvents não conflitar com scroll */
 }
@@ -67,22 +69,24 @@
     cursor: grabbing;
 }
 
-/* CARD EMPILHADO - Efeito de Roda */
+/* CARD EMPILHADO - Lógica de Roda 3D */
 .hero-card-stacked {
     position: absolute;
     width: 100%;
+    height: 100%;
     background: #003399; /* Azul Corporativo */
     border-radius: 28px;
     padding: 24px;
     color: white;
+    /* Transições gerenciadas pelo JS */
     box-shadow: 0 10px 25px rgba(0, 51, 153, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
     
-    /* Configuração da Roda */
+    /* Ponto de origem da rotação na base do card para efeito de roda */
     transform-origin: center bottom;
-    backface-visibility: hidden;
-    will-change: transform;
+    backface-visibility: hidden; /* Melhora performance e visual */
+    will-change: transform, opacity;
 }
 
 .hero-card-stacked.empty {
@@ -251,11 +255,6 @@
 
 .date-overlay .dia { font-size: 0.85rem; font-weight: 800; }
 .date-overlay .mes { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; }
-
-.atleta-info-main { flex: 1; }
-.atleta-nome { display: block; font-weight: 700; color: #1e293b; font-size: 0.9rem; }
-.atleta-status { font-size: 0.75rem; color: #64748b; }
-.atleta-action { color: #cbd5e1; }
 
 /* Loader */
 .dash-loader-container {
