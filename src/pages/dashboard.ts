@@ -91,7 +91,7 @@ export async function montarDashboard(container: HTMLElement) {
 
                             return `
                             <div class="hero-card-stacked" style="--index: ${index}; --total: ${aniversariantesHoje.length}">
-                                <span class="hero-tag">HOJE É O DIA DELE(A)</span>
+                                <span class="hero-tag">Hoje é o dia de</span>
                                 <div class="hero-main-info">
                                     <div class="hero-avatar-wrapper">
                                         <img src="${p.imagem_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nome || 'U')}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
