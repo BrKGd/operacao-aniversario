@@ -1,10 +1,19 @@
-/* dashboard.css - Upgrade Moderno e Corporativo com Efeito Carrossel 3D Horizontal */
+/* dashboard.css - Upgrade Moderno e Corporativo */
+:root {
+    --fec-azul-corporativo: #003399;
+    --fec-bg-light: #f8fafc;
+    --fec-text-main: #0f172a;
+    --fec-text-sub: #64748b;
+    --fec-bg-dark-drawer: #001f3f; /* Azul escuro do drawer conforme imagens */
+    --fec-azul-vibrante: #0088ff;
+}
+
 .dash-container {
     padding: 16px;
     max-width: 500px;
     margin: 0 auto;
     font-family: 'Inter', system-ui, sans-serif;
-    background: #f8fafc;
+    background: var(--fec-bg-light);
     min-height: 100vh;
 }
 
@@ -20,13 +29,13 @@
 .user-welcome h1 {
     font-size: 1.25rem;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--fec-text-main);
     margin: 0;
 }
 
 .user-welcome p {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--fec-text-sub);
     margin: 4px 0 0;
     text-transform: capitalize;
 }
@@ -44,156 +53,143 @@
     border: 1px solid #e2e8f0;
 }
 
-/* --- CONTAINER DA SEÇÃO HERO (CARROSSEL 3D HORIZONTAL) --- */
+/* --- HERO SECTION (CARROSSEL 3D) --- */
 .hero-section {
-    perspective: 1500px; /* Aumentado para suportar melhor cards largos em 3D */
-    height: 320px; 
+    perspective: 1500px;
+    height: 340px; 
     margin-bottom: 30px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: visible;
 }
 
 .hero-stack-container {
     position: relative;
-    width: 100%; /* Ocupa a largura total do container pai */
-    height: 230px;
+    width: 100%;
+    height: 280px; 
     transform-style: preserve-3d;
     cursor: grab;
-    touch-action: none;
 }
 
-.hero-stack-container:active {
-    cursor: grabbing;
-}
-
-/* CARD EMPILHADO - Lógica de Rotação Lateral */
 .hero-card-stacked {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%; /* Largura total solicitada */
-    height: 100%;
-    background: #003399; /* Azul Corporativo */
+    inset: 0;
+    background: var(--fec-azul-corporativo);
     border-radius: 28px;
     padding: 24px;
     color: white;
     box-shadow: 0 15px 35px rgba(0, 51, 153, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
-    
-    /* Ponto de origem central para o giro horizontal */
-    transform-origin: center center;
     backface-visibility: hidden;
-    will-change: transform, opacity;
-    
-    /* Transição suave para as mudanças de estado via JS */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
     transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease;
 }
 
-/* Card de Destaque (Principal) */
 .hero-card-stacked:first-child {
     background: linear-gradient(135deg, #003399 0%, #002266 100%);
-    box-shadow: 0 25px 50px rgba(0, 51, 153, 0.3);
-}
-
-.hero-card-stacked.empty {
-    background: white;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 }
 
 .hero-tag {
     font-size: 0.65rem;
     font-weight: 900;
     letter-spacing: 1.5px;
-    background: #FFD700; /* Destaque em Dourado/Amarelo */
-    color: #003399;
+    background: #FFD700;
+    color: var(--fec-azul-corporativo);
     padding: 4px 10px;
     border-radius: 8px;
     display: inline-block;
-    margin-bottom: 20px;
-}
-
-.hero-card-stacked.empty .hero-tag {
-    background: #f1f5f9;
-    color: #64748b;
+    align-self: flex-start;
+    margin-bottom: 15px;
 }
 
 .hero-main-info {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 25px;
+    gap: 16px;
+    margin-bottom: 15px;
 }
 
 .hero-avatar-wrapper {
     position: relative;
-    width: 70px;
-    height: 70px;
+    width: 70px; height: 70px;
     flex-shrink: 0;
 }
 
 .hero-img {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     border-radius: 20px;
     border: 3px solid white;
     object-fit: cover;
 }
 
-.hero-crown {
-    position: absolute;
-    top: -12px;
-    right: -10px;
-    font-size: 1.2rem;
-}
-
 .hero-nome {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 900;
     margin: 0;
-    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.hero-msg-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
 }
 
 .hero-sub {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: rgba(255,255,255,0.85);
-    margin: 8px 0 0;
-    line-height: 1.4;
     font-style: italic;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Correção para o aviso de diagnóstico */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hero-crown {
+    position: absolute;
+    top: -25px;
+    right: -15px;
+    font-size: 2rem;
+}
+
+.btn-send-quick {
+    background: transparent;
+    border: none;
+    color: #25d366;
+    flex-shrink: 0;
+    width: 35px; height: 35px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .btn-parabens-hero {
     width: 100%;
     background: white;
-    color: #003399;
+    color: var(--fec-azul-corporativo);
     border: none;
     padding: 14px;
-    border-radius: 16px;
+    border-radius: 18px;
     font-weight: 800;
-    font-size: 0.9rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-}
-
-.hero-pattern {
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    z-index: -1;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* LISTA DE PRÓXIMOS */
+.proximos-section { margin-top: 10px; }
+
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -202,87 +198,233 @@
 }
 
 .section-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
     font-size: 1rem;
     font-weight: 800;
-    color: #0f172a;
-}
-
-.count-badge {
-    background: #f1f5f9;
-    color: #64748b;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 8px;
+    color: var(--fec-text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .card-atleta-modern {
     background: white;
-    padding: 8px 12px 8px 8px;
-    border-radius: 20px;
+    padding: 10px;
+    border-radius: 22px;
     display: flex;
     align-items: center;
     gap: 16px;
     margin-bottom: 12px;
     border: 1px solid #f1f5f9;
-    transition: transform 0.2s;
-    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
-.card-atleta-modern:active { transform: scale(0.98); }
-
 .atleta-card-3x4 {
-    width: 60px;
-    height: 80px;
+    width: 55px; height: 75px;
     background: #f1f5f9;
-    border-radius: 12px;
-    overflow: hidden;
+    border-radius: 14px;
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e2e8f0;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
 .cat-thumb { width: 100%; height: 100%; object-fit: cover; }
-.cat-placeholder { font-weight: 800; color: #94a3b8; }
 
 .date-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 51, 153, 0.85);
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0, 51, 153, 0.9);
     color: white;
-    padding: 4px 0;
+    text-align: center;
+    padding: 3px 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    line-height: 1;
 }
 
-.date-overlay .dia { font-size: 0.85rem; font-weight: 800; }
-.date-overlay .mes { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; }
+.date-overlay .dia { font-size: 0.8rem; font-weight: 800; line-height: 1; }
+.date-overlay .mes { font-size: 0.5rem; text-transform: uppercase; font-weight: 600; }
 
-/* Estilos de Informação Adicionais (Atleta) */
 .atleta-info-main { flex: 1; }
-.atleta-nome { display: block; font-weight: 700; color: #1e293b; font-size: 0.9rem; }
-.atleta-status { font-size: 0.75rem; color: #64748b; }
-.atleta-action { color: #cbd5e1; }
+.atleta-nome { display: block; font-weight: 700; font-size: 0.9rem; color: var(--fec-text-main); }
+.atleta-status { font-size: 0.75rem; color: var(--fec-text-sub); font-weight: 500; }
 
-/* Loader */
-.dash-loader-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+/* --- DRAWER CORRIGIDO (ESTILO CALENDÁRIO) --- */
+.drawer-cal {
+    position: fixed;
+    inset: 0; /* Preenche toda a tela */
+    width: 100%;
+    background: rgba(0, 8, 20, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: none;
+    align-items: flex-end; /* Fixa na base */
+    justify-content: center; /* Centraliza horizontalmente */
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.fec-loader-minimal {
+.drawer-cal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.drawer-cal-content {
+    background: var(--fec-bg-dark-drawer);
+    width: 100%;
+    max-width: 100%; /* Alinhado com o container principal */
+    height: 65vh; /* Altura da foto 2 */
+    border-radius: 30px 30px 0 0;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+    position: fixed;
+    bottom: 0;
+    padding: 0 0 0 5px;
+    
+}
+
+.drawer-cal.active .drawer-cal-content {
+    transform: translateY(0);
+}
+
+.drawer-handle {
+    width: 45px;
+    height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+}
+
+.drawer-cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.drawer-cal-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.drawer-cal-title i { color: #fff; opacity: 0.7; }
+
+.drawer-cal-title h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: white;
+    font-weight: 700;
+}
+
+.drawer-cal-title p {
+    margin: 2px 0 0;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+}
+
+.btn-close-drawer {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* PILLS DE FILTRO */
+.pills-container-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 15px 25px;
+    scrollbar-width: none;
+}
+
+.pills-container-scroll::-webkit-scrollbar { display: none; }
+
+.btn-pill-filter {
+    height: 22.5px !important;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #003399;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    gap: 6px; 
+}
+
+.btn-pill-filter.active {
+    background: var(--fec-azul-vibrante);
+    color: white;
+    border-color: var(--fec-azul-vibrante);
+    box-shadow: 0 4px 12px rgba(0, 136, 255, 0.3);
+}
+
+/* LISTA DE TEMPLATES */
+.lista-templates-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 25px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.template-item-cal {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 18px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.template-item-cal:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.08); }
+
+.template-info { flex: 1; padding-right: 15px; }
+
+.badge-categoria-msg {
+    font-size: 0.6rem;
+    background: rgba(99, 102, 241, 0.2);
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: #818cf8;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.template-texto-cal {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.btn-enviar-template-cal { color: #25d366; flex-shrink: 0; }
+
+/* LOADER */
+.fec-loader-minimal {
+    font-weight: 800;
+    color: var(--fec-azul-corporativo);
+    text-align: center;
+    padding: 60px 20px;
 }

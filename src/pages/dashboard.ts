@@ -1,6 +1,6 @@
 import '../styles/dashboard.css';
 import { aniversarioService } from '../services/aniversarioService';
-import { Aniversario } from '../types';
+import { Aniversario, MensagemTemplate } from '../types';
 import { 
     createIcons, 
     Send, 
@@ -16,8 +16,18 @@ import {
     Plus,
     CalendarHeart,
     Settings2,
-    User
+    User,
+    X,
+    Filter
 } from 'lucide';
+
+// Objeto centralizado com todos os ícones usados nesta tela para evitar erros de "icon not found"
+const DASHBOARD_ICONS = { 
+    Send, TrendingUp, Calendar, MessageCircle, ChevronRight, Star,
+    Sparkles, LogOut, LayoutGrid, Contact2, Plus, CalendarHeart, Settings2, User, X, Filter
+};
+
+let templatesGlobais: MensagemTemplate[] = [];
 
 export async function montarDashboard(container: HTMLElement) {
     container.innerHTML = `
@@ -29,12 +39,8 @@ export async function montarDashboard(container: HTMLElement) {
     try {
         const hoje = new Date();
         const todos: Aniversario[] = await aniversarioService.listarTodos();
-        const templates = await aniversarioService.listarTemplates();
+        templatesGlobais = await aniversarioService.listarTemplates();
         
-        const mensagemAleatoria = templates.length > 0 
-            ? templates[Math.floor(Math.random() * templates.length)].conteudo 
-            : "Desejamos um excelente dia e um feliz aniversário!";
-
         const aniversariantesHoje = todos.filter((p: Aniversario) => {
             if (!p.data_nascimento) return false;
             const d = new Date(p.data_nascimento + 'T00:00:00');
@@ -76,7 +82,14 @@ export async function montarDashboard(container: HTMLElement) {
 
                 <section class="hero-section">
                     <div class="hero-stack-container" id="heroStack">
-                        ${temAniversariante ? aniversariantesHoje.map((p, index) => `
+                        ${temAniversariante ? aniversariantesHoje.map((p, index) => {
+                            const templateSorteado = templatesGlobais.length > 0 
+                                ? templatesGlobais[Math.floor(Math.random() * templatesGlobais.length)]
+                                : null;
+                            
+                            const msgCard = templateSorteado?.conteudo || "Desejamos um excelente dia e um feliz aniversário!";
+
+                            return `
                             <div class="hero-card-stacked" style="--index: ${index}; --total: ${aniversariantesHoje.length}">
                                 <span class="hero-tag">HOJE É O DIA DELE(A)</span>
                                 <div class="hero-main-info">
@@ -86,15 +99,21 @@ export async function montarDashboard(container: HTMLElement) {
                                     </div>
                                     <div class="hero-text-data">
                                         <h2 class="hero-nome">${(p.nome || 'Usuário').split(' ')[0]}</h2>
-                                        <p class="hero-sub">"${mensagemAleatoria}"</p>
+                                        <div class="hero-msg-row">
+                                            <p class="hero-sub">"${msgCard}"</p>
+                                            <button class="btn-send-quick" title="Enviar esta frase" 
+                                                onclick="window.enviarZapDireto('${p.telefone || ''}', '${msgCard}')">
+                                                <i data-lucide="message-circle"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <button class="btn-parabens-hero" onclick="window.navegar('detalhes', '${p.id}')">
-                                    <i data-lucide="message-circle"></i> ENVIAR PARABÉNS
+                                <button class="btn-parabens-hero" onclick="window.abrirSeletorDash('${p.nome}', '${p.telefone || ''}')">
+                                    <i data-lucide="message-circle"></i> ESCOLHER MENSAGEM
                                 </button>
                                 <div class="hero-pattern"></div>
                             </div>
-                        `).join('') : `
+                        `; }).join('') : `
                             <div class="hero-card-stacked empty">
                                 <span class="hero-tag">SEM EVENTOS</span>
                                 <div class="hero-empty-state">
@@ -143,14 +162,101 @@ export async function montarDashboard(container: HTMLElement) {
                     </div>
                 </section>
             </div>
+
+            <div id="drawer-mensagem-dash" class="drawer-cal">
+                <div class="drawer-cal-content">
+                    <div class="drawer-handle"></div>
+                    <div class="drawer-cal-header">
+                        <div class="drawer-cal-title">
+                            <i data-lucide="message-circle"></i>
+                            <div>
+                                <h3 id="dash-drawer-nome">Enviar Mensagem</h3>
+                                <p>Selecione um modelo para enviar</p>
+                            </div>
+                        </div>
+                        <button class="btn-close-drawer" onclick="window.fecharDrawerDash()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
+                    <div id="dash-pills-container" class="pills-container-scroll"></div>
+
+                    <div id="dash-templates-list" class="lista-templates-container">
+                    </div>
+                </div>
+            </div>
         `;
 
-        createIcons({ 
-            icons: { 
-                Send, TrendingUp, Calendar, MessageCircle, ChevronRight, Star,
-                Sparkles, LogOut, LayoutGrid, Contact2, Plus, CalendarHeart, Settings2, User
-            } 
-        });
+        // Funções Globais expostas para o HTML
+        (window as any).enviarZapDireto = (tel: string, msg: string) => {
+            if (!tel) return alert("Telefone não cadastrado.");
+            window.open(`https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
+        };
+
+        (window as any).abrirSeletorDash = (nome: string, tel: string) => {
+            const drawer = document.getElementById('drawer-mensagem-dash');
+            const list = document.getElementById('dash-templates-list');
+            const pillsContainer = document.getElementById('dash-pills-container');
+            const targetNome = document.getElementById('dash-drawer-nome');
+
+            if (drawer && list && pillsContainer && targetNome) {
+                targetNome.innerText = `Para ${nome.split(' ')[0]}`;
+                
+                const tiposMensagens = [...new Set(templatesGlobais.map(t => t.tipo))].sort();
+                let tipoAtivo: string | null = null;
+
+                const renderTemplates = (filtro: string | null) => {
+                    const filtrados = filtro 
+                        ? templatesGlobais.filter(t => t.tipo === filtro)
+                        : templatesGlobais;
+
+                    list.innerHTML = filtrados.map(t => `
+                        <div class="template-item-cal" onclick="window.enviarZapDireto('${tel}', '${t.conteudo}')">
+                            <div class="template-info">
+                                <span class="badge-categoria-msg">${t.tipo}</span>
+                                <p class="template-texto-cal">${t.conteudo}</p>
+                            </div>
+                            <div class="btn-enviar-template-cal">
+                                <i data-lucide="message-circle"></i>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // CORREÇÃO: Sempre passar todos os ícones para o Lucide não se perder
+                    createIcons({ icons: DASHBOARD_ICONS });
+                };
+
+                const renderPills = () => {
+                    pillsContainer.innerHTML = `
+                        <button class="btn-pill-filter ${!tipoAtivo ? 'active' : ''}" data-tipo="all">Todos</button>
+                        ${tiposMensagens.map(tipo => `
+                            <button class="btn-pill-filter ${tipoAtivo === tipo ? 'active' : ''}" data-tipo="${tipo}">${tipo}</button>
+                        `).join('')}
+                    `;
+
+                    pillsContainer.querySelectorAll('.btn-pill-filter').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const tipo = (e.currentTarget as HTMLElement).dataset.tipo;
+                            tipoAtivo = tipo === 'all' ? null : tipo!;
+                            renderPills();
+                            renderTemplates(tipoAtivo);
+                        });
+                    });
+                };
+
+                renderPills();
+                renderTemplates(null);
+                
+                drawer.classList.add('active');
+            }
+        };
+
+        (window as any).fecharDrawerDash = () => {
+            document.getElementById('drawer-mensagem-dash')?.classList.remove('active');
+        };
+
+        // Renderização inicial dos ícones
+        createIcons({ icons: DASHBOARD_ICONS });
 
         if (temAniversariante) {
             inicializarStack();
@@ -180,15 +286,13 @@ function inicializarStack() {
         cards.forEach((card, index) => {
             card.style.transition = isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease';
             
-            // Layout Base: O primeiro (index 0) é o destaque
             const scale = Math.max(0.7, 1 - (index * 0.1));
             const translateZ = index * -100;
-            const translateY = index * 10; // Leve empilhamento vertical natural
+            const translateY = index * 10; 
             
             card.style.zIndex = (cards.length - index).toString();
             card.style.opacity = index > 2 ? '0' : (1 - index * 0.3).toString();
             
-            // Transformação Padrão (Sem arrastar)
             card.style.transform = `translateZ(${translateZ}px) translateY(${translateY}px) scale(${scale})`;
         });
     };
@@ -206,7 +310,6 @@ function inicializarStack() {
         moveX = clientX - startX;
         moveY = clientY - startY;
 
-        // Detectar direção no início do gesto
         if (!gestureDirection && (Math.abs(moveX) > 10 || Math.abs(moveY) > 10)) {
             gestureDirection = Math.abs(moveX) > Math.abs(moveY) ? 'horizontal' : 'vertical';
         }
@@ -228,10 +331,8 @@ function inicializarStack() {
         isDragging = false;
 
         const threshold = 70;
-        let mudou = false;
 
         if (gestureDirection === 'horizontal' && Math.abs(moveX) > threshold) {
-            // Logica Horizontal
             if (moveX > 0) {
                 const last = cards.pop();
                 if (last) { cards.unshift(last); stack.prepend(last); }
@@ -239,9 +340,7 @@ function inicializarStack() {
                 const first = cards.shift();
                 if (first) { cards.push(first); stack.appendChild(first); }
             }
-            mudou = true;
         } else if (gestureDirection === 'vertical' && Math.abs(moveY) > threshold) {
-            // Logica Vertical
             if (moveY > 0) {
                 const last = cards.pop();
                 if (last) { cards.unshift(last); stack.prepend(last); }
@@ -249,7 +348,6 @@ function inicializarStack() {
                 const first = cards.shift();
                 if (first) { cards.push(first); stack.appendChild(first); }
             }
-            mudou = true;
         }
 
         moveX = 0;
