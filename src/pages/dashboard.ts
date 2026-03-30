@@ -98,8 +98,10 @@ export async function montarDashboard(container: HTMLElement) {
                             <div class="hero-card-stacked empty">
                                 <span class="hero-tag">SEM EVENTOS</span>
                                 <div class="hero-empty-state">
-                                    <i data-lucide="user" class="icon-empty"></i>
-                                    <p>Tudo tranquilo por aqui hoje.</p>
+                                    <div style="text-align: center; padding: 20px;">
+                                        <i data-lucide="user" style="width: 40px; height: 40px; opacity: 0.2; margin-bottom: 10px;"></i>
+                                        <p>Tudo tranquilo por aqui hoje.</p>
+                                    </div>
                                 </div>
                             </div>
                         `}
@@ -134,7 +136,7 @@ export async function montarDashboard(container: HTMLElement) {
                                 </div>
                             </div>
                         `).join('') : `
-                            <div class="dash-empty-list">
+                            <div class="dash-empty-list" style="text-align:center; padding: 40px; color: #94a3b8; font-size: 0.9rem;">
                                 <p>Sem eventos previstos para esta semana.</p>
                             </div>
                         `}
@@ -164,41 +166,73 @@ function inicializarStack() {
     const stack = document.getElementById('heroStack');
     if (!stack) return;
 
-    const cards = stack.querySelectorAll('.hero-card-stacked');
-    let startX: number, startY: number, moveX: number, moveY: number;
+    let isDragging = false;
+    let startY = 0;
+    let moveY = 0;
 
-    cards.forEach((card: any) => {
-        card.addEventListener('touchstart', (e: TouchEvent) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            card.style.transition = 'none';
-        });
+    const cards = Array.from(stack.querySelectorAll('.hero-card-stacked')) as HTMLElement[];
+    if (cards.length === 0) return;
 
-        card.addEventListener('touchmove', (e: TouchEvent) => {
-            moveX = e.touches[0].clientX - startX;
-            moveY = e.touches[0].clientY - startY;
-            
-            // Swipe circular (rotação baseada no movimento horizontal)
-            const rotation = moveX / 10;
-            card.style.transform = `translate(${moveX}px, ${moveY}px) rotate(${rotation}deg)`;
-        });
-
-        card.addEventListener('touchend', () => {
+    // Atualiza as posições visuais baseadas no índice atual do array
+    const atualizarPosicoes = () => {
+        cards.forEach((card, index) => {
             card.style.transition = 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+            const scale = Math.max(0.8, 1 - (index * 0.05));
+            const translateY = index * 12;
+            const rotate = 15 - (index * 2); // Angulação de 15 graus no topo decrescendo
             
-            // Se o arrasto for longo o suficiente, joga o card fora
-            if (Math.abs(moveX) > 120) {
-                card.style.transform = `translate(${moveX * 2}px, ${moveY}px) rotate(${moveX / 5}deg)`;
-                card.style.opacity = '0';
-                setTimeout(() => card.remove(), 500);
-            } else {
-                // Volta para a posição original na pilha
-                const index = card.style.getPropertyValue('--index');
-                const scale = 1 - (index * 0.05);
-                const offset = index * 12;
-                card.style.transform = `translateY(${offset}px) scale(${scale})`;
-            }
-            moveX = 0;
+            card.style.zIndex = (cards.length - index).toString();
+            card.style.transform = `translateY(${translateY}px) scale(${scale}) rotate(${rotate}deg)`;
+            card.style.opacity = index > 3 ? '0' : '1';
         });
-    });
+    };
+
+    const handleStart = (clientY: number) => {
+        isDragging = true;
+        startY = clientY;
+        const topCard = cards[0];
+        if (topCard) topCard.style.transition = 'none';
+    };
+
+    const handleMove = (clientY: number) => {
+        if (!isDragging) return;
+        moveY = clientY - startY;
+        const topCard = cards[0];
+        if (topCard) {
+            // Preview do movimento circular (inclina conforme arrasta)
+            const rotation = 15 + (moveY / 10);
+            topCard.style.transform = `translateY(${moveY}px) scale(1) rotate(${rotation}deg)`;
+        }
+    };
+
+    const handleEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const topCard = cards[0];
+        if (!topCard) return;
+
+        // Se o arrasto for significativo (mais de 70px para cima ou baixo)
+        if (Math.abs(moveY) > 70) {
+            // Remove do topo e coloca no final (Efeito de Roda)
+            const movedCard = cards.shift();
+            if (movedCard) {
+                cards.push(movedCard);
+                stack.appendChild(movedCard);
+            }
+        }
+        
+        moveY = 0;
+        atualizarPosicoes();
+    };
+
+    // Eventos de Pointer unificam Mouse e Touch
+    stack.addEventListener('pointerdown', (e) => handleStart(e.clientY));
+    window.addEventListener('pointermove', (e) => handleMove(e.clientY));
+    window.addEventListener('pointerup', handleEnd);
+    
+    // Previne comportamento padrão de arrasto de imagem
+    stack.addEventListener('dragstart', (e) => e.preventDefault());
+
+    atualizarPosicoes();
 }
