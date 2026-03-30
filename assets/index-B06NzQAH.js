@@ -8602,7 +8602,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                             <div class="hero-card-stacked" style="--index: ${c}; --total: ${r.length}">
                                 <span class="hero-tag">Hoje é o dia de</span>
                                 <div class="hero-main-info">
-                                    <div class="hero-avatar-wrapper">
+                                    <div class="hero-avatar-wrapper" onclick="window.navegar('detalhes', '${s.id}')">
                                         <img src="${s.imagem_url||`https://ui-avatars.com/api/?name=${encodeURIComponent(s.nome||"U")}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
                                         <div class="hero-crown">👑</div>
                                     </div>
@@ -8659,7 +8659,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                                 <div class="atleta-info-main">
                                     <span class="atleta-nome">${s.nome||"Contato"}</span>
                                     <span class="atleta-status">
-                                        Em ${s.diffDays} ${s.diffDays===1?"dia":"dias"} faz ${s.idadeNova} anos
+                                        Em ${s.diffDays} ${s.diffDays===1?"dia":"dias"}, faz ${s.idadeNova} anos
                                     </span>
                                 </div>
                                 <div class="atleta-action">
