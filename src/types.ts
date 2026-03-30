@@ -26,7 +26,8 @@ export interface Aniversario {
   frase_exibicao?: string;
   imagem_url?: string;
   categoria_id: string;
-  categorias?: Categoria; 
+  categorias?: Categoria;
+  idadeNova: number; 
 }
 
 /*Tipos para as rotas e navegação do App */

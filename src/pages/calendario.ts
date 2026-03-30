@@ -1,4 +1,5 @@
 import '../styles/calendario.css';
+import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria, MensagemTemplate } from '../types';
 import { 
@@ -60,7 +61,7 @@ export async function montarCalendario(container: HTMLElement) {
                             <p style="margin:0; font-size:0.9rem; color: rgba(255,255,255,0.8);">${msgFinal}</p>
                         </div>
                         <div class="template-action">
-                            <i data-lucide="message-circle" style="width: 18px; color: #25d366;"></i>
+                            <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">
                         </div>
                     </div>
                 `;
@@ -218,7 +219,7 @@ export async function montarCalendario(container: HTMLElement) {
                                         <span>${calcularIdadeVindoura(n.data_nascimento)} anos • Dia ${new Date(n.data_nascimento + 'T00:00:00').getDate()}</span>
                                     </div>
                                     <button class="btn-zap-cal" data-nome="${n.nome}" data-tel="${n.telefone || ''}" onclick="event.stopPropagation();">
-                                        <i data-lucide="message-circle" style="width:20px;"></i>
+                                        <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">
                                     </button>
                                 </div>
                             `).join('') : `<p style="text-align:center; color:#94a3b8; padding:30px; font-size:0.9rem;">Nenhum encontrado.</p>`}

@@ -115,19 +115,18 @@
 
 .hero-avatar-wrapper {
     position: relative;
-    width: 70px; height: 70px;
+    width: 150px; height: 150px;
     flex-shrink: 0;
 }
 
 .hero-img {
     width: 100%; height: 100%;
     border-radius: 20px;
-    border: 3px solid white;
     object-fit: cover;
 }
 
 .hero-nome {
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 900;
     margin: 0;
     line-height: 1.2;
@@ -141,9 +140,9 @@
 }
 
 .hero-sub {
-    font-size: 0.8rem;
+    font-size: 1rem;
     color: rgba(255,255,255,0.85);
-    font-style: italic;
+    font-style:normal;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2; /* Correção para o aviso de diagnóstico */
@@ -172,21 +171,38 @@
 }
 
 .btn-parabens-hero {
-    width: 100%;
-    background: white;
-    color: var(--fec-azul-corporativo);
+    width: auto; /* Deixe o width auto ou um valor fixo menor para caber na direita */
+    min-width: 60%; 
+    background: #25d366;
+    color: white;
     border: none;
-    padding: 14px;
+    padding: 14px 24px; /* Aumentei o padding lateral */
     border-radius: 18px;
-    font-weight: 800;
+    font-weight: bold;
     cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+    margin: -15px -10px 0 auto;
+    text-decoration: none;
+    transition: transform 0.2s ease;
 }
 
+.btn-parabens-hero img {
+    display: block;
+    object-fit: contain;
+}
+
+.btn-send-quick img {
+    display: block;
+    margin: auto;
+}
+
+.btn-parabens-hero:active {
+    transform: scale(0.98);
+}
 /* LISTA DE PRÓXIMOS */
 .proximos-section { margin-top: 10px; }
 
@@ -241,8 +257,32 @@
 }
 
 .date-overlay .dia { font-size: 0.8rem; font-weight: 800; line-height: 1; }
-.date-overlay .mes { font-size: 0.5rem; text-transform: uppercase; font-weight: 600; }
+.date-overlay .mes { font-size: 0.5rem; font-weight: 600; }
 
+/* Estilização do Badge de Contagem em formato Pill */
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22.5px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background-color: #003399;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 51, 153, 0.1);
+    transition: transform 0.2s ease;
+}
+
+/* Feedback visual ao interagir com a seção (opcional) */
+.section-header:hover .count-badge {
+    transform: translateY(-1px);
+}
 .atleta-info-main { flex: 1; }
 .atleta-nome { display: block; font-weight: 700; font-size: 0.9rem; color: var(--fec-text-main); }
 .atleta-status { font-size: 0.75rem; color: var(--fec-text-sub); font-weight: 500; }

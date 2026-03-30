@@ -1,4 +1,5 @@
 import '../styles/dashboard.css';
+import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, MensagemTemplate } from '../types';
 import { 
@@ -21,13 +22,17 @@ import {
     Filter
 } from 'lucide';
 
-// Objeto centralizado com todos os ícones usados nesta tela
 const DASHBOARD_ICONS = { 
     Send, TrendingUp, Calendar, MessageCircle, ChevronRight, Star,
     Sparkles, LogOut, LayoutGrid, Contact2, Plus, CalendarHeart, Settings2, User, X, Filter
 };
 
 let templatesGlobais: MensagemTemplate[] = [];
+
+// Configuração de Previsão
+const DIAS_PREVISAO = 15;
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
 export async function montarDashboard(container: HTMLElement) {
     container.innerHTML = `
@@ -47,7 +52,7 @@ export async function montarDashboard(container: HTMLElement) {
             return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
         });
 
-        const proximos7Dias = todos.map(p => {
+        const proximosEventos = todos.map(p => {
             if (!p.data_nascimento) return null;
             const d = new Date(p.data_nascimento + 'T00:00:00');
             const niverEsteAno = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
@@ -58,9 +63,13 @@ export async function montarDashboard(container: HTMLElement) {
 
             const diffTime = niverEsteAno.getTime() - hoje.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return { ...p, diffDays, dataObj: d };
+            const idadeNova = niverEsteAno.getFullYear() - d.getFullYear();
+
+            return { ...p, diffDays, dataObj: d, idadeNova };
         })
-        .filter((p): p is (NonNullable<typeof p>) => p !== null && p.diffDays > 0 && p.diffDays <= 7)
+        .filter((p): p is (Aniversario & { diffDays: number; dataObj: Date; idadeNova: number }) => 
+            p !== null && p.diffDays > 0 && p.diffDays <= DIAS_PREVISAO
+        )
         .sort((a, b) => a.diffDays - b.diffDays);
 
         const temAniversariante = aniversariantesHoje.length > 0;
@@ -70,7 +79,7 @@ export async function montarDashboard(container: HTMLElement) {
                 <header class="dash-header">
                     <div class="user-welcome">
                         <h1>Painel de Controle</h1>
-                        <p>${hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                        <p>${capitalize(hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</p>
                     </div>
                     <div class="dash-actions">
                         <div class="badge-total-mes" title="Total do mês">
@@ -86,7 +95,6 @@ export async function montarDashboard(container: HTMLElement) {
                             const templateSorteado = templatesGlobais.length > 0 
                                 ? templatesGlobais[Math.floor(Math.random() * templatesGlobais.length)]
                                 : null;
-                            
                             const msgCard = templateSorteado?.conteudo || "Desejamos um excelente dia e um feliz aniversário!";
 
                             return `
@@ -103,13 +111,13 @@ export async function montarDashboard(container: HTMLElement) {
                                             <p class="hero-sub">"${msgCard}"</p>
                                             <button class="btn-send-quick" title="Enviar esta frase" 
                                                 onclick="window.enviarZapDireto('${p.telefone || ''}', '${msgCard}')">
-                                                <i data-lucide="message-circle"></i>
+                                                <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                                 <button class="btn-parabens-hero" onclick="window.abrirSeletorDash('${p.nome}', '${p.telefone || ''}')">
-                                    <i data-lucide="message-circle"></i> ESCOLHER MENSAGEM
+                                    <img src="${whatsappIcon}" alt="WhatsApp" style="width: 24px; height: 24px;"> ESCOLHER MENSAGEM
                                 </button>
                                 <div class="hero-pattern"></div>
                             </div>
@@ -129,12 +137,15 @@ export async function montarDashboard(container: HTMLElement) {
 
                 <section class="proximos-section">
                     <div class="section-header">
-                        <h3 class="section-title"><i data-lucide="calendar"></i> Próximos Eventos</h3>
-                        <span class="count-badge">${proximos7Dias.length} agendados</span>
+                        <h3 class="section-title"><i data-lucide="calendar"></i> Próximos ${DIAS_PREVISAO} dias</h3>
+                        <span class="count-badge">
+                        ${proximosEventos.length} 
+                        ${proximosEventos.length === 1 ? 'agendado' : 'agendados'}
+                        </span>
                     </div>
                     
                     <div class="proximos-list">
-                        ${proximos7Dias.length > 0 ? proximos7Dias.map(p => `
+                        ${proximosEventos.length > 0 ? proximosEventos.map(p => `
                             <div class="card-atleta-modern" onclick="window.navegar('detalhes', '${p.id}')">
                                 <div class="atleta-card-3x4">
                                     ${p.imagem_url 
@@ -142,13 +153,16 @@ export async function montarDashboard(container: HTMLElement) {
                                         : `<span class="cat-placeholder">${p.nome?.substring(0,2).toUpperCase() || 'AN'}</span>`
                                     }
                                     <div class="date-overlay">
-                                        <span class="dia">${p.dataObj.getDate()}</span>
-                                        <span class="mes">${p.dataObj.toLocaleString('pt-BR', { month: 'short' }).toUpperCase()}</span>
+                                        <span class="mes">
+                                            ${p.dataObj.getDate()} de ${capitalize(p.dataObj.toLocaleString('pt-BR', { month: 'long' }))}
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="atleta-info-main">
                                     <span class="atleta-nome">${p.nome || 'Contato'}</span>
-                                    <span class="atleta-status">Em ${p.diffDays} ${p.diffDays === 1 ? 'dia' : 'dias'}</span>
+                                    <span class="atleta-status">
+                                        Em ${p.diffDays} ${p.diffDays === 1 ? 'dia' : 'dias'} faz ${p.idadeNova} anos
+                                    </span>
                                 </div>
                                 <div class="atleta-action">
                                     <i data-lucide="chevron-right"></i>
@@ -156,7 +170,7 @@ export async function montarDashboard(container: HTMLElement) {
                             </div>
                         `).join('') : `
                             <div class="dash-empty-list" style="text-align:center; padding: 40px; color: #94a3b8; font-size: 0.9rem;">
-                                <p>Sem eventos previstos para esta semana.</p>
+                                <p>Sem eventos previstos para este período.</p>
                             </div>
                         `}
                     </div>
@@ -168,7 +182,6 @@ export async function montarDashboard(container: HTMLElement) {
                     <div class="drawer-handle"></div>
                     <div class="drawer-cal-header">
                         <div class="drawer-cal-title">
-                            <i data-lucide="message-circle"></i>
                             <div>
                                 <h3 id="dash-drawer-nome">Enviar Mensagem</h3>
                                 <p>Selecione um modelo para enviar</p>
@@ -178,16 +191,13 @@ export async function montarDashboard(container: HTMLElement) {
                             <i data-lucide="x"></i>
                         </button>
                     </div>
-
                     <div id="dash-pills-container" class="pills-container-scroll"></div>
-
-                    <div id="dash-templates-list" class="lista-templates-container">
-                    </div>
+                    <div id="dash-templates-list" class="lista-templates-container"></div>
                 </div>
             </div>
         `;
 
-        // Funções Globais
+        // Funções Globais (WhatsApp e Drawer)
         (window as any).enviarZapDireto = (tel: string, msg: string) => {
             if (!tel) return alert("Telefone não cadastrado.");
             window.open(`https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
@@ -205,10 +215,7 @@ export async function montarDashboard(container: HTMLElement) {
                 let tipoAtivo: string | null = null;
 
                 const renderTemplates = (filtro: string | null) => {
-                    const filtrados = filtro 
-                        ? templatesGlobais.filter(t => t.tipo === filtro)
-                        : templatesGlobais;
-
+                    const filtrados = filtro ? templatesGlobais.filter(t => t.tipo === filtro) : templatesGlobais;
                     list.innerHTML = filtrados.map(t => `
                         <div class="template-item-cal" onclick="window.enviarZapDireto('${tel}', '${t.conteudo}')">
                             <div class="template-info">
@@ -216,7 +223,7 @@ export async function montarDashboard(container: HTMLElement) {
                                 <p class="template-texto-cal">${t.conteudo}</p>
                             </div>
                             <div class="btn-enviar-template-cal">
-                                <i data-lucide="message-circle"></i>
+                                <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">
                             </div>
                         </div>
                     `).join('');
@@ -230,7 +237,6 @@ export async function montarDashboard(container: HTMLElement) {
                             <button class="btn-pill-filter ${tipoAtivo === tipo ? 'active' : ''}" data-tipo="${tipo}">${tipo}</button>
                         `).join('')}
                     `;
-
                     pillsContainer.querySelectorAll('.btn-pill-filter').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             const tipo = (e.currentTarget as HTMLElement).dataset.tipo;
@@ -280,11 +286,9 @@ function inicializarStack() {
     const aplicarTransformacoes3D = () => {
         cards.forEach((card, index) => {
             card.style.transition = isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease';
-            
             const scale = Math.max(0.7, 1 - (index * 0.1));
             const translateZ = index * -100;
             const translateY = index * 10; 
-            
             card.style.zIndex = (cards.length - index).toString();
             card.style.opacity = index > 2 ? '0' : (1 - index * 0.3).toString();
             card.style.transform = `translateZ(${translateZ}px) translateY(${translateY}px) scale(${scale})`;
@@ -292,49 +296,38 @@ function inicializarStack() {
     };
 
     const handleStart = (e: PointerEvent) => {
-        // Se o clique for em um botão dentro do card, não inicia o swipe
         if ((e.target as HTMLElement).closest('button')) return;
-        
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
         gestureDirection = null;
-        
-        // Evita que o navegador tente arrastar a imagem ou texto
         stack.style.userSelect = 'none';
     };
 
     const handleMove = (e: PointerEvent) => {
         if (!isDragging) return;
-        
         moveX = e.clientX - startX;
         moveY = e.clientY - startY;
 
-        // Detecta a direção predominante do gesto
         if (!gestureDirection && (Math.abs(moveX) > 10 || Math.abs(moveY) > 10)) {
             gestureDirection = Math.abs(moveX) > Math.abs(moveY) ? 'horizontal' : 'vertical';
         }
 
-        // SE o gesto for predominantemente HORIZONTAL, bloqueamos o scroll da tela e movemos o card
         if (gestureDirection === 'horizontal') {
-            if (e.cancelable) e.preventDefault(); // Impede scroll da página
+            if (e.cancelable) e.preventDefault();
             e.stopPropagation();
-
             const mainCard = cards[0];
             if (mainCard) {
                 const rotY = moveX / 15;
                 mainCard.style.transform = `translateX(${moveX * 0.8}px) rotateY(${rotY}deg) scale(1.05)`;
             }
         } 
-        // Se for vertical e o usuário moveu pouco, ainda não decidimos. 
-        // Se for vertical e mover muito, o isDragging será cancelado pelo comportamento natural do navegador ou handleEnd
     };
 
     const handleEnd = () => {
         if (!isDragging) return;
         isDragging = false;
         stack.style.userSelect = 'auto';
-
         const threshold = 100;
 
         if (gestureDirection === 'horizontal' && Math.abs(moveX) > threshold) {
@@ -346,22 +339,14 @@ function inicializarStack() {
                 if (first) { cards.push(first); stack.appendChild(first); }
             }
         }
-
-        moveX = 0;
-        moveY = 0;
-        gestureDirection = null;
+        moveX = 0; moveY = 0; gestureDirection = null;
         aplicarTransformacoes3D();
     };
 
-    // Eventos específicos no stack para capturar o início
     stack.addEventListener('pointerdown', handleStart);
-    
-    // Eventos globais para garantir que o movimento continue mesmo se sair do stack
     window.addEventListener('pointermove', handleMove, { passive: false });
     window.addEventListener('pointerup', handleEnd);
     window.addEventListener('pointercancel', handleEnd);
-    
     stack.addEventListener('dragstart', (e) => e.preventDefault());
-
     aplicarTransformacoes3D();
 }

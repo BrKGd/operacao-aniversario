@@ -1,4 +1,5 @@
-import '../styles/detalhes.css'; 
+import '../styles/detalhes.css';
+import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
 import { Aniversario, Categoria } from '../types';
@@ -65,7 +66,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                     <div class="notes-content">${(pessoa as any).frase_exibicao || 'Sem observações.'}</div>
                     
                     <a href="${gerarLinkWhatsapp(pessoa.nome, pessoa.telefone || '')}" target="_blank" class="btn-whatsapp-modern">
-                        <i data-lucide="message-circle"></i> ENVIAR MENSAGEM
+                        <img src="${whatsappIcon}" alt="WhatsApp" style="width: 30px; height: 30px;"></i> ENVIAR MENSAGEM
                     </a>
                 </section>
             </div>
