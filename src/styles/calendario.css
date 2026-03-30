@@ -11,6 +11,11 @@
     --fec-hoje-border: #3b82f6;
     --fec-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
     --fec-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    
+    /* Variáveis do Tema Azul (Compatibilidade com Detalhes) */
+    --fec-azul-vibrante: #003399;   
+    --fec-vermelho-vibrante: #ff0000; 
+    --fec-bg-dark: #001f3f;
 }
 
 .calendario-container {
@@ -271,3 +276,139 @@
 .dia-vazio {
     aspect-ratio: 1/1;
 }
+
+/* --- ESTILO DO FILTRO DE CATEGORIAS NO CALENDÁRIO --- */
+.btn-cat-filter {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--fec-text-sub);
+}
+
+.btn-cat-filter.active {
+    background: var(--fec-primary);
+    color: white;
+    border-color: var(--fec-primary);
+}
+
+/* --- NOVOS ESTILOS: DRAWER PREMIUM (PARA MENSAGENS E FILTRO) --- */
+.card-template-premium {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.card-template-premium:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.template-info { flex: 1; padding-right: 15px; }
+.template-action { flex-shrink: 0; }
+
+.drawer-title-group h2 { margin: 0; }
+.drawer-title-group small { font-weight: 500; font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+.btn-add-category-drawer {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- REUTILIZANDO CLASSES DO TEMA DARK PARA O DRAWER (CONFORME DETALHES.CSS) --- */
+.drawer-overlay-premium {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 8, 20, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    display: none; 
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.drawer-overlay-premium.active { display: flex; }
+
+.drawer-content-premium {
+    background: var(--fec-bg-dark);
+    width: 100%;
+    max-width: 500px;
+    height: 65vh; 
+    border-radius: 30px 30px 0 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+    position: fixed;
+    bottom: 0; 
+    animation: slideUpDrawer 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpDrawer {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.drawer-handle {
+    width: 45px;
+    height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    margin: 12px auto 0;
+}
+
+.drawer-header-premium { 
+    padding: 15px 25px 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.drawer-header-actions { display: flex; gap: 10px; }
+
+.category-drawer-content { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 20px 25px 40px; 
+}
+
+/* Scrollbar Customizado para o Drawer Azul */
+.category-drawer-content::-webkit-scrollbar { width: 6px; }
+.category-drawer-content::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+.category-drawer-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+/* Itens de Rádio do Filtro (Dentro do Drawer) */
+.category-item-radio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+.category-item-radio span { color: #ffffff; font-size: 0.9rem; }
+.category-item-radio input { accent-color: #0088ff; width: 18px; height: 18px; }
+
+/* Loader Minimalista */
+.fec-loader-minimal { font-weight: 800; color: var(--fec-bg-dark); text-align: center; margin-top: 50px; }

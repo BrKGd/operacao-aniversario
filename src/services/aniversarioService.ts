@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import { Aniversario, Categoria } from '../types';
+import { Aniversario, Categoria, MensagemTemplate } from '../types';
 
 export const aniversarioService = {
   async listarPorMes(mes: number): Promise<Aniversario[]> {
@@ -40,6 +40,20 @@ export const aniversarioService = {
       return [];
     }
     return data as Categoria[];
+  },
+
+  // ✅ NOVO: Busca templates de mensagens para o WhatsApp
+    async listarTemplates() {
+      const { data, error } = await supabase
+          .from('mensagens_templates')
+          .select('*')
+          .order('tipo', { ascending: true }); // <--- MUDANÇA AQUI (de titulo para tipo)
+
+      if (error) {
+          console.error('Erro ao buscar templates de mensagens:', error.message);
+          return [];
+      }
+      return data;
   },
 
   // ✅ RENOMEADO: De adicionarCategoria para salvarCategoria (para bater com a página)
