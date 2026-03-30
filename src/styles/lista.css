@@ -1,164 +1,172 @@
 :root {
-    --fec-blue: #003399;
-    --fec-red: #ff0000;
-    --fec-white: #ffffff;
-    --input-bg: #f3f4f6;
-    --bg-light: #ffffff; 
-    --card-bg: #ffffff;
-    --text-main: #000000;
-    --text-muted: #64748b;
-    --anime-border: 2.5px solid #000000;
+    --fec-primary: #6366f1; /* Indigo Moderno */
+    --fec-gold: #f59e0b;
+    --fec-success: #10b981;
+    --fec-bg: #f8fafc;
+    --fec-card: #ffffff;
+    --fec-text-title: #1e293b;
+    --fec-text-body: #64748b;
+    --fec-border: #e2e8f0;
+    --fec-radius: 16px;
+    --fec-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 }
 
-.lista-wrapper {
-    padding: 20px;
-    background-color: var(--bg-light);
+.fec-list-wrapper {
+    padding: 16px;
+    background: var(--fec-bg);
     min-height: 100vh;
-    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
 }
 
-.header-busca { margin-bottom: 20px; }
+/* --- SEARCH & FILTERS --- */
+.fec-header-sticky {
+    position: sticky;
+    top: 0;
+    background: rgba(248, 250, 252, 0.8);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    margin: -16px -16px 20px -16px;
+    padding: 16px;
+}
 
-.search-box {
-    background: var(--input-bg);
-    border-radius: 15px;
+.fec-search-bar {
+    background: var(--fec-card);
+    border: 1px solid var(--fec-border);
+    border-radius: 12px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
-    padding: 12px 18px;
-    border: var(--anime-border);
-    box-shadow: 4px 4px 0px #000; /* Sombra sólida estilo anime */
+    gap: 12px;
+    box-shadow: var(--fec-shadow);
 }
 
-.search-box input {
-    background: transparent;
+.fec-search-bar input {
     border: none;
     outline: none;
-    color: var(--text-main);
     width: 100%;
-    font-size: 1rem;
-    margin-left: 10px;
-    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--fec-text-title);
 }
 
-.filtros-rapidos {
+/* --- CHIPS DE FILTRO --- */
+.fec-filter-group {
     display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
+    gap: 8px;
     overflow-x: auto;
-    padding: 5px 0 10px;
+    padding: 12px 0 4px;
     scrollbar-width: none;
 }
-.filtros-rapidos::-webkit-scrollbar { display: none; }
 
-.chip {
-    background: #fff;
-    border: 2px solid #000;
-    color: #000;
-    padding: 8px 18px;
-    border-radius: 12px;
+.fec-chip {
+    padding: 6px 16px;
+    border-radius: 100px;
+    background: var(--fec-card);
+    border: 1px solid var(--fec-border);
     font-size: 0.85rem;
-    font-weight: 800;
-    cursor: pointer;
+    font-weight: 500;
+    color: var(--fec-text-body);
+    transition: 0.2s;
     white-space: nowrap;
-    transition: all 0.2s;
-    box-shadow: 2px 2px 0px #000;
 }
 
-.chip.active {
-    background: var(--fec-blue);
-    color: #fff;
-    transform: translate(1px, 1px);
-    box-shadow: 0px 0px 0px #000;
+.fec-chip.active {
+    background: var(--fec-primary);
+    color: white;
+    border-color: var(--fec-primary);
 }
 
-.card-aniversario {
-    background: var(--card-bg);
-    border-radius: 20px;
-    padding: 15px;
+/* --- CARD DE CONTATO --- */
+.fec-contact-card {
+    background: var(--fec-card);
+    border-radius: var(--fec-radius);
+    padding: 14px;
+    margin-bottom: 12px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-    border: var(--anime-border);
-    box-shadow: 5px 5px 0px #000;
-    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: var(--fec-shadow);
 }
 
-.card-aniversario:active {
-    transform: translate(3px, 3px);
-    box-shadow: 2px 2px 0px #000;
+.fec-contact-card:hover {
+    border-color: var(--fec-primary);
+    transform: translateY(-2px);
 }
 
-.info-principal {
+.fec-card-main {
     display: flex;
     align-items: center;
-    gap: 15px;
-    flex: 1;
+    gap: 12px;
 }
 
-.avatar-box {
-    width: 55px;
-    height: 55px;
-    background: #e2e8f0;
-    border-radius: 12px;
+.fec-avatar-container {
+    position: relative;
+}
+
+.fec-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: #eef2ff;
+}
+
+.fec-fav-indicator {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    color: var(--fec-gold);
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* --- ACTIONS (Botões Discretos) --- */
+.fec-card-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 900;
-    color: var(--fec-blue);
-    border: 2px solid #000;
-    overflow: hidden;
-    flex-shrink: 0;
+    border: none;
+    background: #f1f5f9;
+    color: var(--fec-text-body);
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-.img-avatar-list {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+.btn-action:hover { background: #e2e8f0; color: var(--fec-primary); }
+.btn-action.done { color: var(--fec-success); background: #ecfdf5; }
+.btn-action.fav.active { color: var(--fec-gold); background: #fffbeb; }
 
-.textos-contato { display: flex; flex-direction: column; gap: 1px; }
-
-.nome-contato {
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--text-main);
-}
-
-.subtexto-contato {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.categoria-tag {
+/* --- HISTÓRICO & STATUS --- */
+.fec-history-tag {
     font-size: 0.7rem;
-    font-weight: 900;
-    color: var(--fec-red);
-    text-transform: uppercase;
+    color: var(--fec-text-body);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.numero-dias {
-    display: block;
-    font-size: 1.8rem;
-    font-weight: 950;
-    color: var(--fec-blue);
-    line-height: 1;
-    text-align: center;
+/* --- SKELETON LOADING --- */
+.skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
 }
 
-.label-dias {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 800;
-    text-transform: uppercase;
-    display: block;
-    text-align: center;
-}
-
-.no-data {
-    text-align: center;
-    font-weight: 700;
-    color: var(--text-muted);
-    padding: 40px;
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }

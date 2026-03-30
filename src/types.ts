@@ -27,7 +27,10 @@ export interface Aniversario {
   imagem_url?: string;
   categoria_id: string;
   categorias?: Categoria;
-  idadeNova: number; 
+  idadeNova: number;
+  favorito: boolean; 
+  send_msg: boolean;
+  ultimo_envio_ano?: number; 
 }
 
 /*Tipos para as rotas e navegação do App */
