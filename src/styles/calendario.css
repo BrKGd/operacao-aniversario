@@ -352,7 +352,7 @@
 .drawer-content-premium {
     background: var(--fec-bg-dark);
     width: 100%;
-    max-width: 500px;
+    max-width: 100%;
     height: 65vh; 
     border-radius: 30px 30px 0 0;
     display: flex;
@@ -396,6 +396,56 @@
 .category-drawer-content::-webkit-scrollbar { width: 6px; }
 .category-drawer-content::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
 .category-drawer-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+
+/* --- NOVOS ESTILOS PARA OS PILLS DE FILTRO (DRAWER) --- */
+.pills-container-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 5px 0;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.pills-container-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.btn-pill-filter {
+    padding: 8px 18px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-pill-filter.active {
+    background: #0088ff;
+    color: #ffffff;
+    border-color: #0088ff;
+    box-shadow: 0 4px 12px rgba(0, 136, 255, 0.3);
+}
+
+.btn-pill-filter:active {
+    transform: scale(0.95);
+}
+
+/* Lista Dinâmica de Templates */
+.lista-templates-container {
+    display: flex;
+    flex-direction: column;
+    animation: fadeInList 0.3s ease;
+}
+
+@keyframes fadeInList {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 /* Itens de Rádio do Filtro (Dentro do Drawer) */
 .category-item-radio {
