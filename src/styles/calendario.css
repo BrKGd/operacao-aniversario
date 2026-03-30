@@ -279,7 +279,11 @@
 
 /* --- ESTILO DO FILTRO DE CATEGORIAS NO CALENDÁRIO --- */
 .btn-cat-filter {
-    padding: 6px 14px;
+    display: flex;             /* Ativa o flexbox */
+    align-items: center;      /* Centraliza verticalmente o texto */
+    justify-content: center;   /* Centraliza horizontalmente o texto */
+    height: 22.5px;            /* Altura definida por você */
+    padding: 0 12px;           /* Removido padding vertical (6px) para não conflitar com a altura */
     border-radius: 20px;
     border: 1px solid #e2e8f0;
     background: white;
@@ -412,7 +416,11 @@
 }
 
 .btn-pill-filter {
-    padding: 8px 18px;
+    display: flex;             /* Ativa o flexbox */
+    align-items: center;      /* Centraliza verticalmente */
+    justify-content: center;   /* Centraliza horizontalmente */
+    height: 22.5px;              /* Altura fixa desejada */
+    padding: 0 14px;           /* Zero no topo/baixo, ajuste lateral */
     border-radius: 25px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
@@ -424,11 +432,17 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.btn-pill-filter:hover{
+    background: #0088ff;
+    color: #ffffff;
+    border-color: #0088ff;
+}
+
 .btn-pill-filter.active {
     background: #0088ff;
     color: #ffffff;
     border-color: #0088ff;
-    box-shadow: 0 4px 12px rgba(0, 136, 255, 0.3);
+    box-shadow: 0 4px 4px var(--fec-azul-vibrante);
 }
 
 .btn-pill-filter:active {
