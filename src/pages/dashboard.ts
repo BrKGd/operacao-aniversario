@@ -167,60 +167,52 @@ function inicializarStack() {
     if (!stack) return;
 
     let isDragging = false;
-    let startY = 0;
-    let moveY = 0;
+    let startX = 0; // Mudado para X
+    let moveX = 0;
 
-    // Converte NodeList para Array para manipulação fácil
     let cards = Array.from(stack.querySelectorAll('.hero-card-stacked')) as HTMLElement[];
-    if (cards.length <= 1) return; // Nada para rodar
+    if (cards.length <= 1) return;
 
-    // Configuração da Roda Virtual 3D
-    const radius = 150; // Raio do cilindro virtual em pixels
-    const angleIncrement = 15; // Angulação entre cards em graus
-
-    // Função para aplicar as transformações 3D baseadas na posição do array
     const aplicarTransformacoes3D = () => {
         cards.forEach((card, index) => {
-            // Adiciona transição apenas quando a roda muda (isDragging é falso)
-            card.style.transition = isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease, z-index 0.5s ease';
+            card.style.transition = isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease';
             
-            // O card 0 é o topo (frente). Cards subsequentes rodam para trás e diminuem escala.
-            const angle = index * angleIncrement;
-            const radians = (angle * Math.PI) / 180;
+            // O index 0 é o card central (Destaque)
+            // Calculamos o deslocamento lateral (offset)
+            const sideOffset = 40; // Distância entre os cards laterais
+            const rotationY = index * 45; // Ângulo de rotação lateral
+            const translateX = index * sideOffset;
+            const translateZ = index * -100; // Afasta os cards de trás
             
-            // Lógica de Roda 3D: RotateX + TranslateY (move na roda) + TranslateZ (profundidade)
-            // Usamos RotateX negativo para tombar para trás
-            const rotateX = -angle; 
-            const ty = radius * Math.sin(radians);
-            const tz = -radius * (1 - Math.cos(radians)); // Afasta conforme roda
-            
-            // Escala diminui progressivamente para cards de trás
-            const scale = Math.max(0.7, 1 - (index * 0.08)); 
+            // Escala: O primeiro é 1.0, os próximos diminuem
+            const scale = Math.max(0.6, 1 - (index * 0.15)); 
 
             card.style.zIndex = (cards.length - index).toString();
             
-            // Combina transformações. Importante manter rotateX tombando para trás.
-            card.style.transform = `translateY(${ty}px) translateZ(${tz}px) rotateX(${rotateX}deg) scale(${scale})`;
+            // Aplicamos a transformação:
+            // 1. TranslateX para mover para o lado
+            // 2. TranslateZ para profundidade
+            // 3. RotateY para angulação lateral
+            card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${-rotationY}deg) scale(${scale})`;
             
-            // Esconde cards que rodaram demais para trás
-            card.style.opacity = index > 3 ? '0' : '1'; 
+            // Opacidade progressiva
+            card.style.opacity = index > 2 ? '0' : (1 - index * 0.3).toString();
         });
     };
 
-    const handleStart = (clientY: number) => {
+    const handleStart = (clientX: number) => {
         isDragging = true;
-        startY = clientY;
+        startX = clientX;
     };
 
-    const handleMove = (clientY: number) => {
+    const handleMove = (clientX: number) => {
         if (!isDragging) return;
-        moveY = clientY - startY;
+        moveX = clientX - startX;
         
-        // Preview leve do movimento (tomba o card da frente)
         if (cards[0]) {
-            const previewRotation = (moveY / 5); // Sensibilidade
-            cards[0].style.transition = 'none';
-            cards[0].style.transform = `translateY(${moveY / 2}px) translateZ(0px) rotateX(${previewRotation}deg) scale(1)`;
+            // Preview do movimento lateral no card principal
+            const rotation = moveX / 10;
+            cards[0].style.transform = `translateX(${moveX * 0.5}px) rotateY(${rotation}deg) scale(1.02)`;
         }
     };
 
@@ -228,40 +220,33 @@ function inicializarStack() {
         if (!isDragging) return;
         isDragging = false;
 
-        // Limiar de swipe para mudar de card
-        const swipeThreshold = 60;
-
-        if (Math.abs(moveY) > swipeThreshold) {
-            // Ativa a rotação (Roda Infinita)
-            if (moveY > 0) {
-                // Arrastou para BAIXO: O último card vem para a frente
-                const lastCard = cards.pop();
-                if (lastCard) {
-                    cards.unshift(lastCard); // Coloca no início do array
-                    stack.prepend(lastCard); // Move no DOM para o início
+        const threshold = 50;
+        if (Math.abs(moveX) > threshold) {
+            if (moveX > 0) {
+                // Swipe para Direita: traz o último para frente
+                const last = cards.pop();
+                if (last) {
+                    cards.unshift(last);
+                    stack.prepend(last);
                 }
             } else {
-                // Arrastou para CIMA: O primeiro card vai para o final
-                const firstCard = cards.shift();
-                if (firstCard) {
-                    cards.push(firstCard); // Coloca no final do array
-                    stack.appendChild(firstCard); // Move no DOM para o final
+                // Swipe para Esquerda: manda o primeiro para trás
+                const first = cards.shift();
+                if (first) {
+                    cards.push(first);
+                    stack.appendChild(first);
                 }
             }
         }
         
-        moveY = 0;
-        aplicarTransformacoes3D(); // Aplica a animação 3D apenas agora
+        moveX = 0;
+        aplicarTransformacoes3D();
     };
 
-    // Eventos de Pointer unificam Mouse e Touch (Computador e Celular)
-    stack.addEventListener('pointerdown', (e) => handleStart(e.clientY));
-    window.addEventListener('pointermove', (e) => handleMove(e.clientY));
+    stack.addEventListener('pointerdown', (e) => handleStart(e.clientX));
+    window.addEventListener('pointermove', (e) => handleMove(e.clientX));
     window.addEventListener('pointerup', handleEnd);
-    
-    // Previne comportamento padrão de arrasto (como selecionar texto ou imagem)
     stack.addEventListener('dragstart', (e) => e.preventDefault());
 
-    // Inicializa a posição 3D sem animação
     aplicarTransformacoes3D();
 }
