@@ -24,6 +24,7 @@ export interface Aniversario {
   telefone?: string;        
   observacoes?: string;  
   frase_exibicao?: string;
+  imagem_url?: string;
   categoria_id: string;
   categorias?: Categoria; 
 }

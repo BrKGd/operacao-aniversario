@@ -1,28 +1,52 @@
 import '../styles/dashboard.css';
 import { aniversarioService } from '../services/aniversarioService';
-import { gerarLinkWhatsapp } from '../utils/messages';
 import { Aniversario } from '../types';
+import { 
+    createIcons, 
+    Send, 
+    TrendingUp, 
+    Calendar, 
+    MessageCircle, 
+    ChevronRight,
+    Star,
+    Sparkles,
+    LogOut,
+    LayoutGrid,
+    Contact2,
+    Plus,
+    CalendarHeart,
+    Settings2,
+    User
+} from 'lucide';
 
 export async function montarDashboard(container: HTMLElement) {
-    container.innerHTML = `<div class="loading">Convocando dados...</div>`;
+    container.innerHTML = `
+        <div class="dash-loader-container">
+            <div class="fec-loader-minimal">A carregar painel...</div>
+        </div>
+    `;
 
     try {
         const hoje = new Date();
-        const mesAtual = hoje.getMonth();
         const todos: Aniversario[] = await aniversarioService.listarTodos();
         
-        // 1. Destaque do Dia
+        // Busca mensagens para o destaque
+        const templates = await aniversarioService.listarTemplates();
+        const mensagemAleatoria = templates.length > 0 
+            ? templates[Math.floor(Math.random() * templates.length)].conteudo 
+            : "Desejamos um excelente dia e um feliz aniversário!";
+
         const aniversariantesHoje = todos.filter((p: Aniversario) => {
+            if (!p.data_nascimento) return false;
             const d = new Date(p.data_nascimento + 'T00:00:00');
             return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
         });
 
-        // 2. Próximos 7 dias com cálculo de contagem regressiva
         const proximos7Dias = todos.map(p => {
+            if (!p.data_nascimento) return null;
             const d = new Date(p.data_nascimento + 'T00:00:00');
             const niverEsteAno = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
             
-            // Se o niver já passou este ano, calcula para o próximo (ajuste de segurança)
             if (niverEsteAno < hoje && (hoje.getDate() !== d.getDate() || hoje.getMonth() !== d.getMonth())) {
                 niverEsteAno.setFullYear(hoje.getFullYear() + 1);
             }
@@ -31,71 +55,101 @@ export async function montarDashboard(container: HTMLElement) {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return { ...p, diffDays, dataObj: d };
         })
-        .filter(p => p.diffDays > 0 && p.diffDays <= 7)
+        .filter((p): p is (NonNullable<typeof p>) => p !== null && p.diffDays > 0 && p.diffDays <= 7)
         .sort((a, b) => a.diffDays - b.diffDays);
 
-        const primeiroDeHoje = aniversariantesHoje.length > 0 ? aniversariantesHoje[0] : null;
+        const temAniversariante = aniversariantesHoje.length > 0;
+        const primeiroDeHoje = aniversariantesHoje[0];
 
         container.innerHTML = `
             <div class="dash-container">
-                <!-- CARD DESTAQUE (HERO) -->
-                <section class="hero-card">
+                <header class="dash-header">
+                    <div class="user-welcome">
+                        <h1>Painel de Controle</h1>
+                        <p>${hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                    </div>
+                    <div class="dash-actions">
+                        <div class="badge-total-mes" title="Total do mês">
+                            <i data-lucide="calendar-heart"></i>
+                            <span>${todos.filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T00:00:00').getMonth() === hoje.getMonth()).length}</span>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="hero-card ${!temAniversariante ? 'empty' : ''}">
                     <div class="hero-content">
-                        <h2>ANIVERSARIANTE DO DIA</h2>
-                        ${primeiroDeHoje ? `
-                            <div class="hero-avatar">🦁</div>
-                            <div class="hero-nome">${primeiroDeHoje.nome.toUpperCase()}</div>
-                            <a href="${gerarLinkWhatsapp(primeiroDeHoje.nome, primeiroDeHoje.telefone || '')}" 
-                               target="_blank" class="btn-parabens">
-                               <i data-lucide="send"></i> ENVIAR PARABÉNS
-                            </a>
+                        <span class="hero-tag">DESTAQUE DO DIA</span>
+                        ${temAniversariante && primeiroDeHoje ? `
+                            <div class="hero-main-info">
+                                <div class="hero-avatar-wrapper">
+                                    <img src="${primeiroDeHoje.imagem_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(primeiroDeHoje.nome || 'U')}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
+                                    <div class="hero-crown">👑</div>
+                                </div>
+                                <div class="hero-text-data">
+                                    <h2 class="hero-nome">${(primeiroDeHoje.nome || 'Usuário').split(' ')[0]}</h2>
+                                    <p class="hero-sub">"${mensagemAleatoria}"</p>
+                                </div>
+                            </div>
+                            <button class="btn-parabens-hero" onclick="window.navegar('detalhes', '${primeiroDeHoje.id}')">
+                                <i data-lucide="message-circle"></i> ENVIAR PARABÉNS
+                            </button>
                         ` : `
-                            <p class="hero-empty">Nenhum jogo festivo hoje.<br>Prepare a torcida para os próximos!</p>
+                            <div class="hero-empty-state">
+                                <i data-lucide="user" class="icon-empty"></i>
+                                <p>Sem eventos registrados para hoje.<br>Consulte a agenda para os próximos dias.</p>
+                            </div>
                         `}
                     </div>
-                    <div class="bola-fundo"></div>
+                    <div class="hero-pattern"></div>
                 </section>
 
-                <!-- RESUMO DO MÊS -->
-                <div class="mini-stats">
-                    <div class="stats-icon"><i data-lucide="trending-up"></i></div>
-                    <div class="stats-text">
-                        Total de aniversariantes em <strong>${hoje.toLocaleString('pt-BR', {month: 'long'})}</strong>: 
-                        <span>${todos.filter(p => new Date(p.data_nascimento + 'T00:00:00').getMonth() === mesAtual).length}</span>
-                    </div>
-                </div>
-
-                <!-- PRÓXIMAS CONVOCAÇÕES -->
                 <section class="proximos-section">
-                    <h3 class="section-title"><i data-lucide="calendar"></i> Próximas Convocações</h3>
+                    <div class="section-header">
+                        <h3 class="section-title"><i data-lucide="calendar"></i> Próximos Eventos</h3>
+                        <span class="count-badge">${proximos7Dias.length} agendados</span>
+                    </div>
                     
-                    <div class="proximos-grid">
+                    <div class="proximos-list">
                         ${proximos7Dias.length > 0 ? proximos7Dias.map(p => `
-                            <div class="card-atleta">
-                                <div class="atleta-badge">
-                                    <span class="mes">${p.dataObj.toLocaleString('pt-BR', { month: 'short' }).toUpperCase()}</span>
-                                    <span class="dia">${p.dataObj.getDate()}</span>
+                            <div class="card-atleta-modern" onclick="window.navegar('detalhes', '${p.id}')">
+                                <div class="atleta-card-3x4">
+                                    ${p.imagem_url 
+                                        ? `<img src="${p.imagem_url}" alt="Foto" class="cat-thumb">` 
+                                        : `<span class="cat-placeholder">${p.nome?.substring(0,2).toUpperCase() || 'AN'}</span>`
+                                    }
+                                    <div class="date-overlay">
+                                        <span class="dia">${p.dataObj.getDate()}</span>
+                                        <span class="mes">${p.dataObj.toLocaleString('pt-BR', { month: 'short' }).toUpperCase()}</span>
+                                    </div>
                                 </div>
-                                <div class="atleta-info">
-                                    <span class="nome">${p.nome}</span>
-                                    <span class="countdown">Faltam ${p.diffDays} dias</span>
+
+                                <div class="atleta-info-main">
+                                    <span class="atleta-nome">${p.nome || 'Contato'}</span>
+                                    <span class="atleta-status">Em ${p.diffDays} ${p.diffDays === 1 ? 'dia' : 'dias'}</span>
                                 </div>
-                                <a href="${gerarLinkWhatsapp(p.nome, p.telefone || '')}" target="_blank" class="btn-icon">
-                                    <i data-lucide="message-circle"></i>
-                                </a>
+                                <div class="atleta-action">
+                                    <i data-lucide="chevron-right"></i>
+                                </div>
                             </div>
                         `).join('') : `
-                            <div class="empty-state">Nenhuma comemoração nos próximos 7 dias.</div>
+                            <div class="dash-empty-list">
+                                <p>Sem eventos previstos para esta semana.</p>
+                            </div>
                         `}
                     </div>
                 </section>
             </div>
         `;
 
-        if ((window as any).lucide) (window as any).lucide.createIcons();
+        createIcons({ 
+            icons: { 
+                Send, TrendingUp, Calendar, MessageCircle, ChevronRight, Star,
+                Sparkles, LogOut, LayoutGrid, Contact2, Plus, CalendarHeart, Settings2, User
+            } 
+        });
 
     } catch (error) {
         console.error('Erro no Dashboard:', error);
-        container.innerHTML = `<div class="error-msg">Erro ao carregar o estádio.</div>`;
+        container.innerHTML = `<div class="error-msg">Erro ao carregar informações.</div>`;
     }
 }
