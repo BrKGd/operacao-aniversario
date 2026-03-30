@@ -1,24 +1,27 @@
 import '../styles/lista.css'; 
 import { aniversarioService } from '../services/aniversarioService';
-import { Aniversario } from '../types';
+import { Aniversario, Categoria } from '../types';
+import { modalAlerta } from '../utils/modalAlertas';
 
 export async function montarLista(container: HTMLElement) {
-    container.innerHTML = `<div class="loading-state">Buscando elenco...</div>`;
+    container.innerHTML = `<div class="fec-loader-minimal">Buscando elenco...</div>`;
 
     try {
-        const contatos: Aniversario[] = await aniversarioService.listarTodos();
+        const [contatos, categorias]: [Aniversario[], Categoria[]] = await Promise.all([
+            aniversarioService.listarTodos(),
+            aniversarioService.listarCategorias()
+        ]);
 
-        // Função interna para calcular dias restantes e idade
+        let filtroTexto = "";
+        let filtroCategoriaId = "todos";
+
         const calcularInfoNiver = (dataNasc: string) => {
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
-            
-            const nasc = new Date(dataNasc);
+            const nasc = new Date(dataNasc + 'T00:00:00');
             const proxNiver = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
             
-            if (proxNiver < hoje) {
-                proxNiver.setFullYear(hoje.getFullYear() + 1);
-            }
+            if (proxNiver < hoje) proxNiver.setFullYear(hoje.getFullYear() + 1);
             
             const diffTime = proxNiver.getTime() - hoje.getTime();
             const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -31,16 +34,19 @@ export async function montarLista(container: HTMLElement) {
             };
         };
 
-        const renderizarGrid = (filtro = "") => {
-            const filtrados = contatos.filter(c => 
-                c.nome.toLowerCase().includes(filtro.toLowerCase())
+        const renderizarGrid = () => {
+            let filtrados = contatos.filter(c => 
+                c.nome.toLowerCase().includes(filtroTexto.toLowerCase())
             );
+
+            if (filtroCategoriaId !== "todos") {
+                filtrados = filtrados.filter(c => c.categoria_id === filtroCategoriaId);
+            }
 
             if (filtrados.length === 0) {
                 return `<div class="no-data">Nenhum integrante encontrado.</div>`;
             }
 
-            // Ordenar por proximidade de dias
             const ordenados = filtrados.map(c => ({ ...c, info: calcularInfoNiver(c.data_nascimento) }))
                                      .sort((a, b) => a.info.dias - b.info.dias);
 
@@ -48,7 +54,8 @@ export async function montarLista(container: HTMLElement) {
                 <div class="card-aniversario">
                     <div class="info-principal" onclick="window.navegar('detalhes', '${c.id}')">
                         <div class="avatar-box">
-                            ${c.nome.charAt(0)}
+                             <img src="${(c as any).imagem_url || ''}" class="img-avatar-list" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                             <span class="avatar-letter" style="display:none">${c.nome.charAt(0)}</span>
                         </div>
                         <div class="textos-contato">
                             <span class="nome-contato">${c.nome}</span>
@@ -77,10 +84,10 @@ export async function montarLista(container: HTMLElement) {
                 </div>
                 
                 <div class="filtros-rapidos">
-                    <button class="chip active">Todos</button>
-                    <button class="chip">Amigos</button>
-                    <button class="chip">Família</button>
-                    <button class="chip">Trabalho</button>
+                    <button class="chip active" data-id="todos">Todos</button>
+                    ${categorias.map(cat => `
+                        <button class="chip" data-id="${cat.id}">${cat.nome}</button>
+                    `).join('')}
                 </div>
 
                 <div id="listaContatos" class="grid-cards">
@@ -89,41 +96,34 @@ export async function montarLista(container: HTMLElement) {
             </div>
         `;
 
-        const atribuirEventos = () => {
-            document.querySelectorAll('.btn-mini.edit').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const id = btn.getAttribute('data-id');
-                    (window as any).navegar('form', id);
-                });
-            });
-
-            document.querySelectorAll('.btn-mini.del').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const id = btn.getAttribute('data-id');
-                    if (id && confirm("Remover do elenco?")) {
-                        await aniversarioService.excluir(id);
-                        montarLista(container);
-                    }
-                });
-            });
-        };
-
-        document.getElementById('inputBusca')?.addEventListener('input', (e) => {
-            const val = (e.target as HTMLInputElement).value;
+        const atualizarInterface = () => {
             const lista = document.getElementById('listaContatos');
             if (lista) {
-                lista.innerHTML = renderizarGrid(val);
-                atribuirEventos();
+                lista.innerHTML = renderizarGrid();
                 if ((window as any).lucide) (window as any).lucide.createIcons();
             }
+        };
+
+        // Evento de Busca
+        document.getElementById('inputBusca')?.addEventListener('input', (e) => {
+            filtroTexto = (e.target as HTMLInputElement).value;
+            atualizarInterface();
         });
 
-        atribuirEventos();
+        // Evento de Filtro por Categoria (Chips)
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                filtroCategoriaId = chip.getAttribute('data-id') || "todos";
+                atualizarInterface();
+            });
+        });
+
         if ((window as any).lucide) (window as any).lucide.createIcons();
 
     } catch (error) {
+        console.error(error);
         container.innerHTML = `<div class="error-msg">Erro ao carregar lista.</div>`;
     }
 }
