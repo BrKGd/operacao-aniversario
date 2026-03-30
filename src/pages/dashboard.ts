@@ -29,9 +29,8 @@ export async function montarDashboard(container: HTMLElement) {
     try {
         const hoje = new Date();
         const todos: Aniversario[] = await aniversarioService.listarTodos();
-        
-        // Busca mensagens para o destaque
         const templates = await aniversarioService.listarTemplates();
+        
         const mensagemAleatoria = templates.length > 0 
             ? templates[Math.floor(Math.random() * templates.length)].conteudo 
             : "Desejamos um excelente dia e um feliz aniversário!";
@@ -59,7 +58,6 @@ export async function montarDashboard(container: HTMLElement) {
         .sort((a, b) => a.diffDays - b.diffDays);
 
         const temAniversariante = aniversariantesHoje.length > 0;
-        const primeiroDeHoje = aniversariantesHoje[0];
 
         container.innerHTML = `
             <div class="dash-container">
@@ -76,31 +74,36 @@ export async function montarDashboard(container: HTMLElement) {
                     </div>
                 </header>
 
-                <section class="hero-card ${!temAniversariante ? 'empty' : ''}">
-                    <div class="hero-content">
-                        <span class="hero-tag">DESTAQUE DO DIA</span>
-                        ${temAniversariante && primeiroDeHoje ? `
-                            <div class="hero-main-info">
-                                <div class="hero-avatar-wrapper">
-                                    <img src="${primeiroDeHoje.imagem_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(primeiroDeHoje.nome || 'U')}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
-                                    <div class="hero-crown">👑</div>
+                <section class="hero-section">
+                    <div class="hero-stack-container" id="heroStack">
+                        ${temAniversariante ? aniversariantesHoje.map((p, index) => `
+                            <div class="hero-card-stacked" style="--index: ${index}; --total: ${aniversariantesHoje.length}">
+                                <span class="hero-tag">HOJE É O DIA DELE(A)</span>
+                                <div class="hero-main-info">
+                                    <div class="hero-avatar-wrapper">
+                                        <img src="${p.imagem_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nome || 'U')}&background=ffffff&color=003399&bold=true&size=128`}" class="hero-img">
+                                        <div class="hero-crown">👑</div>
+                                    </div>
+                                    <div class="hero-text-data">
+                                        <h2 class="hero-nome">${(p.nome || 'Usuário').split(' ')[0]}</h2>
+                                        <p class="hero-sub">"${mensagemAleatoria}"</p>
+                                    </div>
                                 </div>
-                                <div class="hero-text-data">
-                                    <h2 class="hero-nome">${(primeiroDeHoje.nome || 'Usuário').split(' ')[0]}</h2>
-                                    <p class="hero-sub">"${mensagemAleatoria}"</p>
-                                </div>
+                                <button class="btn-parabens-hero" onclick="window.navegar('detalhes', '${p.id}')">
+                                    <i data-lucide="message-circle"></i> ENVIAR PARABÉNS
+                                </button>
+                                <div class="hero-pattern"></div>
                             </div>
-                            <button class="btn-parabens-hero" onclick="window.navegar('detalhes', '${primeiroDeHoje.id}')">
-                                <i data-lucide="message-circle"></i> ENVIAR PARABÉNS
-                            </button>
-                        ` : `
-                            <div class="hero-empty-state">
-                                <i data-lucide="user" class="icon-empty"></i>
-                                <p>Sem eventos registrados para hoje.<br>Consulte a agenda para os próximos dias.</p>
+                        `).join('') : `
+                            <div class="hero-card-stacked empty">
+                                <span class="hero-tag">SEM EVENTOS</span>
+                                <div class="hero-empty-state">
+                                    <i data-lucide="user" class="icon-empty"></i>
+                                    <p>Tudo tranquilo por aqui hoje.</p>
+                                </div>
                             </div>
                         `}
                     </div>
-                    <div class="hero-pattern"></div>
                 </section>
 
                 <section class="proximos-section">
@@ -122,7 +125,6 @@ export async function montarDashboard(container: HTMLElement) {
                                         <span class="mes">${p.dataObj.toLocaleString('pt-BR', { month: 'short' }).toUpperCase()}</span>
                                     </div>
                                 </div>
-
                                 <div class="atleta-info-main">
                                     <span class="atleta-nome">${p.nome || 'Contato'}</span>
                                     <span class="atleta-status">Em ${p.diffDays} ${p.diffDays === 1 ? 'dia' : 'dias'}</span>
@@ -148,8 +150,55 @@ export async function montarDashboard(container: HTMLElement) {
             } 
         });
 
+        if (temAniversariante) {
+            inicializarStack();
+        }
+
     } catch (error) {
         console.error('Erro no Dashboard:', error);
         container.innerHTML = `<div class="error-msg">Erro ao carregar informações.</div>`;
     }
+}
+
+function inicializarStack() {
+    const stack = document.getElementById('heroStack');
+    if (!stack) return;
+
+    const cards = stack.querySelectorAll('.hero-card-stacked');
+    let startX: number, startY: number, moveX: number, moveY: number;
+
+    cards.forEach((card: any) => {
+        card.addEventListener('touchstart', (e: TouchEvent) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            card.style.transition = 'none';
+        });
+
+        card.addEventListener('touchmove', (e: TouchEvent) => {
+            moveX = e.touches[0].clientX - startX;
+            moveY = e.touches[0].clientY - startY;
+            
+            // Swipe circular (rotação baseada no movimento horizontal)
+            const rotation = moveX / 10;
+            card.style.transform = `translate(${moveX}px, ${moveY}px) rotate(${rotation}deg)`;
+        });
+
+        card.addEventListener('touchend', () => {
+            card.style.transition = 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+            
+            // Se o arrasto for longo o suficiente, joga o card fora
+            if (Math.abs(moveX) > 120) {
+                card.style.transform = `translate(${moveX * 2}px, ${moveY}px) rotate(${moveX / 5}deg)`;
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 500);
+            } else {
+                // Volta para a posição original na pilha
+                const index = card.style.getPropertyValue('--index');
+                const scale = 1 - (index * 0.05);
+                const offset = index * 12;
+                card.style.transform = `translateY(${offset}px) scale(${scale})`;
+            }
+            moveX = 0;
+        });
+    });
 }
