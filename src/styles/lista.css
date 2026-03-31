@@ -9,6 +9,10 @@
     --fec-border: #e2e8f0;
     --fec-radius: 16px;
     --fec-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    
+    /* Variáveis extras do Dashboard para o Drawer */
+    --fec-bg-dark-drawer: #001f3f;
+    --fec-azul-vibrante: #0088ff;
 }
 
 .fec-list-wrapper {
@@ -46,6 +50,7 @@
     width: 100%;
     font-size: 0.95rem;
     color: var(--fec-text-title);
+    background: transparent;
 }
 
 /* --- CHIPS DE FILTRO --- */
@@ -169,4 +174,163 @@
 @keyframes skeleton-loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+/* --- DRAWER (ESTILO CORPORATIVO DARK DO DASHBOARD) --- */
+.drawer-cal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    background: rgba(0, 8, 20, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-cal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.drawer-cal-content {
+    background: var(--fec-bg-dark-drawer);
+    width: 100%;
+    height: 65vh;
+    border-radius: 30px 30px 0 0;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+    position: fixed;
+    bottom: 0;
+}
+
+.drawer-cal.active .drawer-cal-content {
+    transform: translateY(0);
+}
+
+.drawer-handle {
+    width: 45px;
+    height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+}
+
+.drawer-cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.drawer-cal-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0px; /* Garante zero espaço entre os elementos */
+}
+
+.drawer-cal-title h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.1rem;
+    color: white;
+    font-weight: 700;
+    line-height: 0.85; 
+}
+
+.drawer-cal-title p {
+    margin-top: 5px;
+    padding: 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+    line-height: 1.1;
+    }
+
+.btn-close-drawer {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+/* PILLS DE FILTRO DENTRO DO DRAWER */
+.pills-container-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 15px 25px;
+    scrollbar-width: none;
+}
+
+.btn-pill-filter {
+    height: 28px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0 12px;
+}
+
+.btn-pill-filter.active {
+    background: var(--fec-azul-vibrante);
+    color: white;
+    border-color: var(--fec-azul-vibrante);
+    box-shadow: 0 4px 12px rgba(0, 136, 255, 0.3);
+}
+
+/* LISTA DE TEMPLATES DENTRO DO DRAWER */
+.lista-templates-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 25px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px !important;
+}
+
+.template-item-cal {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 18px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.template-item-cal:active { transform: scale(0.98); }
+
+.badge-categoria-msg {
+    font-size: 0.6rem;
+    background: rgba(99, 102, 241, 0.2);
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: #818cf8;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: inline-block;
+}
+
+.template-texto-cal {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+    margin: 0;
 }

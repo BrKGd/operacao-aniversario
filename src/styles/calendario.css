@@ -458,7 +458,7 @@
     animation: fadeInList 0.3s ease;
     width: 100%;
     padding: 0;
-    margin: 0!important;
+    gap: 0;
 }
 
 @keyframes fadeInList {
