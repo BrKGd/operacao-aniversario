@@ -393,7 +393,7 @@
 .category-drawer-content { 
     flex: 1; 
     overflow-y: auto; 
-    padding: 20px 25px 40px; 
+    padding: 10px 15px 20px; 
 }
 
 /* Scrollbar Customizado para o Drawer Azul */
@@ -407,8 +407,8 @@
     gap: 8px;
     overflow-x: auto;
     padding: 5px 0;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .pills-container-scroll::-webkit-scrollbar {
@@ -416,20 +416,22 @@
 }
 
 .btn-pill-filter {
-    display: flex;             /* Ativa o flexbox */
-    align-items: center;      /* Centraliza verticalmente */
-    justify-content: center;   /* Centraliza horizontalmente */
-    height: 22.5px;              /* Altura fixa desejada */
-    padding: 0 14px;           /* Zero no topo/baixo, ajuste lateral */
-    border-radius: 25px;
+    height: 22.5px !important;
+    border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    gap: 6px;
+    margin: 5px 0 5px 0 !important;
 }
 
 .btn-pill-filter:hover{
@@ -454,6 +456,9 @@
     display: flex;
     flex-direction: column;
     animation: fadeInList 0.3s ease;
+    width: 100%;
+    padding: 0;
+    margin: 0!important;
 }
 
 @keyframes fadeInList {

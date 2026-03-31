@@ -406,7 +406,8 @@
     align-items: center;
     justify-content: center;
     padding: 0 12px;
-    gap: 6px; 
+    gap: 6px;
+    margin: 5px 0 5px 0; 
 }
 
 .btn-pill-filter.active {

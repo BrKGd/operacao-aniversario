@@ -93,7 +93,7 @@ export async function montarCalendario(container: HTMLElement) {
             drawer.innerHTML = `
                 <div class="drawer-content-premium">
                     <div class="drawer-handle"></div>
-                    <div class="drawer-header-premium" style="padding-bottom: 10px; border-bottom: none;">
+                    <div class="drawer-header-premium" style="padding-bottom: 10px; border-bottom: border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <div class="drawer-title-group">
                             <h2 style="font-size: 1rem; color: #fff;">Mensagem para ${nome}</h2>
                             <small style="color: rgba(255,255,255,0.5); display: block;">Escolha um estilo e o template</small>
@@ -106,7 +106,7 @@ export async function montarCalendario(container: HTMLElement) {
                     </div>
 
                     <div class="category-drawer-content" style="padding-top: 0;">
-                        <div id="section-filtros-templates" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div id="section-filtros-templates">
                             <div class="pills-container-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; -ms-overflow-style: none;">
                                 <button class="btn-pill-filter ${!tipoTemplateAtivo ? 'active' : ''}" data-tipo="">Todos</button>
                                 ${tiposMensagensDisponiveis.map(tipo => `
@@ -114,7 +114,6 @@ export async function montarCalendario(container: HTMLElement) {
                                 `).join('')}
                             </div>
                         </div>
-
                         <div class="lista-templates-container" id="lista-dinamica-templates"></div>
                     </div>
                 </div>
