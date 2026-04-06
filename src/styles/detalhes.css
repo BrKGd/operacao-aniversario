@@ -5,6 +5,7 @@
     --fec-bg-dark: #001f3f;
     --fec-shadow: rgba(0, 31, 63, 0.2);
     --transition: all 0.3s ease;
+    --skeleton-bg: #e2e8f0;
 }
 
 .detalhes-page-wrapper {
@@ -27,6 +28,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* Ajuste para evitar que o skeleton mova o Hero */
+.section-hero-light.skeleton-loading {
+    display: flex;
+    flex-direction: column;
 }
 
 .btn-back-absolute {
@@ -58,6 +65,7 @@
     justify-content: center;
     border: 3px solid var(--fec-bg-dark);
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    flex-shrink: 0; /* Impede que a div diminua no loading */
 }
 
 .img-full-profile { width: 100%; height: 100%; object-fit: cover; }
@@ -80,9 +88,10 @@
     left: 50%;
     transform: translateX(-50%);
     box-shadow: 0 12px 30px var(--fec-shadow);
+    box-sizing: border-box; /* Garante que o padding não aumente o tamanho */
 }
 
-.name-info h1 { font-size: 1.75rem; font-weight: bold; color: var(--fec-azul-vibrante); margin: 0; }
+.name-info h1 { font-size: 1.75rem; font-weight: bold; color: var(--fec-azul-vibrante); margin: 0; line-height: 1.2; }
 .name-info span { font-size: 0.75rem; color: var(--fec-vermelho-vibrante); font-weight: bold; text-transform: uppercase; }
 
 .btn-more-options {
@@ -132,9 +141,9 @@
 .dropdown-options .delete-opt { color: var(--fec-vermelho-vibrante); }
 
 /* --- CONTEÚDO --- */
-.section-details-white { padding: 60px 24px 30px; flex: 1; }
-.info-row { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
-.info-block label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; text-transform: capitalize !important; }
+.section-details-white { padding: 60px 24px 30px; flex: 1; display: flex; flex-direction: column; }
+.info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; height: 50px; }
+.info-block label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; text-transform: capitalize !important; display: block; }
 .info-block p { font-size: 0.85rem; color: var(--fec-vermelho-vibrante); margin: 4px 0 0; }
 label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; text-transform: capitalize !important; }
 
@@ -143,7 +152,7 @@ label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; t
     justify-content: center;  
     align-items: center;
     background: var(--fec-bg-dark);
-    height: 3.5vh;
+    height: 30px; /* Altura fixa para não mover a linha */
     color: white;
     padding: 0 12px;
     border-radius: 25px;
@@ -154,18 +163,19 @@ label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; t
 
 .notes-content {
     background: #f8fafc;
-    padding: 10px 5px 5px 10px;
+    padding: 10px;
     min-height: 100px;
     border-radius: 15px;
     color: var(--fec-vermelho-vibrante);
     border: 2px solid var(--fec-azul-vibrante);
     margin-top: 10px;
     font-size: 0.85rem;
+    box-sizing: border-box;
 }
 
 .btn-whatsapp-modern {
-    width: 100px;
-    min-width: 60%;
+    width: 100%;
+    max-width: 280px;
     padding: 18px;
     background: #25d366;
     color: white;
@@ -182,35 +192,22 @@ label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; t
 
 .btn-whatsapp-modern:active { transform: scale(0.98); }
 
-.btn-whatsapp-modern img {
-    display: block;
-    object-fit: contain;
-}
-
-/* --- DRAWER TIPO MOBILE (BOTTOM SHEET) - CUSTOMIZADO AZUL --- */
+/* --- DRAWER --- */
 .drawer-overlay-premium {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
     background: rgba(0, 8, 20, 0.7);
     backdrop-filter: blur(5px);
     z-index: 9999;
     display: none; 
     flex-direction: column;
     justify-content: flex-end;
-    align-items: center;
 }
-
 .drawer-overlay-premium.active { display: flex; }
-
 .drawer-content-premium {
-    background: var(--fec-bg-dark); /* Fundo Azul Escuro */
+    background: var(--fec-bg-dark);
     width: 100%;
-    max-width: 100%;
     height: 55vh;
     border-radius: 30px 30px 0 0;
     display: flex;
@@ -221,87 +218,62 @@ label { font-size: 1.1rem; color: var(--fec-azul-vibrante); font-weight: bold; t
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .drawer-overlay-premium.active .drawer-content-premium { transform: translateY(0); }
-
-.drawer-handle {
-    width: 45px;
-    height: 5px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    margin: 12px auto 0;
-}
-
-.drawer-header-premium { 
-    padding: 15px 25px 20px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.drawer-header-premium h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0;
-}
-
-.drawer-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.btn-add-category-drawer {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 8px;
-}
-
-.category-drawer-content { 
-    flex: 1; 
-    overflow-y: auto; 
-    padding: 20px 25px 40px; 
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-/* --- CUSTOMIZAÇÃO DO SCROLLBAR --- */
-.category-drawer-content::-webkit-scrollbar { width: 6px; }
-.category-drawer-content::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-.category-drawer-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-.category-drawer-content::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
-
-.category-item-radio {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 0;
-    background: transparent;
-    cursor: pointer;
-    transition: 0.2s;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.category-item-radio span { 
-    font-weight: 500; 
-    color: #ffffff; 
-    font-size: 1rem; 
-}
-
-.category-item-radio input { 
-    width: 22px; 
-    height: 22px; 
-    accent-color: #0088ff; 
-    cursor: pointer;
-}
+.drawer-handle { width: 45px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 12px auto 0; }
+.drawer-header-premium { padding: 15px 25px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.drawer-header-premium h2 { font-size: 1.2rem; color: #ffffff; margin: 0; }
+.category-drawer-content { flex: 1; overflow-y: auto; padding: 20px 25px 40px; }
+.category-item-radio { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.category-item-radio span { color: #ffffff; }
 
 .fec-loader-minimal { font-weight: 800; color: var(--fec-bg-dark); text-align: center; margin-top: 50px; }
+
+/* --- 🌟 SKELETON REFINADO (ANTI-SHIFT) --- */
+
+.skeleton {
+    background-color: var(--skeleton-bg);
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg, 
+        rgba(255, 255, 255, 0) 0, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    100% { transform: translateX(100%); }
+}
+
+.skeleton-text {
+    background: var(--skeleton-bg);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Estabilização das alturas específicas no Loading */
+.info-block .skeleton-text {
+    margin-top: 10px;
+}
+
+.days-badge.skeleton {
+    background: var(--skeleton-bg);
+    width: 80px;
+    height: 30px; /* Igual à altura do badge real */
+    border-radius: 25px;
+}
+
+/* Corrige o salto da imagem de perfil */
+.profile-image-container.skeleton {
+    border-color: var(--skeleton-bg);
+    box-shadow: none;
+}
