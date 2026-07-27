@@ -15,6 +15,43 @@
     --fec-azul-vibrante: #0088ff;
 }
 
+body[data-theme='dark'] {
+    --fec-bg: #090d16;
+    --fec-card: #131b2e;
+    --fec-text-title: #f8fafc;
+    --fec-text-body: #94a3b8;
+    --fec-border: #1e293b;
+}
+
+body[data-theme='dark'] .fec-header-sticky {
+    background: rgba(9, 13, 22, 0.85);
+}
+
+body[data-theme='dark'] .fec-search-bar {
+    background: #131b2e;
+    border-color: #1e293b;
+}
+
+body[data-theme='dark'] .fec-search-bar input {
+    color: #f8fafc;
+}
+
+body[data-theme='dark'] .fec-chip {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #94a3b8;
+}
+
+body[data-theme='dark'] .fec-chip.active {
+    background: #6366f1;
+    color: #ffffff;
+}
+
+body[data-theme='dark'] .fec-contact-card {
+    background: #131b2e;
+    border-color: #1e293b;
+}
+
 .fec-list-wrapper {
     padding: 16px;
     background: var(--fec-bg);

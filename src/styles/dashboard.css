@@ -8,6 +8,35 @@
     --fec-azul-vibrante: #0088ff;
 }
 
+body[data-theme='dark'] {
+    --fec-bg-light: #090d16;
+    --fec-text-main: #f8fafc;
+    --fec-text-sub: #94a3b8;
+}
+
+body[data-theme='dark'] .card-atleta-modern {
+    background: #131b2e;
+    border-color: #1e293b;
+}
+
+body[data-theme='dark'] .atleta-nome {
+    color: #f8fafc;
+}
+
+body[data-theme='dark'] .atleta-status {
+    color: #94a3b8;
+}
+
+body[data-theme='dark'] .hero-card-stacked {
+    background: #131b2e;
+    border: 1px solid #1e293b;
+}
+
+body[data-theme='dark'] .badge-total-mes {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
 .dash-container {
     padding: 16px;
     max-width: 500px;

@@ -3,6 +3,13 @@ import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, MensagemTemplate } from '../types';
 import { 
+    parseLocalDate, 
+    diasAteAniversario, 
+    ehAniversarioHoje, 
+    calcularIdade 
+} from '../utils/dateUtils';
+import { webPushService } from '../utils/webPush';
+import { 
     createIcons, 
     Send, 
     TrendingUp, 
@@ -46,26 +53,21 @@ export async function montarDashboard(container: HTMLElement) {
         const todos: Aniversario[] = await aniversarioService.listarTodos();
         templatesGlobais = await aniversarioService.listarTemplates();
         
+        // WebPush Notification Check
+        webPushService.verificarENotificarAniversariantes(todos);
+
+        // Filtro preciso sem erro de timezone (-1 dia)
         const aniversariantesHoje = todos.filter((p: Aniversario) => {
-            if (!p.data_nascimento) return false;
-            const d = new Date(p.data_nascimento + 'T00:00:00');
-            return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
+            return p.data_nascimento && ehAniversarioHoje(p.data_nascimento);
         });
 
         const proximosEventos = todos.map(p => {
             if (!p.data_nascimento) return null;
-            const d = new Date(p.data_nascimento + 'T00:00:00');
-            const niverEsteAno = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
-            
-            if (niverEsteAno < hoje && (hoje.getDate() !== d.getDate() || hoje.getMonth() !== d.getMonth())) {
-                niverEsteAno.setFullYear(hoje.getFullYear() + 1);
-            }
+            const diffDays = diasAteAniversario(p.data_nascimento);
+            const dataObj = parseLocalDate(p.data_nascimento);
+            const idadeNova = calcularIdade(p.data_nascimento) + (diffDays === 0 ? 0 : 1);
 
-            const diffTime = niverEsteAno.getTime() - hoje.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const idadeNova = niverEsteAno.getFullYear() - d.getFullYear();
-
-            return { ...p, diffDays, dataObj: d, idadeNova };
+            return { ...p, diffDays, dataObj, idadeNova };
         })
         .filter((p): p is (Aniversario & { diffDays: number; dataObj: Date; idadeNova: number }) => 
             p !== null && p.diffDays > 0 && p.diffDays <= DIAS_PREVISAO
@@ -84,7 +86,7 @@ export async function montarDashboard(container: HTMLElement) {
                     <div class="dash-actions">
                         <div class="badge-total-mes" title="Total do mês">
                             <i data-lucide="calendar-heart"></i>
-                            <span>${todos.filter(p => p.data_nascimento && new Date(p.data_nascimento + 'T00:00:00').getMonth() === hoje.getMonth()).length}</span>
+                            <span>${todos.filter(p => p.data_nascimento && parseLocalDate(p.data_nascimento).getMonth() === hoje.getMonth()).length}</span>
                         </div>
                     </div>
                 </header>

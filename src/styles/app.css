@@ -18,6 +18,16 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body[data-theme='dark'] {
+    --fec-white: #131b2e;
+    --fec-gray-bg: #090d16;
+    --fec-gray-light: #1e293b;
+    --fec-text: #f8fafc;
+    --fec-text-muted: #94a3b8;
+    background-color: #090d16 !important;
+    color: #f8fafc !important;
+}
+
 /* RESET TOTAL */
 * {
     box-sizing: border-box;
@@ -354,4 +364,31 @@ i[data-lucide] {
     font-weight: 600;
     margin-top: 20px;
     text-align: center;
+}
+
+/* --- MODO ESCURO GLOBAL HARMONIOSO --- */
+body[data-theme='dark'] #app-header {
+    background: #131b2e;
+    border-bottom: 1px solid #1e293b;
+}
+
+body[data-theme='dark'] .app-title-header {
+    color: #38bdf8;
+}
+
+body[data-theme='dark'] .nav-bottom-container {
+    background: rgba(19, 27, 46, 0.95);
+    border-top: 1px solid #1e293b;
+}
+
+body[data-theme='dark'] .main-content {
+    background-color: #090d16;
+}
+
+body[data-theme='dark'] .nav-item {
+    color: #94a3b8;
+}
+
+body[data-theme='dark'] .nav-item.active {
+    color: #38bdf8;
 }

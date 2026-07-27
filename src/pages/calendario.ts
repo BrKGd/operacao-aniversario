@@ -2,6 +2,7 @@ import '../styles/calendario.css';
 import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria, MensagemTemplate } from '../types';
+import { parseLocalDate } from '../utils/dateUtils';
 import { 
     createIcons, 
     ChevronLeft, 
@@ -39,7 +40,7 @@ export async function montarCalendario(container: HTMLElement) {
         const tiposMensagensDisponiveis = [...new Set(templates.map(t => t.tipo))].sort();
 
         const calcularIdadeVindoura = (dataNasc: string) => {
-            const nasc = new Date(dataNasc + 'T00:00:00');
+            const nasc = parseLocalDate(dataNasc);
             return anoVisualizado - nasc.getFullYear();
         };
 
@@ -154,7 +155,7 @@ export async function montarCalendario(container: HTMLElement) {
             const nomeMes = new Date(anoVisualizado, mesVisualizado).toLocaleString('pt-BR', { month: 'long' });
 
             const niversMes = todos.filter(p => {
-                const d = new Date(p.data_nascimento + 'T00:00:00');
+                const d = parseLocalDate(p.data_nascimento);
                 return d.getMonth() === mesVisualizado;
             });
 
@@ -162,7 +163,7 @@ export async function montarCalendario(container: HTMLElement) {
             for (let i = 0; i < primeiroDiaMes; i++) diasHtml += `<div class="dia-vazio"></div>`;
 
             for (let dia = 1; dia <= diasNoMes; dia++) {
-                const niversDoDia = niversMes.filter(n => new Date(n.data_nascimento + 'T00:00:00').getDate() === dia);
+                const niversDoDia = niversMes.filter(n => parseLocalDate(n.data_nascimento).getDate() === dia);
                 const ehHoje = dia === hoje.getDate() && mesVisualizado === hoje.getMonth() && anoVisualizado === hoje.getFullYear();
                 const getAvatarUrl = (nome: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=6366f1&color=fff&bold=true`;
 
@@ -179,8 +180,8 @@ export async function montarCalendario(container: HTMLElement) {
             }
 
             const niversParaExibir = diaSelecionado 
-                ? niversMes.filter(n => new Date(n.data_nascimento + 'T00:00:00').getDate() === diaSelecionado)
-                : niversMes.sort((a,b) => new Date(a.data_nascimento + 'T00:00:00').getDate() - new Date(b.data_nascimento + 'T00:00:00').getDate());
+                ? niversMes.filter(n => parseLocalDate(n.data_nascimento).getDate() === diaSelecionado)
+                : niversMes.sort((a,b) => parseLocalDate(a.data_nascimento).getDate() - parseLocalDate(b.data_nascimento).getDate());
 
             container.innerHTML = `
                 <div class="calendario-container">
@@ -215,7 +216,7 @@ export async function montarCalendario(container: HTMLElement) {
                                     <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(n.nome)}&background=random" class="foto-lista">
                                     <div class="info-niver">
                                         <strong>${n.nome}</strong>
-                                        <span>${calcularIdadeVindoura(n.data_nascimento)} anos • Dia ${new Date(n.data_nascimento + 'T00:00:00').getDate()}</span>
+                                        <span>${calcularIdadeVindoura(n.data_nascimento)} anos • Dia ${parseLocalDate(n.data_nascimento).getDate()}</span>
                                     </div>
                                     <button class="btn-zap-cal" data-nome="${n.nome}" data-tel="${n.telefone || ''}" onclick="event.stopPropagation();">
                                         <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">

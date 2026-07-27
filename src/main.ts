@@ -1,5 +1,6 @@
 import './styles/app.css'; 
 import { supabase } from './supabaseClient';
+import { aniversarioService } from './services/aniversarioService';
 import { createIcons, icons } from 'lucide';
 
 // Importação das páginas
@@ -15,11 +16,22 @@ import { montarCategorias } from './pages/categorias';
 
 // --- INICIALIZAÇÃO ---
 async function inicializar() {
+    // Aplica o tema salvo no localStorage imediatamente em todo o app
+    const temaSalvo = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', temaSalvo);
+
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
         configurarLogin();
     } else {
+        // Dispara o aquecimento do cache em background para 0ms de latencia
+        Promise.all([
+            aniversarioService.listarTodos(),
+            aniversarioService.listarCategorias(),
+            aniversarioService.listarTemplates()
+        ]).catch(err => console.warn('Aviso no pré-carregamento:', err));
+
         montarLayoutEstrutural();
     }
 }

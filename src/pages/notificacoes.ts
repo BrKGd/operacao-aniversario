@@ -1,6 +1,7 @@
 import '../styles/notificacoes.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
+import { diasAteAniversario } from '../utils/dateUtils';
 import { modalAlerta } from '../utils/modalAlertas';
 import { 
     createIcons, 
@@ -68,11 +69,7 @@ export async function montarNotificacoes(container: HTMLElement) {
         hoje.setHours(0,0,0,0);
 
         const proximos = todos.filter(p => {
-            const d = new Date(p.data_nascimento + 'T00:00:00');
-            const niver = new Date(hoje.getFullYear(), d.getMonth(), d.getDate());
-            if (niver < hoje) niver.setFullYear(hoje.getFullYear() + 1);
-            const diff = Math.ceil((niver.getTime() - hoje.getTime()) / 86400000);
-            return diff <= 7;
+            return p.data_nascimento && diasAteAniversario(p.data_nascimento) <= 7;
         });
 
         container.innerHTML = `

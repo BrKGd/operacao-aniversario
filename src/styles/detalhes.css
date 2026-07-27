@@ -1,4 +1,3 @@
-/* --- RESET E IDENTIDADE VISUAL --- */
 :root {
     --fec-azul-vibrante: #003399;   
     --fec-vermelho-vibrante: #ff0000; 
@@ -6,6 +5,37 @@
     --fec-shadow: rgba(0, 31, 63, 0.2);
     --transition: all 0.3s ease;
     --skeleton-bg: #e2e8f0;
+}
+
+body[data-theme='dark'] {
+    --fec-azul-vibrante: #38bdf8;
+    --fec-vermelho-vibrante: #fb7185;
+    --fec-bg-dark: #1e293b;
+    --fec-shadow: rgba(0, 0, 0, 0.5);
+}
+
+body[data-theme='dark'] .section-details-white {
+    background: #090d16 !important;
+}
+
+body[data-theme='dark'] .name-floating-card {
+    background: #131b2e !important;
+    border-color: #1e293b !important;
+}
+
+body[data-theme='dark'] .info-block p {
+    color: #f8fafc !important;
+}
+
+body[data-theme='dark'] .notes-content {
+    background: #131b2e !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+
+body[data-theme='dark'] .dropdown-options {
+    background: #131b2e !important;
+    border: 1px solid #1e293b !important;
 }
 
 .detalhes-page-wrapper {

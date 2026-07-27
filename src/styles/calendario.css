@@ -18,6 +18,51 @@
     --fec-bg-dark: #001f3f;
 }
 
+body[data-theme='dark'] {
+    --fec-bg: #090d16;
+    --fec-card-white: #131b2e;
+    --fec-text-main: #f8fafc;
+    --fec-text-sub: #94a3b8;
+    --fec-primary: #38bdf8;
+    --fec-primary-light: rgba(56, 189, 248, 0.15);
+    --fec-event-bg: rgba(225, 29, 72, 0.2);
+    --fec-event-color: #fb7185;
+    --fec-hoje-border: #38bdf8;
+}
+
+body[data-theme='dark'] .dia-card {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #f8fafc;
+}
+
+body[data-theme='dark'] .num-dia {
+    color: #f8fafc;
+}
+
+body[data-theme='dark'] .btn-cal {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #f8fafc;
+}
+
+body[data-theme='dark'] .btn-cat-filter {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #94a3b8;
+}
+
+body[data-theme='dark'] .btn-cat-filter.active {
+    background: #4361ee;
+    color: #ffffff;
+}
+
+body[data-theme='dark'] .item-legenda {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #f8fafc;
+}
+
 .calendario-container {
     padding: 12px; /* Reduzido para ser mais compacto */
     max-width: 500px;

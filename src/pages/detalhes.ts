@@ -3,6 +3,7 @@ import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { gerarLinkWhatsapp } from '../utils/messages';
 import { Aniversario, Categoria } from '../types';
+import { formatDateBR, calcularIdade, diasAteAniversario } from '../utils/dateUtils';
 import { modalAlerta } from '../utils/modalAlertas';
 import { createIcons, icons } from 'lucide';
 
@@ -51,11 +52,10 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
             return;
         }
 
-        // Cálculos de data
-        const dataNasc = new Date(pessoa.data_nascimento + 'T00:00:00');
-        const hoje = new Date();
-        let idade = hoje.getFullYear() - dataNasc.getFullYear();
-        if (hoje < new Date(hoje.getFullYear(), dataNasc.getMonth(), dataNasc.getDate())) idade--;
+        // Cálculos de data precisos sem bug UTC (-1 dia)
+        const dataFormatada = formatDateBR(pessoa.data_nascimento, false);
+        const idade = calcularIdade(pessoa.data_nascimento);
+        const diasFaltantes = diasAteAniversario(pessoa.data_nascimento);
 
         // 3. RENDERIZAÇÃO DO CONTEÚDO REAL
         container.innerHTML = `
@@ -86,9 +86,9 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                     <div class="info-row">
                         <div class="info-block">
                             <label>Aniversário</label>
-                            <p>${dataNasc.toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'})}</p>
+                            <p>${dataFormatada}</p>
                         </div>
-                        <div class="days-badge">${idade} ANOS</div>
+                        <div class="days-badge">${diasFaltantes === 0 ? '🎉 HOJE!' : `${idade} ANOS`}</div>
                     </div>
                     <div class="info-block" style="margin-bottom: 20px;">
                         <label>Whatsapp</label>

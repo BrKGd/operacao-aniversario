@@ -3,6 +3,7 @@ import '../styles/dashboard.css';
 import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, MensagemTemplate } from '../types';
+import { diasAteAniversario } from '../utils/dateUtils';
 import { createIcons, icons } from 'lucide';
 
 // 🧠 Tipagem do Estado Local
@@ -291,11 +292,5 @@ export async function montarLista(container: HTMLElement) {
 }
 
 function calcularDias(dataNasc: string) {
-    if (!dataNasc) return 999;
-    const hoje = new Date();
-    hoje.setHours(0,0,0,0);
-    const nasc = new Date(dataNasc + 'T00:00:00');
-    const prox = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
-    if (prox < hoje) prox.setFullYear(hoje.getFullYear() + 1);
-    return Math.ceil((prox.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    return diasAteAniversario(dataNasc);
 }

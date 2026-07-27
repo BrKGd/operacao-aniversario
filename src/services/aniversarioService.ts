@@ -1,62 +1,187 @@
 import { supabase } from '../supabaseClient';
 import { Aniversario, Categoria, MensagemTemplate } from '../types';
 
+// --- CACHE EM MEMÓRIA & LOCALSTORAGE PARA PERFORMANCE MÁXIMA (0ms SWR) ---
+const CACHE_KEYS = {
+  ANIVERSARIOS: 'leao_cache_aniversarios',
+  CATEGORIAS: 'leao_cache_categorias',
+  TEMPLATES: 'leao_cache_templates',
+  TIMESTAMP: 'leao_cache_timestamp'
+};
+
+const TTL_MS = 5 * 60 * 1000; // 5 minutos de validade antes da revalidação automatizada
+
+let inMemoryAniversarios: Aniversario[] | null = null;
+let inMemoryCategorias: Categoria[] | null = null;
+let inMemoryTemplates: MensagemTemplate[] | null = null;
+
+function salvarCacheLocal<T>(key: string, data: T) {
+  try {
+    let payload = data;
+
+    // Se for a lista de aniversariantes, removemos Base64 pesados das fotos para otimizar espaço
+    if (key === CACHE_KEYS.ANIVERSARIOS && Array.isArray(data)) {
+      payload = data.map((item: any) => {
+        if (item && item.imagem_url && item.imagem_url.startsWith('data:')) {
+          const { imagem_url, ...resto } = item;
+          return resto;
+        }
+        return item;
+      }) as unknown as T;
+    }
+
+    localStorage.setItem(key, JSON.stringify(payload));
+    localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
+  } catch (e: any) {
+    // Tenta limpar caches antigos se a quota for excedida
+    try {
+      localStorage.removeItem('fec_contatos_cache');
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (retryError) {
+      // Se continuar excedido, mantem o cache perfeitamente em memoria RAM sem poluir o console
+    }
+  }
+}
+
+function lerCacheLocal<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export const aniversarioService = {
-  async listarPorMes(mes: number): Promise<Aniversario[]> {
-    const { data, error } = await supabase
-      .from('aniversarios')
-      .select(`*, categorias (id, nome, icone, cor)`)
-      .filter('data_nascimento', 'raw', `extract(month from data_nascimento) = ${mes + 1}`)
-      .order('nome', { ascending: true });
-
-    if (error) {
-      console.error('Erro ao buscar dados por mês:', error.message);
-      return [];
-    }
-    return (data as any[]) || [];
+  /**
+   * Limpa todos os caches locais (útil após alterações de dados)
+   */
+  invalidarCache() {
+    inMemoryAniversarios = null;
+    inMemoryCategorias = null;
+    inMemoryTemplates = null;
+    localStorage.removeItem(CACHE_KEYS.ANIVERSARIOS);
+    localStorage.removeItem(CACHE_KEYS.CATEGORIAS);
+    localStorage.removeItem(CACHE_KEYS.TEMPLATES);
   },
 
-  async listarTodos(): Promise<Aniversario[]> {
-    const { data, error } = await supabase
-      .from('aniversarios')
-      .select(`*, categorias (id, nome, icone, cor)`)
-      .order('nome', { ascending: true });
-
-    if (error) {
-      console.error('Erro ao buscar todos os aniversariantes:', error.message);
-      return [];
+  /**
+   * Busca a lista completa de aniversariantes.
+   * Retorna instantaneamente se houver cache local (SWR pattern) e revalida em background.
+   */
+  async listarTodos(forceFresh: boolean = false): Promise<Aniversario[]> {
+    // 1. Se tiver memória, retorna instantaneamente (0ms)
+    if (!forceFresh && inMemoryAniversarios && inMemoryAniversarios.length > 0) {
+      this.revalidarAniversariosEmBackground();
+      return inMemoryAniversarios;
     }
-    return (data as any[]) || [];
+
+    // 2. Se tiver no localStorage, carrega e retorna instantaneamente (0ms)
+    const local = lerCacheLocal<Aniversario[]>(CACHE_KEYS.ANIVERSARIOS);
+    if (!forceFresh && local && local.length > 0) {
+      inMemoryAniversarios = local;
+      this.revalidarAniversariosEmBackground();
+      return local;
+    }
+
+    // 3. Se não tiver cache, faz a busca na rede
+    return await this.revalidarAniversariosEmBackground();
   },
 
-  async listarCategorias(): Promise<Categoria[]> {
-    const { data, error } = await supabase
-      .from('categorias')
-      .select('*')
-      .order('nome', { ascending: true });
-
-    if (error) {
-      console.error('Erro ao buscar categorias:', error.message);
-      return [];
-    }
-    return data as Categoria[];
-  },
-
-  // ✅ NOVO: Busca templates de mensagens para o WhatsApp
-    async listarTemplates() {
+  /**
+   * Revalidação silenciosa em background
+   */
+  async revalidarAniversariosEmBackground(): Promise<Aniversario[]> {
+    try {
       const { data, error } = await supabase
-          .from('mensagens_templates')
-          .select('*')
-          .order('tipo', { ascending: true }); // <--- MUDANÇA AQUI (de titulo para tipo)
+        .from('aniversarios')
+        .select(`*, categorias (id, nome, icone, cor)`)
+        .order('nome', { ascending: true });
 
-      if (error) {
-          console.error('Erro ao buscar templates de mensagens:', error.message);
-          return [];
-      }
-      return data;
+      if (error) throw error;
+
+      const lista = (data as any[]) || [];
+      inMemoryAniversarios = lista;
+      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, lista);
+      return lista;
+    } catch (error: any) {
+      console.error('Erro ao revalidar aniversariantes:', error.message || error);
+      return inMemoryAniversarios || lerCacheLocal<Aniversario[]>(CACHE_KEYS.ANIVERSARIOS) || [];
+    }
   },
 
-  // ✅ RENOMEADO: De adicionarCategoria para salvarCategoria (para bater com a página)
+  async listarPorMes(mes: number): Promise<Aniversario[]> {
+    const todos = await this.listarTodos();
+    return todos.filter(p => {
+      if (!p.data_nascimento) return false;
+      const parts = p.data_nascimento.split('-');
+      if (parts.length < 2 || !parts[1]) return false;
+      return parseInt(parts[1], 10) - 1 === mes;
+    });
+  },
+
+  /**
+   * Busca a lista de categorias com cache instantâneo
+   */
+  async listarCategorias(forceFresh: boolean = false): Promise<Categoria[]> {
+    if (!forceFresh && inMemoryCategorias && inMemoryCategorias.length > 0) {
+      return inMemoryCategorias;
+    }
+
+    const local = lerCacheLocal<Categoria[]>(CACHE_KEYS.CATEGORIAS);
+    if (!forceFresh && local && local.length > 0) {
+      inMemoryCategorias = local;
+      return local;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('categorias')
+        .select('*')
+        .order('nome', { ascending: true });
+
+      if (error) throw error;
+      const lista = (data as Categoria[]) || [];
+      inMemoryCategorias = lista;
+      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, lista);
+      return lista;
+    } catch (error: any) {
+      console.error('Erro ao buscar categorias:', error.message || error);
+      return inMemoryCategorias || lerCacheLocal<Categoria[]>(CACHE_KEYS.CATEGORIAS) || [];
+    }
+  },
+
+  /**
+   * Busca os templates de mensagem com cache instantâneo
+   */
+  async listarTemplates(forceFresh: boolean = false): Promise<MensagemTemplate[]> {
+    if (!forceFresh && inMemoryTemplates && inMemoryTemplates.length > 0) {
+      return inMemoryTemplates;
+    }
+
+    const local = lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES);
+    if (!forceFresh && local && local.length > 0) {
+      inMemoryTemplates = local;
+      return local;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('mensagens_templates')
+        .select('*')
+        .order('tipo', { ascending: true });
+
+      if (error) throw error;
+      const lista = (data as MensagemTemplate[]) || [];
+      inMemoryTemplates = lista;
+      salvarCacheLocal(CACHE_KEYS.TEMPLATES, lista);
+      return lista;
+    } catch (error: any) {
+      console.error('Erro ao buscar templates:', error.message || error);
+      return inMemoryTemplates || lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES) || [];
+    }
+  },
+
   async salvarCategoria(categoria: Omit<Categoria, 'id' | 'created_at'>): Promise<Categoria | null> {
     const { data, error } = await supabase
       .from('categorias')
@@ -68,10 +193,10 @@ export const aniversarioService = {
       console.error('Erro ao criar categoria:', error.message);
       throw error;
     }
+    this.invalidarCache();
     return data as Categoria;
   },
 
-  // ✅ ATUALIZAÇÃO: Garante que os tipos batem
   async atualizarCategoria(id: string, dados: Partial<Categoria>): Promise<Categoria | null> {
     const { data, error } = await supabase
       .from('categorias')
@@ -84,6 +209,7 @@ export const aniversarioService = {
       console.error('Erro ao atualizar categoria:', error.message);
       throw error;
     }
+    this.invalidarCache();
     return data as Categoria;
   },
 
@@ -97,16 +223,16 @@ export const aniversarioService = {
       console.error('Erro ao excluir categoria:', error.message);
       throw error;
     }
+    this.invalidarCache();
   },
 
-  // ✅ ATUALIZADO: Incluindo novas colunas de controle de notificação
   async adicionar(aniversario: Omit<Aniversario, 'id' | 'created_at' | 'categorias'>): Promise<Aniversario | null> {
     const { data, error } = await supabase
       .from('aniversarios')
       .insert([
         {
           ...aniversario,
-          notificacoes_ativas: (aniversario as any).notificacoes_ativas ?? true, // Default ativo
+          notificacoes_ativas: (aniversario as any).notificacoes_ativas ?? true,
           id_notificacao: (aniversario as any).id_notificacao || null
         }
       ])
@@ -117,10 +243,10 @@ export const aniversarioService = {
       console.error('Erro ao escalar novo aniversariante:', error.message);
       throw error;
     }
+    this.invalidarCache();
     return data;
   },
 
-  // ✅ ATUALIZADO: Suporte para atualizar status de notificação e vínculo
   async atualizar(id: string, dados: Partial<Aniversario>): Promise<Aniversario | null> {
     const { categorias, ...dadosParaEnvio } = dados as any;
     
@@ -135,6 +261,7 @@ export const aniversarioService = {
       console.error('Erro ao atualizar registro:', error.message);
       throw error;
     }
+    this.invalidarCache();
     return data;
   },
 
@@ -148,9 +275,9 @@ export const aniversarioService = {
       console.error('Erro ao remover registro:', error.message);
       throw error;
     }
+    this.invalidarCache();
   },
 
-  // 🔔 NOVAS FUNÇÕES PARA A TABELA 'NOTIFICACOES'
   async listarNotificacoes() {
     const { data, error } = await supabase
       .from('notificacoes')
@@ -164,9 +291,7 @@ export const aniversarioService = {
     return data || [];
   },
 
-  // ✅ ATUALIZADO: Agora aceita 'grupos_especificos' como array de IDs
   async salvarNotificacao(notificacao: { dias: number; hora: string; alvo: string; grupos_especificos?: string[] }) {
-    // 1. Busca o utilizador atual autenticado
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -174,7 +299,6 @@ export const aniversarioService = {
       throw new Error('Você precisa estar logado para salvar notificações.');
     }
 
-    // 2. Insere os dados incluindo o user_id e os grupos selecionados
     const { data, error } = await supabase
       .from('notificacoes')
       .insert([
