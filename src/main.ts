@@ -20,6 +20,15 @@ async function inicializar() {
     const temaSalvo = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', temaSalvo);
 
+    // Registro do Service Worker PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+            console.log('[PWA] Service Worker ativo:', reg.scope);
+        }).catch((err) => {
+            console.warn('[PWA] Aviso ao registrar Service Worker:', err);
+        });
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
@@ -264,6 +273,26 @@ function recarregarIcones() {
     // @ts-ignore
     if (typeof createIcons === 'function') {
         createIcons({ icons });
+    }
+}
+
+// --- PWA PROMPT HANDLER ---
+let pwaInstallPrompt: any = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    pwaInstallPrompt = e;
+});
+
+export function dispararInstalacaoPWA(cbStatus?: (sucesso: boolean) => void) {
+    if (pwaInstallPrompt) {
+        pwaInstallPrompt.prompt();
+        pwaInstallPrompt.userChoice.then((choiceResult: any) => {
+            const aceitou = choiceResult.outcome === 'accepted';
+            if (cbStatus) cbStatus(aceitou);
+            pwaInstallPrompt = null;
+        });
+    } else if (cbStatus) {
+        cbStatus(false);
     }
 }
 

@@ -4,6 +4,7 @@ import { excelService } from '../services/excelService';
 import { webPushService } from '../utils/webPush';
 import { modalAlerta } from '../utils/modalAlertas';
 import { createIcons, icons } from 'lucide';
+import { dispararInstalacaoPWA } from '../main';
 
 export async function montarConfiguracoes(container: HTMLElement) {
     // 1. Skeleton Loading Moderno
@@ -131,6 +132,17 @@ export async function montarConfiguracoes(container: HTMLElement) {
                         </div>
                         <div class="toggle-switch ${pushAtivo ? 'active' : ''}"></div>
                     </div>
+
+                    <div class="action-card" id="btnInstalarPWA">
+                        <div class="action-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                            <i data-lucide="download-cloud"></i>
+                        </div>
+                        <div class="action-content">
+                            <span>Instalar Aplicativo (PWA)</span>
+                            <small>Fixar o Leão Festivo na sua Tela Inicial como App nativo</small>
+                        </div>
+                        <i data-lucide="chevron-right" style="color: var(--text-muted);"></i>
+                    </div>
                 </section>
 
                 <section class="config-section">
@@ -229,6 +241,25 @@ export async function montarConfiguracoes(container: HTMLElement) {
                 }
             }
             montarConfiguracoes(container);
+        });
+
+        // 4. Instalar Aplicativo (PWA)
+        document.getElementById('btnInstalarPWA')?.addEventListener('click', () => {
+            dispararInstalacaoPWA((aceitou) => {
+                if (aceitou) {
+                    modalAlerta.show({
+                        title: 'Aplicativo Instalado!',
+                        message: 'O Leão Festivo foi adicionado à sua tela inicial.',
+                        type: 'success'
+                    });
+                } else {
+                    modalAlerta.show({
+                        title: 'Como Instalar',
+                        message: 'Para instalar manualmente, toque no menu do seu navegador (três pontos ou compartilhar) e selecione "Adicionar à Tela Inicial" ou "Instalar Aplicativo".',
+                        type: 'info'
+                    });
+                }
+            });
         });
 
         // 4. Exportação Excel (.xlsx)
