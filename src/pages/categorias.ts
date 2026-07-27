@@ -6,7 +6,10 @@ import {
     createIcons, Wallet, X, RotateCcw, Check, Search, ChevronLeft, 
     Pencil, Trash2, Plus, Star, Heart, Church, Tag, Home, Utensils, 
     Music, Coffee, User, Camera, Gift, Stethoscope, Activity, Pill, 
-    Baby, Dumbbell, HelpCircle, Brain, Syringe, Thermometer
+    Baby, Dumbbell, HelpCircle, Brain, Syringe, Thermometer,
+    Users, PartyPopper, Cake, Briefcase, Building, Laptop, Calculator,
+    Trophy, Flame, Plane, Car, Gamepad2, Palette, Globe, Sun,
+    Moon, Compass, Flag, Bookmark, Crown, Shield, Award, Smile
 } from 'lucide';
 
 const ORIGEM_KEY = 'fec_catg_origem';
@@ -16,31 +19,22 @@ const ICON_MAP = {
     LogOut, LayoutGrid, Contact2, CalendarHeart, Settings2, Wallet, X, 
     RotateCcw, Check, Search, Home, Utensils, Music, Coffee, User, Camera, 
     Gift, Stethoscope, Activity, Pill, Baby, Dumbbell, HelpCircle, Brain, 
-    Syringe, Thermometer 
+    Syringe, Thermometer, Users, PartyPopper, Cake, Briefcase, Building, 
+    Laptop, Calculator, Trophy, Flame, Plane, Car, Gamepad2, Palette, 
+    Globe, Sun, Moon, Compass, Flag, Bookmark, Crown, Shield, Award, Smile
 };
 
 export async function montarCategorias(container: HTMLElement) {
-    
-    // --- NOVA LÓGICA DE CAPTURA BLINDADA ---
-    // Se o hash atual já é #categorias, tentamos pegar o histórico imediato do navegador
-    // Se o usuário clicou num link, o navegador sabe qual era a página anterior.
     const salvarOrigem = () => {
         const hashAntesDeMudar = window.location.hash;
-        
-        // Se o hash não for categorias, salvamos ele agora!
         if (hashAntesDeMudar && hashAntesDeMudar !== '#categorias') {
             localStorage.setItem(ORIGEM_KEY, hashAntesDeMudar);
-        } 
-        // Se já caiu aqui como #categorias e o storage está vazio ou com algo antigo,
-        // tentamos deduzir pelo comportamento comum (voltar para cadastro)
-        else if (!localStorage.getItem(ORIGEM_KEY)) {
+        } else if (!localStorage.getItem(ORIGEM_KEY)) {
             localStorage.setItem(ORIGEM_KEY, '#cadastro');
         }
     };
 
-    // Executa a tentativa de salvamento
     salvarOrigem();
-    // ---------------------------------------
 
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando categorias...</div></div>`;
 
@@ -55,7 +49,7 @@ export async function montarCategorias(container: HTMLElement) {
 
                 <div class="catg-header">
                     <h2>Categorias</h2>
-                    <p style="color: #64748b; margin-top: -5px;">Gerencie seus grupos de aniversariantes</p>
+                    <p style="color: var(--fec-text-muted, #64748b); margin-top: -5px;">Gerencie seus grupos de aniversariantes</p>
                 </div>
 
                 <div class="catg-list">
@@ -87,7 +81,6 @@ export async function montarCategorias(container: HTMLElement) {
 
         const acaoVoltar = () => {
             const origem = localStorage.getItem(ORIGEM_KEY) || '#cadastro';
-            
             if (origem.includes('#cadastro') || origem.includes('id=')) {
                 window.history.back();
             } else {
@@ -142,33 +135,61 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
     modalOverlay.className = 'catg-modal-overlay';
     
     let iconeSelecionado = dados?.icone || 'star';
-    let corSelecionada = dados?.cor || '#4361EE';
+    let corSelecionada = dados?.cor || '#0052FF';
 
+    // Lista Expandida de Ícones Lucide (45+ Ícones Úteis)
     const listaIcones = [
-        'heart', 'stethoscope', 'activity', 'pill', 'baby', 'dumbbell', 
-        'help-circle', 'brain', 'syringe', 'thermometer', 'star', 'church', 
-        'home', 'utensils', 'music', 'coffee', 'user', 'camera', 'gift'
+        'star', 'heart', 'users', 'user', 'party-popper', 'cake', 'gift', 'sparkles',
+        'crown', 'shield', 'award', 'smile', 'briefcase', 'building', 'laptop',
+        'calculator', 'trophy', 'flame', 'stethoscope', 'activity', 'pill', 'baby',
+        'dumbbell', 'brain', 'syringe', 'thermometer', 'church', 'home', 'utensils',
+        'music', 'coffee', 'camera', 'plane', 'car', 'gamepad-2', 'palette', 'globe',
+        'sun', 'moon', 'compass', 'flag', 'bookmark', 'tag'
+    ];
+
+    const coresPredefinidas = [
+        '#0052FF', '#FF3B30', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#64748B'
     ];
 
     modalOverlay.innerHTML = `
         <div class="catg-modal-card">
             <div class="catg-modal-header">
-                <h3><i data-lucide="tag"></i> ${dados ? 'Editar Categoria' : 'Nova Categoria'}</h3>
+                <h3><i data-lucide="${dados ? 'pencil' : 'plus'}"></i> ${dados ? 'Editar Categoria' : 'Nova Categoria'}</h3>
                 <button class="catg-btn-close" id="closeCatForm"><i data-lucide="x"></i></button>
             </div>
+
             <div class="catg-modal-body">
-                <div class="catg-input-group">
-                    <label>NOME DA CATEGORIA</label>
-                    <input type="text" class="catg-input-text" id="inNomeCat" placeholder="Ex: Amigos, Trabalho..." value="${dados?.nome || ''}">
-                </div>
-                <div class="catg-input-group">
-                    <label>ESCOLHA UM ÍCONE</label>
-                    <div class="catg-icon-grid-box">
-                        <div style="position: relative; margin-bottom: 12px;">
-                            <input type="text" class="catg-input-text" id="searchIcon" placeholder="Buscar ícones..." style="padding-left: 40px;">
-                            <i data-lucide="search" style="position: absolute; left: 12px; top: 12px; width: 18px; color: #94a3b8;"></i>
+                <!-- PREVIEW EM TEMPO REAL -->
+                <div class="catg-preview-hero">
+                    <span class="preview-label">PRÉ-VISUALIZAÇÃO DA CATEGORIA</span>
+                    <div class="catg-preview-card" id="cardPreview" style="background: ${corSelecionada}15; border-color: ${corSelecionada}40;">
+                        <div class="catg-preview-icon" id="iconPreview" style="background: ${corSelecionada};">
+                            <i data-lucide="${iconeSelecionado}"></i>
                         </div>
-                        <div class="catg-icon-grid">
+                        <div class="catg-preview-info">
+                            <span class="catg-preview-title" id="textPreviewTitle">${dados?.nome || 'Nome da Categoria'}</span>
+                            <span class="catg-preview-sub">Identidade Visual do Grupo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOME DA CATEGORIA -->
+                <div class="catg-input-group">
+                    <label><i data-lucide="tag" class="label-icon"></i> NOME DA CATEGORIA</label>
+                    <input type="text" class="catg-input-text" id="inNomeCat" placeholder="Ex: Amigos, Trabalho, Família..." value="${dados?.nome || ''}">
+                </div>
+
+                <!-- ESCOLHA DO ÍCONE -->
+                <div class="catg-input-group">
+                    <div class="label-row">
+                        <label><i data-lucide="sparkles" class="label-icon"></i> ESCOLHA UM ÍCONE LUCIDE (${listaIcones.length} OPÇÕES)</label>
+                    </div>
+                    <div class="catg-icon-grid-box">
+                        <div class="icon-search-wrapper">
+                            <i data-lucide="search" class="search-icon-inside"></i>
+                            <input type="text" class="catg-input-text icon-search-input" id="searchIcon" placeholder="Buscar ícone (ex: heart, gift, star)...">
+                        </div>
+                        <div class="catg-icon-grid" id="gridIconesContainer">
                             ${listaIcones.map(icon => `
                                 <div class="catg-icon-item ${iconeSelecionado === icon ? 'active' : ''}" data-icon="${icon}">
                                     <i data-lucide="${icon}"></i>
@@ -177,8 +198,15 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
                         </div>
                     </div>
                 </div>
+
+                <!-- COR DA IDENTIDADE -->
                 <div class="catg-input-group">
-                    <label>COR DA IDENTIDADE</label>
+                    <label><i data-lucide="palette" class="label-icon"></i> PALETA DE COR DA IDENTIDADE</label>
+                    <div class="color-preset-row">
+                        ${coresPredefinidas.map(c => `
+                            <div class="color-preset-pill ${corSelecionada.toUpperCase() === c.toUpperCase() ? 'active' : ''}" data-color="${c}" style="background: ${c};"></div>
+                        `).join('')}
+                    </div>
                     <div class="catg-color-row">
                         <div class="catg-color-view" id="previewCor" style="background: ${corSelecionada}"></div>
                         <input type="text" class="catg-color-hex" id="hexCor" value="${corSelecionada.toUpperCase()}">
@@ -186,9 +214,10 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
                     </div>
                 </div>
             </div>
+
             <div class="catg-modal-footer">
-                <button class="catg-btn-circle catg-blue" id="btnResetCat"><i data-lucide="rotate-ccw"></i></button>
-                <button class="catg-btn-circle catg-green" id="btnSalvarCat"><i data-lucide="check"></i></button>
+                <button class="catg-btn-circle catg-blue" id="btnResetCat" title="Restaurar"><i data-lucide="rotate-ccw"></i></button>
+                <button class="catg-btn-circle catg-green" id="btnSalvarCat" title="Salvar Categoria"><i data-lucide="check"></i></button>
             </div>
         </div>
     `;
@@ -196,13 +225,44 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
     document.body.appendChild(modalOverlay);
     createIcons({ icons: ICON_MAP });
 
+    const inputNome = modalOverlay.querySelector('#inNomeCat') as HTMLInputElement;
+    const textPreviewTitle = modalOverlay.querySelector('#textPreviewTitle') as HTMLElement;
+    const iconPreview = modalOverlay.querySelector('#iconPreview') as HTMLElement;
+    const cardPreview = modalOverlay.querySelector('#cardPreview') as HTMLElement;
+    const searchIcon = modalOverlay.querySelector('#searchIcon') as HTMLInputElement;
+
+    const atualizarPreview = () => {
+        const nomeVal = inputNome.value.trim() || 'Nome da Categoria';
+        textPreviewTitle.textContent = nomeVal;
+        cardPreview.style.background = `${corSelecionada}15`;
+        cardPreview.style.borderColor = `${corSelecionada}40`;
+        iconPreview.style.background = corSelecionada;
+        iconPreview.innerHTML = `<i data-lucide="${iconeSelecionado}"></i>`;
+        createIcons({ icons: ICON_MAP });
+    };
+
+    // Live update do nome
+    inputNome.addEventListener('input', atualizarPreview);
+
+    // Busca de ícones em tempo real
+    searchIcon?.addEventListener('input', () => {
+        const query = searchIcon.value.toLowerCase().trim();
+        modalOverlay.querySelectorAll('.catg-icon-item').forEach(item => {
+            const iconName = (item as HTMLElement).dataset.icon || '';
+            const visivel = iconName.toLowerCase().includes(query);
+            (item as HTMLElement).style.display = visivel ? 'flex' : 'none';
+        });
+    });
+
     modalOverlay.querySelector('#closeCatForm')?.addEventListener('click', () => modalOverlay.remove());
 
+    // Seleção de ícones
     modalOverlay.querySelectorAll('.catg-icon-item').forEach(item => {
         item.addEventListener('click', () => {
             modalOverlay.querySelectorAll('.catg-icon-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
             iconeSelecionado = (item as HTMLElement).dataset.icon || 'star';
+            atualizarPreview();
         });
     });
 
@@ -210,18 +270,42 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
     const picker = modalOverlay.querySelector('#hiddenPicker') as HTMLInputElement;
     const inputHex = modalOverlay.querySelector('#hexCor') as HTMLInputElement;
 
-    preview.addEventListener('click', () => picker.click());
-    picker.addEventListener('input', () => {
-        corSelecionada = picker.value;
+    const setCor = (novaCor: string) => {
+        corSelecionada = novaCor;
         preview.style.background = corSelecionada;
         inputHex.value = corSelecionada.toUpperCase();
+        picker.value = corSelecionada;
+        modalOverlay.querySelectorAll('.color-preset-pill').forEach(pill => {
+            const pColor = (pill as HTMLElement).dataset.color;
+            pill.classList.toggle('active', pColor?.toUpperCase() === corSelecionada.toUpperCase());
+        });
+        atualizarPreview();
+    };
+
+    // Paleta de Cores Rápidas
+    modalOverlay.querySelectorAll('.color-preset-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const color = (pill as HTMLElement).dataset.color;
+            if (color) setCor(color);
+        });
     });
 
+    preview.addEventListener('click', () => picker.click());
+    picker.addEventListener('input', () => setCor(picker.value));
+    inputHex.addEventListener('change', () => {
+        let val = inputHex.value.trim();
+        if (!val.startsWith('#')) val = '#' + val;
+        if (/^#[0-9A-F]{6}$/i.test(val)) {
+            setCor(val);
+        }
+    });
+
+    // Salvar Categoria
     modalOverlay.querySelector('#btnSalvarCat')?.addEventListener('click', async () => {
-        const nome = (modalOverlay.querySelector('#inNomeCat') as HTMLInputElement).value;
+        const nome = inputNome.value.trim();
         if (!nome) return modalAlerta.show({ message: "Digite o nome da categoria.", type: "warning" });
 
-        modalAlerta.showLoading(dados ? "Atualizando..." : "Salvando...");
+        modalAlerta.showLoading(dados ? "Atualizando Categoria..." : "Criando Categoria...");
 
         try {
             if (dados?.id) {
@@ -233,7 +317,7 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
             modalAlerta.close();
             modalOverlay.remove();
             
-            await modalAlerta.show({ message: "Sucesso!", type: "success" });
+            await modalAlerta.show({ message: "Categoria salva com sucesso!", type: "success" });
 
             onSuccess();
             onFinalize(); 
@@ -244,16 +328,15 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
         }
     });
 
+    // Resetar para valores originais
     modalOverlay.querySelector('#btnResetCat')?.addEventListener('click', () => {
-        (modalOverlay.querySelector('#inNomeCat') as HTMLInputElement).value = dados?.nome || '';
+        inputNome.value = dados?.nome || '';
         iconeSelecionado = dados?.icone || 'star';
-        corSelecionada = dados?.cor || '#4361EE';
-        preview.style.background = corSelecionada;
-        inputHex.value = corSelecionada.toUpperCase();
-        picker.value = corSelecionada;
+        setCor(dados?.cor || '#0052FF');
         modalOverlay.querySelectorAll('.catg-icon-item').forEach(i => {
             const el = i as HTMLElement;
             el.classList.toggle('active', el.dataset.icon === iconeSelecionado);
         });
+        atualizarPreview();
     });
 }
