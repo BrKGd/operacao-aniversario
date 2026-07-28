@@ -110,10 +110,9 @@ export const aniversarioService = {
     const itemLocal = listaLocal.find(u => u.email.toLowerCase() === email);
 
     const isMaster = email === 'gleidson.fig@gmail.com';
-    const statusFinal = isMaster ? 'active' : (itemLocal?.status || statusBanco || user.user_metadata?.status || 'active');
+    const statusFinal = isMaster ? 'active' : (profileRow?.status || statusBanco || itemLocal?.status || user.user_metadata?.status || 'active');
     const roleFinal = isMaster ? 'admin' : (itemLocal?.role || roleBanco || user.user_metadata?.role || 'user');
     const isAdmin = isMaster || roleFinal === 'admin';
-    const isBlocked = statusFinal === 'blocked';
 
     const metadata = user.user_metadata || {};
     const nome = profileRow?.nome_completo || metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
@@ -127,6 +126,7 @@ export const aniversarioService = {
           email: user.email,
           nome_completo: nome,
           avatar_url: avatar,
+          status: statusFinal,
           updated_at: new Date().toISOString()
         });
       } catch (e) {
@@ -240,7 +240,7 @@ export const aniversarioService = {
           nome: p.nome_completo || p.email.split('@')[0],
           avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
           role: p.email.toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : 'user',
-          status: 'active',
+          status: p.status || 'active',
           created_at: p.updated_at
         }));
       }
@@ -252,17 +252,21 @@ export const aniversarioService = {
     let listaLocal: any[] = RAW ? JSON.parse(RAW) : [];
 
     const map = new Map<string, any>();
-    // 1. Adiciona os usuarios base cadastrados no Supabase
+    // 1. Adiciona os usuarios base cadastrados no Supabase como fallback
     usuariosBaseSupabase.forEach(u => map.set(u.email.toLowerCase(), u));
-    // 2. Mescla com os dados da tabela public.profiles
-    listaDb.forEach(u => {
-      const exist = map.get(u.email.toLowerCase()) || {};
-      map.set(u.email.toLowerCase(), { ...exist, ...u });
-    });
-    // 3. Mescla com os ajustes de papel/status salvos pelo Administrador
+    // 2. Mescla com os ajustes salvos em cache local
     listaLocal.forEach(u => {
       const exist = map.get(u.email.toLowerCase()) || {};
       map.set(u.email.toLowerCase(), { ...exist, ...u });
+    });
+    // 3. Mescla com os dados REAIS da tabela public.profiles do Supabase (Fonte da Verdade Suprema)
+    listaDb.forEach(u => {
+      const exist = map.get(u.email.toLowerCase()) || {};
+      map.set(u.email.toLowerCase(), { 
+        ...exist, 
+        ...u, 
+        status: u.status || exist.status || 'active' 
+      });
     });
 
     let listaFinal = Array.from(map.values());
@@ -316,32 +320,68 @@ export const aniversarioService = {
       throw new Error("O Administrador Mestre nao pode ser bloqueado.");
     }
 
+    const emailNorm = emailTarget.toLowerCase().trim();
+
+    // 1. Grava no banco Supabase na tabela public.profiles (Via RPC com SECURITY DEFINER para desviar de restrições RLS)
+    let rpcOk = false;
+    try {
+      const { error } = await supabase.rpc('alterar_status_usuario', {
+        target_email: emailNorm,
+        novo_status: novoStatus
+      });
+      if (!error) {
+        rpcOk = true;
+      } else {
+        console.warn('RPC alterar_status_usuario falhou ou não existe ainda no Supabase:', error.message);
+      }
+    } catch (e) {
+      console.warn('Exceção ao chamar RPC no Supabase:', e);
+    }
+
+    // 2. Fallback Direct Update na tabela public.profiles
+    if (!rpcOk) {
+      const { error: errUpdate } = await supabase
+        .from('profiles')
+        .update({ status: novoStatus, updated_at: new Date().toISOString() })
+        .eq('email', emailNorm);
+
+      if (errUpdate) {
+        console.error('Erro ao atualizar status direto na tabela profiles:', errUpdate.message);
+        // Tenta atualizar por ID se encontrar
+        const { data: profObj } = await supabase.from('profiles').select('id').eq('email', emailNorm).maybeSingle();
+        if (profObj?.id) {
+          const { error: errId } = await supabase.from('profiles').update({ status: novoStatus, updated_at: new Date().toISOString() }).eq('id', profObj.id);
+          if (errId) throw new Error(`Falha ao salvar status no Supabase: ${errId.message}`);
+        } else {
+          throw new Error(`Falha ao atualizar status no Supabase: ${errUpdate.message}`);
+        }
+      }
+    }
+
+    // 3. Grava o status na tabela user_settings como backup
+    try {
+      const { data: profObj } = await supabase.from('profiles').select('id').eq('email', emailNorm).maybeSingle();
+      if (profObj?.id) {
+        await supabase.from('user_settings').upsert({
+          user_id: profObj.id,
+          updated_at: new Date().toISOString(),
+          preferences: { status: novoStatus }
+        });
+      }
+    } catch (e) {
+      console.warn('Aviso ao salvar em user_settings:', e);
+    }
+
+    // 4. Atualiza o catalogo local
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
-    let targetUser: any = null;
-    
     lista = lista.map(u => {
-      if (u.email.toLowerCase() === emailTarget.toLowerCase()) {
-        targetUser = { ...u, status: novoStatus };
-        return targetUser;
+      if (u.email.toLowerCase() === emailNorm) {
+        return { ...u, status: novoStatus };
       }
       return u;
     });
-
     localStorage.setItem('leao_users_registry', JSON.stringify(lista));
-
-    // Grava o status no banco Supabase na tabela user_settings
-    if (targetUser?.id && targetUser.id !== 'master-admin') {
-      try {
-        await supabase.from('user_settings').upsert({
-          user_id: targetUser.id,
-          updated_at: new Date().toISOString(),
-          preferences: { status: novoStatus, role: targetUser.role || 'user' }
-        });
-      } catch (e) {
-        console.warn('Aviso ao salvar status no Supabase:', e);
-      }
-    }
   },
 
   /**

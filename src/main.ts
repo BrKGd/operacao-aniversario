@@ -48,12 +48,7 @@ async function inicializar() {
         if (perfil?.status === 'blocked') {
             await supabase.auth.signOut();
             aniversarioService.invalidarCache();
-            configurarLogin();
-            modalAlerta.show({ 
-                title: "Acesso Suspenso", 
-                message: "Sua conta de usuário foi temporariamente bloqueada pelo Administrador do sistema.", 
-                type: "error" 
-            });
+            exibirTelaUsuarioBloqueado(perfil.email || session.user.email || 'Usuário');
             return;
         }
 
@@ -157,9 +152,70 @@ function configurarLogin() {
             btn.innerHTML = originalContent;
             recarregarIcones();
         } else {
+            const perfil = await aniversarioService.getPerfilUsuario();
+            if (perfil?.status === 'blocked') {
+                await supabase.auth.signOut();
+                aniversarioService.invalidarCache();
+                exibirTelaUsuarioBloqueado(emailEl.value || perfil.email || 'Usuário');
+                return;
+            }
             window.location.hash = '#dash';
             window.location.reload();
         }
+    });
+}
+
+// --- TELA VISUAL DE USUÁRIO BLOQUEADO OU SUSPENSO ---
+function exibirTelaUsuarioBloqueado(emailTarget: string) {
+    document.body.innerHTML = `
+        <div class="auth-full-page" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);">
+            <div class="auth-content-wrapper" style="max-width: 440px;">
+                <div class="blocked-card-icon" style="margin-bottom: 24px;">
+                    <div style="width: 84px; height: 84px; margin: 0 auto; background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);">
+                        <i data-lucide="shield-alert" style="width: 44px; height: 44px; color: #ef4444;"></i>
+                    </div>
+                </div>
+
+                <div class="blocked-badge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                    <i data-lucide="lock" style="width: 14px; height: 14px; color: #ef4444;"></i> Acesso Restrito / Bloqueado
+                </div>
+
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #ffffff; margin: 0 0 12px 0;">Conta Suspensa</h2>
+                
+                <p style="font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 24px;">
+                    A conta referente ao e-mail <strong style="color: #ffffff;">${emailTarget}</strong> está temporariamente bloqueada ou desativada pelo Administrador do sistema.
+                </p>
+
+                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; margin-bottom: 28px; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #f87171; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px;">
+                        <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i> Por que isto aconteceu?
+                    </div>
+                    <p style="font-size: 0.82rem; color: #94a3b8; margin: 0; line-height: 1.5;">
+                        Sua conta foi suspensa por regras administrativas ou revogação de acessos. Se você acredita que isto é um erro, entre em contato com o Administrador.
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="mailto:gleidson.fig@gmail.com?subject=Solicitacao%20de%20Desbloqueio%20de%20Conta%20-%20${encodeURIComponent(emailTarget)}" class="btn-auth-submit" style="background: #ef4444; color: #ffffff; text-decoration: none; justify-content: center; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="mail"></i>
+                        <span>Solicitar Desbloqueio ao Suporte</span>
+                    </a>
+
+                    <button id="btnVoltarLoginBlocked" class="btn-auth-submit" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="log-out"></i>
+                        <span>Voltar à Tela de Login</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    recarregarIcones();
+
+    document.getElementById('btnVoltarLoginBlocked')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        aniversarioService.invalidarCache();
+        configurarLogin();
     });
 }
 
