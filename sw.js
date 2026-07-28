@@ -1,4 +1,4 @@
-const CACHE_NAME = 'operacao-aniversario-v4';
+const CACHE_NAME = 'operacao-aniversario-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
