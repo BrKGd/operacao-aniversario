@@ -19,6 +19,32 @@
 
   <title>Leão Festivo • Gestão de Aniversários</title>
 
+  <!-- Auto-recuperação de cache antigo do PWA para erros de Module Script -->
+  <script>
+    window.addEventListener('error', function(e) {
+      var msg = (e && e.message) || '';
+      var src = (e && e.filename) || '';
+      if (msg.indexOf('Expected a JavaScript') !== -1 || msg.indexOf('Failed to load module script') !== -1 || msg.indexOf('MIME type') !== -1) {
+        console.warn('[PWA] Cache antigo detectado. Limpando registrador e recarregando...');
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var i = 0; i < regs.length; i++) regs[i].unregister();
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                for (var j = 0; j < names.length; j++) caches.delete(names[j]);
+                window.location.reload(true);
+              });
+            } else {
+              window.location.reload(true);
+            }
+          });
+        } else {
+          window.location.reload(true);
+        }
+      }
+    }, true);
+  </script>
+
   <!-- Estilos inline do Splash Screen Inicial para 0ms de FOUC -->
   <style>
     body, html {
@@ -70,7 +96,7 @@
       margin: 0;
     }
   </style>
-  <script type="module" crossorigin src="/operacao-aniversario/assets/index-CRWtXAl0.js"></script>
+  <script type="module" crossorigin src="/operacao-aniversario/assets/index-hG6XNC3I.js"></script>
   <link rel="stylesheet" crossorigin href="/operacao-aniversario/assets/index-BUxD2T5F.css">
 </head>
 

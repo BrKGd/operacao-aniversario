@@ -1,4 +1,4 @@
-const CACHE_NAME = 'operacao-aniversario-v3';
+const CACHE_NAME = 'operacao-aniversario-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -33,7 +33,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Estratégia Network-First para navegação HTML / index.html e Stale-While-Revalidate para o restante
+// 3. Interceptação Inteligente de Requisições
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
@@ -57,15 +57,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Para scripts, CSS e imagens: Stale-While-Revalidate
+  // Para scripts (.js) e folhas de estilo (.css): Network-First com verificação de MIME Type
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          const contentType = networkResponse.headers.get('content-type') || '';
+          // Se o servidor retornar HTML para um arquivo JS/CSS (ex: 404 SPA fallback de bundle antigo), ignora e recarrega
+          if (contentType.includes('text/html')) {
+            console.warn('[PWA SW] Resposta HTML inválida descartada para:', url.pathname);
+            return networkResponse;
+          }
+          if (networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Para demais arquivos (imagens, fontes): Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         }
         return networkResponse;
       }).catch(() => cachedResponse);
