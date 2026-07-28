@@ -110,7 +110,7 @@ export const aniversarioService = {
     const itemLocal = listaLocal.find(u => u.email.toLowerCase() === email);
 
     const isMaster = email === 'gleidson.fig@gmail.com';
-    const statusFinal = isMaster ? 'active' : (profileRow?.status || statusBanco || itemLocal?.status || user.user_metadata?.status || 'active');
+    const statusFinal = isMaster ? 'active' : (profileRow?.status || (itemLocal?.status === 'deleted' ? 'deleted' : (statusBanco || user.user_metadata?.status || 'active')));
     const roleFinal = isMaster ? 'admin' : (itemLocal?.role || roleBanco || user.user_metadata?.role || 'user');
     const isAdmin = isMaster || roleFinal === 'admin';
 
@@ -118,8 +118,8 @@ export const aniversarioService = {
     const nome = profileRow?.nome_completo || metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
     const avatar = profileRow?.avatar_url || metadata.avatar_url || metadata.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
 
-    // Se nao existir registro na tabela public.profiles, grava automaticamente
-    if (!profileRow) {
+    // Se nao existir registro na tabela public.profiles e a conta nao estiver excluida, grava automaticamente
+    if (!profileRow && statusFinal !== 'deleted') {
       try {
         await supabase.from('profiles').upsert({
           id: user.id,
@@ -416,14 +416,24 @@ export const aniversarioService = {
     }
 
     if (!rpcOk) {
-      const { error: errUpdate } = await supabase
+      // 1.1 Remover aniversarios, user_settings e notificacoes do usuario
+      const { data: profObj } = await supabase.from('profiles').select('id').eq('email', emailNorm).maybeSingle();
+      if (profObj?.id) {
+        await supabase.from('aniversarios').delete().eq('user_id', profObj.id);
+        await supabase.from('user_settings').delete().eq('user_id', profObj.id);
+        await supabase.from('notificacoes').delete().eq('user_id', profObj.id);
+      }
+
+      // 1.2 Remover perfil da tabela public.profiles no Supabase (DELETE real)
+      const { error: errDelete } = await supabase
         .from('profiles')
-        .update({ status: 'deleted', updated_at: new Date().toISOString() })
+        .delete()
         .eq('email', emailNorm);
 
-      if (errUpdate) {
-        console.error('Erro ao excluir usuario na tabela profiles:', errUpdate.message);
-        throw new Error(`Falha ao excluir usuario no Supabase: ${errUpdate.message}`);
+      if (errDelete) {
+        console.error('Erro ao excluir registro na tabela profiles:', errDelete.message);
+        // Fallback marcacao status deleted
+        await supabase.from('profiles').update({ status: 'deleted', updated_at: new Date().toISOString() }).eq('email', emailNorm);
       }
     }
 

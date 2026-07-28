@@ -77,7 +77,7 @@ CREATE POLICY "Usuários excluem apenas seus aniversariantes"
 ON public.aniversarios FOR DELETE 
 USING (user_id = auth.uid() OR user_id IS NULL);
 
--- 6. POLÍTICAS RLS E FUNÇÕES RPC PARA ALTERAÇÃO E EXCLUSÃO DE STATUS EM PUBLIC.PROFILES
+-- 6. POLÍTICAS RLS E FUNÇÕES RPC PARA ALTERAÇÃO E EXCLUSÃO DE USUÁRIOS EM PUBLIC.PROFILES
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Permitir leitura de perfis para usuários autenticados" ON public.profiles;
@@ -95,7 +95,12 @@ CREATE POLICY "Permitir inserção de perfil"
 ON public.profiles FOR INSERT 
 WITH CHECK (auth.uid() = id OR auth.role() = 'authenticated');
 
--- FUNÇÃO RPC PARA ALTERAR STATUS DE USUÁRIO (SECURITY DEFINER GARANTE QUE O BANCO ATUALIZA MESMO SOB RLS)
+DROP POLICY IF EXISTS "Permitir exclusão de perfil" ON public.profiles;
+CREATE POLICY "Permitir exclusão de perfil" 
+ON public.profiles FOR DELETE 
+USING (auth.role() = 'authenticated');
+
+-- FUNÇÃO RPC PARA ALTERAR STATUS DE USUÁRIO
 CREATE OR REPLACE FUNCTION public.alterar_status_usuario(target_email text, novo_status text)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -111,19 +116,43 @@ BEGIN
 END;
 $$;
 
--- FUNÇÃO RPC PARA EXCLUIR USUÁRIO (DEFININDO STATUS COMO DELETED)
+-- FUNÇÃO RPC PARA EXCLUIR USUÁRIO (DELETE REAL DO BANCO DE DADOS SUPABASE)
 CREATE OR REPLACE FUNCTION public.excluir_usuario(target_email text)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+  target_user_id uuid;
 BEGIN
-  UPDATE public.profiles
-  SET status = 'deleted',
-      updated_at = now()
+  -- Buscar o ID do perfil a ser excluído
+  SELECT id INTO target_user_id 
+  FROM public.profiles 
   WHERE LOWER(email) = LOWER(target_email);
-  
-  RETURN FOUND;
+
+  IF target_user_id IS NOT NULL THEN
+    -- Remover dados vinculados ao usuário
+    DELETE FROM public.aniversarios WHERE user_id = target_user_id;
+    DELETE FROM public.user_settings WHERE user_id = target_user_id;
+    DELETE FROM public.notificacoes WHERE user_id = target_user_id;
+    
+    -- Remover perfil da tabela public.profiles
+    DELETE FROM public.profiles WHERE id = target_user_id;
+
+    -- Tentar remover da tabela auth.users se for permitido
+    BEGIN
+      DELETE FROM auth.users WHERE id = target_user_id;
+    EXCEPTION WHEN OTHERS THEN
+      -- Se a auth.users for protegida pelo Supabase Auth, o perfil em public.profiles já foi removido
+    END;
+
+    RETURN true;
+  END IF;
+
+  -- Se não achou na profiles, tentar deletar diretamente por email se existir
+  DELETE FROM public.profiles WHERE LOWER(email) = LOWER(target_email);
+
+  RETURN true;
 END;
 $$;
 
