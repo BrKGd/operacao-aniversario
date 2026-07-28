@@ -1,14 +1,16 @@
 import '../styles/modalAlertas.css';
 import { 
     createIcons, 
-    CheckCircle, 
-    AlertCircle, 
+    CheckCircle2, 
+    AlertTriangle, 
     Info, 
     HelpCircle, 
-    Loader2 
+    Trash2,
+    Loader2,
+    Sparkles
 } from 'lucide';
 
-type ModalType = 'success' | 'error' | 'info' | 'confirm' | 'warning';
+type ModalType = 'success' | 'error' | 'info' | 'confirm' | 'warning' | 'delete';
 
 interface ModalOptions {
     title?: string;
@@ -20,10 +22,9 @@ interface ModalOptions {
 
 export const modalAlerta = {
     show(options: ModalOptions): Promise<boolean> {
-        const { title, message, type = 'info', confirmText = 'OK', cancelText = 'Cancelar' } = options;
+        const { title, message, type = 'info', confirmText, cancelText = 'Cancelar' } = options;
         
         return new Promise((resolve) => {
-            // Limpa qualquer modal aberto anteriormente
             this.close();
 
             const overlay = document.createElement('div');
@@ -31,35 +32,40 @@ export const modalAlerta = {
             overlay.id = 'fecModalPrincipal';
             
             const iconMap: Record<string, string> = {
-                success: 'check-circle',
-                error: 'alert-circle',
+                success: 'check-circle-2',
+                error: 'alert-triangle',
                 info: 'info',
                 confirm: 'help-circle',
-                warning: 'alert-circle'
+                warning: 'alert-triangle',
+                delete: 'trash-2'
             };
 
+            const defaultConfirmText = type === 'delete' ? 'Sim, Excluir' : (type === 'confirm' ? 'Confirmar' : 'OK');
+            const finalConfirmText = confirmText || defaultConfirmText;
+
             overlay.innerHTML = `
-                <div class="fec-modal-box">
+                <div class="fec-modal-box modal-type-${type}">
                     <div class="fec-modal-icon ${type}">
+                        <div class="icon-pulse-glow"></div>
                         <i data-lucide="${iconMap[type] || 'info'}"></i>
                     </div>
                     <div class="fec-modal-title">${title || this.getDefaultTitle(type)}</div>
                     <div class="fec-modal-message">${message}</div>
                     <div class="fec-modal-footer">
-                        ${type === 'confirm' ? `<button class="btn-modal btn-modal-secondary" id="modalCancel">${cancelText}</button>` : ''}
-                        <button class="btn-modal btn-modal-primary" id="modalConfirm">${confirmText}</button>
+                        ${(type === 'confirm' || type === 'delete' || type === 'warning') 
+                            ? `<button class="btn-modal btn-modal-secondary" id="modalCancel">${cancelText}</button>` 
+                            : ''}
+                        <button class="btn-modal btn-modal-primary btn-${type}" id="modalConfirm">${finalConfirmText}</button>
                     </div>
                 </div>
             `;
 
             document.body.appendChild(overlay);
 
-            // CORREÇÃO: createIcons agora só olha para dentro do overlay recém criado
             createIcons({ 
-                icons: { CheckCircle, AlertCircle, Info, HelpCircle },
+                icons: { CheckCircle2, AlertTriangle, Info, HelpCircle, Trash2, Sparkles },
                 nameAttr: 'data-lucide',
-                attrs: { 'class': 'lucide-modal-icon' },
-                root: overlay // <--- ISSO resolve os erros do console
+                root: overlay
             });
 
             setTimeout(() => overlay.classList.add('active'), 10);
@@ -69,7 +75,7 @@ export const modalAlerta = {
                 setTimeout(() => {
                     overlay.remove();
                     resolve(valor);
-                }, 300);
+                }, 250);
             };
 
             overlay.querySelector('#modalConfirm')?.addEventListener('click', () => fecharEPassarValor(true));
@@ -85,17 +91,22 @@ export const modalAlerta = {
         
         overlay.innerHTML = `
             <div class="fec-modal-box loading">
-                <div class="fec-modal-spinner">
-                     <i data-lucide="loader-2"></i>
+                <div class="fec-modal-loading-wrapper">
+                    <div class="fec-spinner-ring"></div>
+                    <div class="fec-modal-spinner">
+                         <i data-lucide="loader-2"></i>
+                    </div>
                 </div>
-                <div class="fec-modal-title">Processando...</div>
+                <div class="fec-modal-title loading-title">
+                    Processando<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+                </div>
                 <div class="fec-modal-message">${message}</div>
             </div>
         `;
         document.body.appendChild(overlay);
 
         createIcons({ 
-            icons: { Loader2 }, 
+            icons: { Loader2, Sparkles }, 
             root: overlay 
         });
     },
@@ -107,11 +118,12 @@ export const modalAlerta = {
 
     getDefaultTitle(type: ModalType) {
         const titles: Record<string, string> = { 
-            success: 'Sucesso!', 
-            error: 'Erro!', 
-            info: 'Aviso', 
-            confirm: 'Confirmação',
-            warning: 'Atenção'
+            success: 'Concluído com Sucesso!', 
+            error: 'Ops, ocorreu um erro', 
+            info: 'Informação', 
+            confirm: 'Tem certeza?',
+            warning: 'Atenção Necessária',
+            delete: 'Confirmar Exclusão'
         };
         return titles[type] || 'Aviso';
     }
