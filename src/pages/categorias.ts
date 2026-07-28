@@ -117,8 +117,8 @@ export async function montarCategorias(container: HTMLElement) {
                     modalAlerta.showLoading("Excluindo...");
                     await aniversarioService.excluirCategoria(id);
                     modalAlerta.close();
-                    await modalAlerta.show({ message: "Categoria removida!", type: "success" });
                     montarCategorias(container);
+                    modalAlerta.show({ message: "Categoria removida!", type: "success" });
                 }
             });
         });
@@ -317,10 +317,10 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
             modalAlerta.close();
             modalOverlay.remove();
             
-            await modalAlerta.show({ message: "Categoria salva com sucesso!", type: "success" });
-
             onSuccess();
-            onFinalize(); 
+            onFinalize();
+
+            modalAlerta.show({ message: "Categoria salva com sucesso!", type: "success" }); 
 
         } catch (err) {
             modalAlerta.close();

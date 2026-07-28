@@ -193,11 +193,23 @@ export const aniversarioService = {
       console.error('Erro ao criar categoria:', error.message);
       throw error;
     }
-    this.invalidarCache();
-    return data as Categoria;
+    const catCriada = data as Categoria;
+    if (inMemoryCategorias) {
+      inMemoryCategorias.push(catCriada);
+      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
+    } else {
+      this.invalidarCache();
+    }
+    return catCriada;
   },
 
   async atualizarCategoria(id: string, dados: Partial<Categoria>): Promise<Categoria | null> {
+    // Atualizacao otimista em memoria
+    if (inMemoryCategorias) {
+      inMemoryCategorias = inMemoryCategorias.map(c => c.id === id ? { ...c, ...dados } : c);
+      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
+    }
+
     const { data, error } = await supabase
       .from('categorias')
       .update(dados)
@@ -207,13 +219,19 @@ export const aniversarioService = {
 
     if (error) {
       console.error('Erro ao atualizar categoria:', error.message);
+      this.invalidarCache();
       throw error;
     }
-    this.invalidarCache();
     return data as Categoria;
   },
 
   async excluirCategoria(id: string): Promise<void> {
+    // Atualizacao otimista em memoria para 0ms de delay
+    if (inMemoryCategorias) {
+      inMemoryCategorias = inMemoryCategorias.filter(c => c.id !== id);
+      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
+    }
+
     const { error } = await supabase
       .from('categorias')
       .delete()
@@ -221,9 +239,9 @@ export const aniversarioService = {
 
     if (error) {
       console.error('Erro ao excluir categoria:', error.message);
+      this.invalidarCache();
       throw error;
     }
-    this.invalidarCache();
   },
 
   async adicionar(aniversario: Omit<Aniversario, 'id' | 'created_at' | 'categorias'>): Promise<Aniversario | null> {
@@ -243,13 +261,25 @@ export const aniversarioService = {
       console.error('Erro ao escalar novo aniversariante:', error.message);
       throw error;
     }
-    this.invalidarCache();
+
+    if (inMemoryAniversarios) {
+      inMemoryAniversarios.unshift(data);
+      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, inMemoryAniversarios);
+    } else {
+      this.invalidarCache();
+    }
+
     return data;
   },
 
   async atualizar(id: string, dados: Partial<Aniversario>): Promise<Aniversario | null> {
     const { categorias, ...dadosParaEnvio } = dados as any;
-    
+
+    if (inMemoryAniversarios) {
+      inMemoryAniversarios = inMemoryAniversarios.map(a => a.id === id ? { ...a, ...dadosParaEnvio } : a);
+      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, inMemoryAniversarios);
+    }
+
     const { data, error } = await supabase
       .from('aniversarios')
       .update(dadosParaEnvio)
@@ -259,13 +289,19 @@ export const aniversarioService = {
 
     if (error) {
       console.error('Erro ao atualizar registro:', error.message);
+      this.invalidarCache();
       throw error;
     }
-    this.invalidarCache();
     return data;
   },
 
   async excluir(id: string): Promise<void> {
+    // Exclusao instantanea otimista em memoria
+    if (inMemoryAniversarios) {
+      inMemoryAniversarios = inMemoryAniversarios.filter(a => a.id !== id);
+      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, inMemoryAniversarios);
+    }
+
     const { error } = await supabase
       .from('aniversarios')
       .delete()
@@ -273,9 +309,9 @@ export const aniversarioService = {
 
     if (error) {
       console.error('Erro ao remover registro:', error.message);
+      this.invalidarCache();
       throw error;
     }
-    this.invalidarCache();
   },
 
   async listarNotificacoes() {
