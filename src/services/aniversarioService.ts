@@ -80,17 +80,40 @@ export const aniversarioService = {
     if (!user) return null;
 
     const email = (user.email || '').toLowerCase();
-    const isAdmin = email === 'gleidson.fig@gmail.com' || user.user_metadata?.role === 'admin';
-    const isBlocked = user.user_metadata?.status === 'blocked';
 
-    // Tenta sincronizar/buscar da tabela public.profiles do Supabase
+    // 1. Tenta buscar da tabela public.profiles do Supabase
     let profileRow: any = null;
     try {
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
       profileRow = data;
     } catch (e) {
-      console.warn('Tabela profiles não acessível ou vazia:', e);
+      console.warn('Tabela profiles não acessível:', e);
     }
+
+    // 2. Tenta buscar o status/role salvo no banco Supabase (tabela user_settings)
+    let statusBanco = 'active';
+    let roleBanco = 'user';
+    try {
+      const { data: settingsData } = await supabase.from('user_settings').select('*').eq('user_id', user.id).maybeSingle();
+      if (settingsData?.preferences) {
+        const prefs = settingsData.preferences as any;
+        if (prefs.status) statusBanco = prefs.status;
+        if (prefs.role) roleBanco = prefs.role;
+      }
+    } catch (e) {
+      console.warn('Tabela user_settings não acessível:', e);
+    }
+
+    // 3. Tenta buscar ajustes salvos localmente
+    const RAW = localStorage.getItem('leao_users_registry');
+    let listaLocal: any[] = RAW ? JSON.parse(RAW) : [];
+    const itemLocal = listaLocal.find(u => u.email.toLowerCase() === email);
+
+    const isMaster = email === 'gleidson.fig@gmail.com';
+    const statusFinal = isMaster ? 'active' : (itemLocal?.status || statusBanco || user.user_metadata?.status || 'active');
+    const roleFinal = isMaster ? 'admin' : (itemLocal?.role || roleBanco || user.user_metadata?.role || 'user');
+    const isAdmin = isMaster || roleFinal === 'admin';
+    const isBlocked = statusFinal === 'blocked';
 
     const metadata = user.user_metadata || {};
     const nome = profileRow?.nome_completo || metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
@@ -112,15 +135,15 @@ export const aniversarioService = {
     }
 
     // Registra a conta no catalogo local de usuarios para o painel admin
-    this.registrarUsuarioCatalogo({ id: user.id, email, nome, avatar, role: isAdmin ? 'admin' : (metadata.role || 'user'), status: isBlocked ? 'blocked' : 'active', created_at: user.created_at });
+    this.registrarUsuarioCatalogo({ id: user.id, email, nome, avatar, role: roleFinal, status: statusFinal, created_at: user.created_at });
 
     return {
       id: user.id,
       email,
       nome,
       avatar,
-      role: (isAdmin ? 'admin' : (metadata.role || 'user')) as 'admin' | 'user',
-      status: (isBlocked ? 'blocked' : 'active') as 'active' | 'blocked',
+      role: roleFinal as 'admin' | 'user',
+      status: statusFinal as 'active' | 'blocked',
       isAdmin,
       created_at: user.created_at
     };
@@ -256,15 +279,30 @@ export const aniversarioService = {
 
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    let targetUser: any = null;
     
     lista = lista.map(u => {
       if (u.email.toLowerCase() === emailTarget.toLowerCase()) {
-        return { ...u, role: novoPapel };
+        targetUser = { ...u, role: novoPapel };
+        return targetUser;
       }
       return u;
     });
 
     localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+
+    // Grava a preferencia no banco Supabase na tabela user_settings
+    if (targetUser?.id && targetUser.id !== 'master-admin') {
+      try {
+        await supabase.from('user_settings').upsert({
+          user_id: targetUser.id,
+          updated_at: new Date().toISOString(),
+          preferences: { role: novoPapel, status: targetUser.status || 'active' }
+        });
+      } catch (e) {
+        console.warn('Aviso ao salvar role no Supabase:', e);
+      }
+    }
   },
 
   /**
@@ -280,15 +318,30 @@ export const aniversarioService = {
 
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    let targetUser: any = null;
     
     lista = lista.map(u => {
       if (u.email.toLowerCase() === emailTarget.toLowerCase()) {
-        return { ...u, status: novoStatus };
+        targetUser = { ...u, status: novoStatus };
+        return targetUser;
       }
       return u;
     });
 
     localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+
+    // Grava o status no banco Supabase na tabela user_settings
+    if (targetUser?.id && targetUser.id !== 'master-admin') {
+      try {
+        await supabase.from('user_settings').upsert({
+          user_id: targetUser.id,
+          updated_at: new Date().toISOString(),
+          preferences: { status: novoStatus, role: targetUser.role || 'user' }
+        });
+      } catch (e) {
+        console.warn('Aviso ao salvar status no Supabase:', e);
+      }
+    }
   },
 
   /**
