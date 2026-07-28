@@ -177,7 +177,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
             const confirmou = await modalAlerta.show({
                 title: 'Excluir Integrante',
                 message: `Deseja remover ${pessoa.nome}?`,
-                type: 'confirm',
+                type: 'delete',
                 confirmText: 'Sim, excluir',
                 cancelText: 'Cancelar'
             });

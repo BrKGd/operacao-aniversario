@@ -110,7 +110,7 @@ export async function montarCategorias(container: HTMLElement) {
                 const confirmar = await modalAlerta.show({
                     title: "Excluir Categoria?",
                     message: "Deseja realmente remover este grupo?",
-                    type: "confirm"
+                    type: "delete"
                 });
 
                 if (confirmar) {
