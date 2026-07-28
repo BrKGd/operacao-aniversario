@@ -191,87 +191,37 @@ export const aniversarioService = {
     const perfil = await this.getPerfilUsuario();
     if (!perfil?.isAdmin) throw new Error("Acesso restrito ao Administrador.");
 
-    const usuariosBaseSupabase = [
-      {
-        id: "f31834f4-21ca-4c67-b534-a655c7d0cb31",
-        email: "gleidson.fig@gmail.com",
-        nome: "Gleidson Silva (Administrador Mestre)",
-        avatar: "https://ui-avatars.com/api/?name=Gleidson+Silva&background=0052FF&color=fff&bold=true",
-        role: "admin",
-        status: "active",
-        created_at: "2026-03-25"
-      },
-      {
-        id: "f5ffdf81-9bc8-41bf-8e5a-f37e360b9f17",
-        email: "rennyjaine@gmail.com",
-        nome: "Renny Jaine",
-        avatar: "https://ui-avatars.com/api/?name=Renny+Jaine&background=EC4899&color=fff&bold=true",
-        role: "user",
-        status: "active",
-        created_at: "2026-03-30"
-      },
-      {
-        id: "89200aa0-3504-43d1-9925-ed80d50e0a30",
-        email: "gleidson.figueira@gmail.com",
-        nome: "Gleidson Figueira",
-        avatar: "https://ui-avatars.com/api/?name=Gleidson+Figueira&background=10B981&color=fff&bold=true",
-        role: "user",
-        status: "active",
-        created_at: "2026-07-27"
-      },
-      {
-        id: "b7afcee0-a74c-4687-9407-419a7e5c9d66",
-        email: "gleidson.silva_aut@outlook.com",
-        nome: "Gleidson Silva",
-        avatar: "https://ui-avatars.com/api/?name=Gleidson+Silva&background=8B5CF6&color=fff&bold=true",
-        role: "user",
-        status: "active",
-        created_at: "2026-03-25"
-      }
-    ];
-
     let listaDb: any[] = [];
+    let dbSuccess = false;
+
     try {
-      const { data } = await supabase.from('profiles').select('*').order('nome_completo', { ascending: true });
-      if (data && data.length > 0) {
-        listaDb = data.map(p => ({
-          id: p.id,
-          email: p.email,
-          nome: p.nome_completo || p.email.split('@')[0],
-          avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
-          role: p.email.toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : 'user',
-          status: p.status || 'active',
-          created_at: p.updated_at
-        }));
+      const { data, error } = await supabase.from('profiles').select('*').order('nome_completo', { ascending: true });
+      if (!error && data) {
+        dbSuccess = true;
+        listaDb = data
+          .filter(p => p.status !== 'deleted')
+          .map(p => ({
+            id: p.id,
+            email: p.email,
+            nome: p.nome_completo || p.email.split('@')[0],
+            avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
+            role: p.email.toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : 'user',
+            status: p.status || 'active',
+            created_at: p.updated_at
+          }));
       }
     } catch (e) {
       console.warn('Aviso ao buscar tabela profiles:', e);
     }
 
+    if (dbSuccess) {
+      localStorage.setItem('leao_users_registry', JSON.stringify(listaDb));
+      return listaDb;
+    }
+
     const RAW = localStorage.getItem('leao_users_registry');
     let listaLocal: any[] = RAW ? JSON.parse(RAW) : [];
-
-    const map = new Map<string, any>();
-    // 1. Adiciona os usuarios base cadastrados no Supabase como fallback
-    usuariosBaseSupabase.forEach(u => map.set(u.email.toLowerCase(), u));
-    // 2. Mescla com os ajustes salvos em cache local
-    listaLocal.forEach(u => {
-      const exist = map.get(u.email.toLowerCase()) || {};
-      map.set(u.email.toLowerCase(), { ...exist, ...u });
-    });
-    // 3. Mescla com os dados REAIS da tabela public.profiles do Supabase (Fonte da Verdade Suprema)
-    listaDb.forEach(u => {
-      const exist = map.get(u.email.toLowerCase()) || {};
-      map.set(u.email.toLowerCase(), { 
-        ...exist, 
-        ...u, 
-        status: u.status || exist.status || 'active' 
-      });
-    });
-
-    let listaFinal = Array.from(map.values());
-
-    return listaFinal;
+    return listaLocal.filter(u => u.status !== 'deleted');
   },
 
   /**
@@ -440,16 +390,15 @@ export const aniversarioService = {
     // 2. Dispara notificação formal de exclusão por e-mail
     this.notificarUsuarioPorEmail(emailNorm, 'deleted');
 
-    // 3. Atualiza o catalogo local
+    // 3. Sincroniza e limpa caches locais imediatamente
+    this.invalidarCache();
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
-    lista = lista.map(u => {
-      if (u.email.toLowerCase() === emailNorm) {
-        return { ...u, status: 'deleted' };
-      }
-      return u;
-    });
+    lista = lista.filter(u => u.email.toLowerCase() !== emailNorm);
     localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+
+    // 4. Re-sincroniza com a tabela do Supabase
+    await this.listarTodosUsuarios();
   },
 
   /**
