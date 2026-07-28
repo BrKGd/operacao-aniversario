@@ -7,14 +7,14 @@
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
 
--- Garantir restrição de valores (opcional)
+-- Garantir restrição de valores (active, blocked, deleted)
 ALTER TABLE public.profiles 
 DROP CONSTRAINT IF EXISTS check_profiles_status;
 
 ALTER TABLE public.profiles 
-ADD CONSTRAINT check_profiles_status CHECK (status IN ('active', 'blocked'));
+ADD CONSTRAINT check_profiles_status CHECK (status IN ('active', 'blocked', 'deleted'));
 
--- 2. CRIAR ÍNDICE DE PERFORMANCE NA TABELA DE PROFILES
+-- 2. CRIAR ÍNDICES DE PERFORMANCE NA TABELA DE PROFILES
 CREATE INDEX IF NOT EXISTS idx_profiles_status ON public.profiles(status);
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 
@@ -47,60 +47,37 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 4. OTIMIZAÇÃO E ÍNDICES DE ALTA PERFORMANCE PARA OS ANIVERSÁRIOS
--- Índice em user_id para segregação rápida por usuário
 CREATE INDEX IF NOT EXISTS idx_aniversarios_user_id ON public.aniversarios(user_id);
 
--- Índice composto para acelerar buscas por mês e dia de nascimento
 CREATE INDEX IF NOT EXISTS idx_aniversarios_mes_dia 
 ON public.aniversarios (EXTRACT(MONTH FROM data_nascimento), EXTRACT(DAY FROM data_nascimento));
 
--- Índice para busca por favoritos e envios de mensagens
 CREATE INDEX IF NOT EXISTS idx_aniversarios_favorito ON public.aniversarios(favorito);
 
 -- 5. CONFIGURAÇÃO DE SEGURANÇA RLS (ROW LEVEL SECURITY) NA TABELA ANIVERSARIOS
 ALTER TABLE public.aniversarios ENABLE ROW LEVEL SECURITY;
 
--- Política de Leitura: Usuário acessa apenas seus registros (ou registros globais legados sem user_id)
 DROP POLICY IF EXISTS "Usuários lêem apenas seus aniversariantes" ON public.aniversarios;
-
 CREATE POLICY "Usuários lêem apenas seus aniversariantes" 
-ON public.aniversarios 
-FOR SELECT 
-USING (
-  user_id = auth.uid() OR user_id IS NULL
-);
+ON public.aniversarios FOR SELECT 
+USING (user_id = auth.uid() OR user_id IS NULL);
 
--- Política de Inserção: user_id deve ser o do usuário autenticado
 DROP POLICY IF EXISTS "Usuários inserem com seu user_id" ON public.aniversarios;
-
 CREATE POLICY "Usuários inserem com seu user_id" 
-ON public.aniversarios 
-FOR INSERT 
-WITH CHECK (
-  user_id = auth.uid() OR user_id IS NULL
-);
+ON public.aniversarios FOR INSERT 
+WITH CHECK (user_id = auth.uid() OR user_id IS NULL);
 
--- Política de Atualização: Usuário atualiza apenas seus próprios registros
 DROP POLICY IF EXISTS "Usuários atualizam apenas seus aniversariantes" ON public.aniversarios;
-
 CREATE POLICY "Usuários atualizam apenas seus aniversariantes" 
-ON public.aniversarios 
-FOR UPDATE 
-USING (
-  user_id = auth.uid() OR user_id IS NULL
-);
+ON public.aniversarios FOR UPDATE 
+USING (user_id = auth.uid() OR user_id IS NULL);
 
--- Política de Exclusão: Usuário exclui apenas seus próprios registros
 DROP POLICY IF EXISTS "Usuários excluem apenas seus aniversariantes" ON public.aniversarios;
-
 CREATE POLICY "Usuários excluem apenas seus aniversariantes" 
-ON public.aniversarios 
-FOR DELETE 
-USING (
-  user_id = auth.uid() OR user_id IS NULL
-);
+ON public.aniversarios FOR DELETE 
+USING (user_id = auth.uid() OR user_id IS NULL);
 
--- 6. POLÍTICAS RLS E FUNÇÃO RPC PARA ALTERAÇÃO DE STATUS EM PUBLIC.PROFILES
+-- 6. POLÍTICAS RLS E FUNÇÕES RPC PARA ALTERAÇÃO E EXCLUSÃO DE STATUS EM PUBLIC.PROFILES
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Permitir leitura de perfis para usuários autenticados" ON public.profiles;
@@ -134,8 +111,25 @@ BEGIN
 END;
 $$;
 
--- CONCEDER PERMISSÃO DE EXECUÇÃO DA RPC PARA USUÁRIOS AUTENTICADOS
+-- FUNÇÃO RPC PARA EXCLUIR USUÁRIO (DEFININDO STATUS COMO DELETED)
+CREATE OR REPLACE FUNCTION public.excluir_usuario(target_email text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE public.profiles
+  SET status = 'deleted',
+      updated_at = now()
+  WHERE LOWER(email) = LOWER(target_email);
+  
+  RETURN FOUND;
+END;
+$$;
+
+-- CONCEDER PERMISSÕES DE EXECUÇÃO DAS RPCS PARA USUÁRIOS AUTENTICADOS
 GRANT EXECUTE ON FUNCTION public.alterar_status_usuario(text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.excluir_usuario(text) TO authenticated;
 
 -- ============================================================
 -- SCRIPT CONCLUÍDO COM SUCESSO!

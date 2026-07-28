@@ -372,7 +372,12 @@ export const aniversarioService = {
       console.warn('Aviso ao salvar em user_settings:', e);
     }
 
-    // 4. Atualiza o catalogo local
+    // 4. Dispara notificação de e-mail ao bloquear
+    if (novoStatus === 'blocked') {
+      this.notificarUsuarioPorEmail(emailNorm, 'blocked');
+    }
+
+    // 5. Atualiza o catalogo local
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
     lista = lista.map(u => {
@@ -382,6 +387,78 @@ export const aniversarioService = {
       return u;
     });
     localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+  },
+
+  /**
+   * Exclui um usuario alterando seu status para 'deleted' no Supabase e notificando por e-mail
+   */
+  async excluirUsuario(emailTarget: string) {
+    const perfil = await this.getPerfilUsuario();
+    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem excluir usuarios.");
+
+    if (emailTarget.toLowerCase() === 'gleidson.fig@gmail.com') {
+      throw new Error("O Administrador Mestre nao pode ser excluido.");
+    }
+
+    const emailNorm = emailTarget.toLowerCase().trim();
+
+    // 1. Chamar a RPC do Supabase ou update direto
+    let rpcOk = false;
+    try {
+      const { error } = await supabase.rpc('excluir_usuario', {
+        target_email: emailNorm
+      });
+      if (!error) {
+        rpcOk = true;
+      }
+    } catch (e) {
+      console.warn('RPC excluir_usuario nao disponivel, executando fallback:', e);
+    }
+
+    if (!rpcOk) {
+      const { error: errUpdate } = await supabase
+        .from('profiles')
+        .update({ status: 'deleted', updated_at: new Date().toISOString() })
+        .eq('email', emailNorm);
+
+      if (errUpdate) {
+        console.error('Erro ao excluir usuario na tabela profiles:', errUpdate.message);
+        throw new Error(`Falha ao excluir usuario no Supabase: ${errUpdate.message}`);
+      }
+    }
+
+    // 2. Dispara notificação formal de exclusão por e-mail
+    this.notificarUsuarioPorEmail(emailNorm, 'deleted');
+
+    // 3. Atualiza o catalogo local
+    const RAW = localStorage.getItem('leao_users_registry');
+    let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    lista = lista.map(u => {
+      if (u.email.toLowerCase() === emailNorm) {
+        return { ...u, status: 'deleted' };
+      }
+      return u;
+    });
+    localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+  },
+
+  /**
+   * Abre o cliente de e-mail com aviso pré-preenchido sobre bloqueio ou exclusão de conta
+   */
+  notificarUsuarioPorEmail(email: string, tipo: 'blocked' | 'deleted') {
+    let assunto = "";
+    let corpo = "";
+    if (tipo === 'blocked') {
+      assunto = encodeURIComponent("Aviso de Suspensão de Conta - Leão Festivo");
+      corpo = encodeURIComponent(`Olá,\n\nInformamos que sua conta referente ao e-mail ${email} foi temporariamente suspensa pelo Administrador do sistema.\n\nPara solicitar o desbloqueio ou esclarecer dúvidas, responda a esta mensagem ou entre em contato com o suporte.\n\nAtenciosamente,\nEquipe Leão Festivo`);
+    } else if (tipo === 'deleted') {
+      assunto = encodeURIComponent("Aviso de Exclusão Definitiva de Conta - Leão Festivo");
+      corpo = encodeURIComponent(`Olá,\n\nInformamos que sua conta de usuário (${email}) foi permanentemente removida pelo Administrador do sistema.\n\nTodos os acessos e permissões associados a esta conta foram revogados.\n\nAtenciosamente,\nEquipe Leão Festivo`);
+    }
+
+    if (assunto) {
+      window.open(`mailto:${email}?subject=${assunto}&body=${corpo}`, '_blank');
+    }
   },
 
   /**

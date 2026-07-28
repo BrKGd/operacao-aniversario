@@ -52,6 +52,13 @@ async function inicializar() {
             return;
         }
 
+        if (perfil?.status === 'deleted') {
+            await supabase.auth.signOut();
+            aniversarioService.invalidarCache();
+            exibirTelaUsuarioExcluido(perfil.email || session.user.email || 'Usuário');
+            return;
+        }
+
         // Dispara o aquecimento do cache em background para 0ms de latencia
         Promise.all([
             aniversarioService.listarTodos(),
@@ -159,6 +166,12 @@ function configurarLogin() {
                 exibirTelaUsuarioBloqueado(emailEl.value || perfil.email || 'Usuário');
                 return;
             }
+            if (perfil?.status === 'deleted') {
+                await supabase.auth.signOut();
+                aniversarioService.invalidarCache();
+                exibirTelaUsuarioExcluido(emailEl.value || perfil.email || 'Usuário');
+                return;
+            }
             window.location.hash = '#dash';
             window.location.reload();
         }
@@ -213,6 +226,66 @@ function exibirTelaUsuarioBloqueado(emailTarget: string) {
     recarregarIcones();
 
     document.getElementById('btnVoltarLoginBlocked')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        aniversarioService.invalidarCache();
+        configurarLogin();
+    });
+}
+
+// --- TELA VISUAL DE USUÁRIO EXCLUÍDO OU REMOVIDO ---
+function exibirTelaUsuarioExcluido(emailTarget: string) {
+    document.body.innerHTML = `
+        <div class="auth-full-page" style="background: linear-gradient(135deg, #18181b 0%, #09090b 100%);">
+            <div class="auth-content-wrapper" style="max-width: 440px;">
+                <div class="blocked-card-icon" style="margin-bottom: 24px;">
+                    <div style="width: 84px; height: 84px; margin: 0 auto; background: rgba(220, 38, 38, 0.2); border: 2px dashed #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(220, 38, 38, 0.35);">
+                        <i data-lucide="user-x" style="width: 44px; height: 44px; color: #f87171;"></i>
+                    </div>
+                </div>
+
+                <div class="blocked-badge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(220, 38, 38, 0.25); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.5); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                    <i data-lucide="trash-2" style="width: 14px; height: 14px; color: #f87171;"></i> Conta Excluída / Removida
+                </div>
+
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #ffffff; margin: 0 0 12px 0;">Acesso Revogado</h2>
+                
+                <p style="font-size: 0.95rem; color: #e4e4e7; line-height: 1.6; margin-bottom: 24px;">
+                    A conta de usuário associada ao e-mail <strong style="color: #ffffff;">${emailTarget}</strong> foi permanentemente excluída pelo Administrador do sistema.
+                </p>
+
+                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 16px; margin-bottom: 28px; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #f87171; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px;">
+                        <i data-lucide="alert-circle" style="width: 18px; height: 18px;"></i> O que isto significa?
+                    </div>
+                    <p style="font-size: 0.82rem; color: #a1a1aa; margin: 0; line-height: 1.5;">
+                        Seu cadastro foi removido da plataforma. Caso ache que isto ocorreu por engano ou deseja criar uma nova conta, utilize as opções abaixo.
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button id="btnCriarNovaContaExcluido" class="btn-auth-submit" style="background: #0052FF; color: #ffffff; border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="user-plus"></i>
+                        <span>Criar Nova Conta</span>
+                    </button>
+
+                    <button id="btnVoltarLoginExcluido" class="btn-auth-submit" style="background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="log-out"></i>
+                        <span>Voltar à Tela de Login</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    recarregarIcones();
+
+    document.getElementById('btnCriarNovaContaExcluido')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        aniversarioService.invalidarCache();
+        montarTelaRegistro();
+    });
+
+    document.getElementById('btnVoltarLoginExcluido')?.addEventListener('click', async () => {
         await supabase.auth.signOut();
         aniversarioService.invalidarCache();
         configurarLogin();

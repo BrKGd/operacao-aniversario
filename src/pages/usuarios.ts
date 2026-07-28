@@ -97,14 +97,14 @@ export async function montarUsuarios(container: HTMLElement) {
         container.innerHTML = `<div class="fec-center-wrapper">Erro ao carregar usuários.</div>`;
     }
 }
-
 function renderUserCard(u: any): string {
     const isMaster = u.email.toLowerCase() === 'gleidson.fig@gmail.com';
     const isAdmin = u.role === 'admin';
     const isBlocked = u.status === 'blocked';
+    const isDeleted = u.status === 'deleted';
 
-    const statusBadgeText = isBlocked ? 'BLOQUEADO' : 'ATIVO';
-    const statusBadgeClass = isBlocked ? 'status-blocked' : 'status-active';
+    const statusBadgeText = isDeleted ? 'EXCLUÍDO' : (isBlocked ? 'BLOQUEADO' : 'ATIVO');
+    const statusBadgeClass = isDeleted ? 'status-blocked' : (isBlocked ? 'status-blocked' : 'status-active');
 
     const roleBadgeText = isAdmin ? 'ADMINISTRADOR' : 'USUÁRIO';
     const roleBadgeClass = isAdmin ? 'role-admin' : 'role-user';
@@ -112,7 +112,7 @@ function renderUserCard(u: any): string {
     const searchStr = `${u.nome} ${u.email}`.toLowerCase();
 
     return `
-        <div class="user-card-item ${isBlocked ? 'card-is-blocked' : ''}" data-search="${searchStr}">
+        <div class="user-card-item ${isBlocked || isDeleted ? 'card-is-blocked' : ''}" data-search="${searchStr}">
             <div class="user-avatar-box">
                 <img src="${u.avatar}" alt="${u.nome}">
             </div>
@@ -140,6 +140,11 @@ function renderUserCard(u: any): string {
                     <button class="user-action-btn ${isBlocked ? 'btn-unblock' : 'btn-block'}" data-email="${u.email}" data-status="${u.status}" title="${isBlocked ? 'Desbloquear Usuário' : 'Bloquear Acesso'}">
                         <i data-lucide="${isBlocked ? 'unlock' : 'lock'}"></i>
                         <span>${isBlocked ? 'Desbloquear' : 'Bloquear'}</span>
+                    </button>
+
+                    <button class="user-action-btn btn-delete-user" data-email="${u.email}" title="Excluir Usuário Definitivamente" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+                        <i data-lucide="user-x"></i>
+                        <span>Excluir</span>
                     </button>
                 </div>
             ` : `
@@ -211,6 +216,36 @@ function vincularEventosUsuarios(container: HTMLElement, onRefresh: () => void) 
                 } catch (e: any) {
                     modalAlerta.close();
                     modalAlerta.show({ message: e.message || "Erro ao alterar status do usuário.", type: 'error' });
+                }
+            }
+        });
+    });
+
+    // Excluir Usuário
+    container.querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const email = (btn as HTMLElement).dataset.email!;
+
+            const confirmou = await modalAlerta.show({
+                title: 'Excluir Usuário Definitivamente?',
+                message: `Deseja remover permanentemente a conta de ${email}? O acesso será revogado e a notificação de e-mail será disparada.`,
+                type: 'delete',
+                confirmText: 'Sim, Excluir Usuário'
+            });
+
+            if (confirmou) {
+                modalAlerta.showLoading("Excluindo conta do usuário...");
+                try {
+                    await aniversarioService.excluirUsuario(email);
+                    modalAlerta.close();
+                    onRefresh();
+                    modalAlerta.show({ 
+                        message: `A conta ${email} foi marcada como excluída e o e-mail de aviso foi acionado!`, 
+                        type: 'success' 
+                    });
+                } catch (e: any) {
+                    modalAlerta.close();
+                    modalAlerta.show({ message: e.message || "Erro ao excluir usuário.", type: 'error' });
                 }
             }
         });
