@@ -18,12 +18,13 @@ import {
     RotateCcw,
     Users,
     Tag,
-    Star
+    Star,
+    Crown
 } from 'lucide';
 
 const ICON_MAP = { 
     User, Mail, Calendar, ShieldCheck, KeyRound, LogOut, ChevronLeft, 
-    Pencil, Sparkles, Camera, Check, RotateCcw, Users, Tag, Star
+    Pencil, Sparkles, Camera, Check, RotateCcw, Users, Tag, Star, Crown
 };
 
 export async function montarPerfil(container: HTMLElement) {

@@ -264,24 +264,31 @@ export const aniversarioService = {
   },
 
   /**
-   * Revalidação silenciosa em background com filtro por usuário (user_id)
+   * Revalidação silenciosa em background
    */
   async revalidarAniversariosEmBackground(): Promise<Aniversario[]> {
     try {
       const userId = await getCurrentUserId();
-      let query = supabase
-        .from('aniversarios')
-        .select(`*, categorias (id, nome, icone, cor)`);
-
+      let res;
+      
       if (userId) {
-        query = query.or(`user_id.eq.${userId},user_id.is.null`);
+        res = await supabase
+          .from('aniversarios')
+          .select(`*, categorias (id, nome, icone, cor)`)
+          .or(`user_id.eq.${userId},user_id.is.null`)
+          .order('nome', { ascending: true });
       }
 
-      const { data, error } = await query.order('nome', { ascending: true });
+      if (!res || res.error) {
+        res = await supabase
+          .from('aniversarios')
+          .select(`*, categorias (id, nome, icone, cor)`)
+          .order('nome', { ascending: true });
+      }
 
-      if (error) throw error;
+      if (res.error) throw res.error;
 
-      const lista = (data as any[]) || [];
+      const lista = (res.data as any[]) || [];
       inMemoryAniversarios = lista;
       salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, lista);
       return lista;
@@ -302,7 +309,7 @@ export const aniversarioService = {
   },
 
   /**
-   * Busca a lista de categorias com filtro por usuario (user_id)
+   * Busca a lista de categorias com cache instantâneo
    */
   async listarCategorias(forceFresh: boolean = false): Promise<Categoria[]> {
     if (!forceFresh && inMemoryCategorias && inMemoryCategorias.length > 0) {
@@ -316,14 +323,10 @@ export const aniversarioService = {
     }
 
     try {
-      const userId = await getCurrentUserId();
-      let query = supabase.from('categorias').select('*');
-
-      if (userId) {
-        query = query.or(`user_id.eq.${userId},user_id.is.null`);
-      }
-
-      const { data, error } = await query.order('nome', { ascending: true });
+      const { data, error } = await supabase
+        .from('categorias')
+        .select('*')
+        .order('nome', { ascending: true });
 
       if (error) throw error;
       const lista = (data as Categoria[]) || [];
@@ -368,8 +371,7 @@ export const aniversarioService = {
   },
 
   async salvarCategoria(categoria: Omit<Categoria, 'id' | 'created_at'>): Promise<Categoria | null> {
-    const userId = await getCurrentUserId();
-    const payload = userId ? { ...categoria, user_id: userId } : categoria;
+    const payload = { nome: categoria.nome, icone: categoria.icone, cor: categoria.cor };
 
     const { data, error } = await supabase
       .from('categorias')
