@@ -83,9 +83,33 @@ export const aniversarioService = {
     const isAdmin = email === 'gleidson.fig@gmail.com' || user.user_metadata?.role === 'admin';
     const isBlocked = user.user_metadata?.status === 'blocked';
 
+    // Tenta sincronizar/buscar da tabela public.profiles do Supabase
+    let profileRow: any = null;
+    try {
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      profileRow = data;
+    } catch (e) {
+      console.warn('Tabela profiles não acessível ou vazia:', e);
+    }
+
     const metadata = user.user_metadata || {};
-    const nome = metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
-    const avatar = metadata.avatar_url || metadata.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
+    const nome = profileRow?.nome_completo || metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
+    const avatar = profileRow?.avatar_url || metadata.avatar_url || metadata.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
+
+    // Se nao existir registro na tabela public.profiles, grava automaticamente
+    if (!profileRow) {
+      try {
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          email: user.email,
+          nome_completo: nome,
+          avatar_url: avatar,
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) {
+        console.warn('Upsert inicial em profiles ignorado:', e);
+      }
+    }
 
     // Registra a conta no catalogo local de usuarios para o painel admin
     this.registrarUsuarioCatalogo({ id: user.id, email, nome, avatar, role: isAdmin ? 'admin' : (metadata.role || 'user'), status: isBlocked ? 'blocked' : 'active', created_at: user.created_at });
@@ -144,12 +168,35 @@ export const aniversarioService = {
     const perfil = await this.getPerfilUsuario();
     if (!perfil?.isAdmin) throw new Error("Acesso restrito ao Administrador.");
 
-    const RAW = localStorage.getItem('leao_users_registry');
-    let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    let listaDb: any[] = [];
+    try {
+      const { data } = await supabase.from('profiles').select('*').order('nome_completo', { ascending: true });
+      if (data && data.length > 0) {
+        listaDb = data.map(p => ({
+          id: p.id,
+          email: p.email,
+          nome: p.nome_completo || p.email.split('@')[0],
+          avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
+          role: p.email.toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : 'user',
+          status: 'active',
+          created_at: p.updated_at
+        }));
+      }
+    } catch (e) {
+      console.warn('Aviso ao buscar tabela profiles:', e);
+    }
 
-    // Garante que o Admin Mestre gleidson.fig@gmail.com esta na lista
-    if (!lista.some(u => u.email.toLowerCase() === 'gleidson.fig@gmail.com')) {
-      lista.unshift({
+    const RAW = localStorage.getItem('leao_users_registry');
+    let listaLocal: any[] = RAW ? JSON.parse(RAW) : [];
+
+    const map = new Map<string, any>();
+    listaDb.forEach(u => map.set(u.email.toLowerCase(), u));
+    listaLocal.forEach(u => map.set(u.email.toLowerCase(), { ...map.get(u.email.toLowerCase()), ...u }));
+
+    let listaFinal = Array.from(map.values());
+
+    if (!listaFinal.some(u => u.email.toLowerCase() === 'gleidson.fig@gmail.com')) {
+      listaFinal.unshift({
         id: 'master-admin',
         email: 'gleidson.fig@gmail.com',
         nome: 'Gleidson (Administrador Mestre)',
@@ -160,7 +207,7 @@ export const aniversarioService = {
       });
     }
 
-    return lista;
+    return listaFinal;
   },
 
   /**
@@ -208,15 +255,31 @@ export const aniversarioService = {
   },
 
   /**
-   * Atualiza o nome e avatar do perfil do usuário
+   * Atualiza o nome e avatar do perfil do usuário na auth e na tabela public.profiles
    */
   async atualizarPerfilUsuario(dados: { nome?: string; avatar?: string }) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado.");
+
     const user_metadata: any = {};
     if (dados.nome) user_metadata.full_name = dados.nome;
     if (dados.avatar) user_metadata.avatar_url = dados.avatar;
 
     const { data, error } = await supabase.auth.updateUser({ data: user_metadata });
     if (error) throw error;
+
+    try {
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        nome_completo: dados.nome || user_metadata.full_name,
+        avatar_url: dados.avatar || user_metadata.avatar_url,
+        updated_at: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('Aviso ao atualizar tabela profiles:', e);
+    }
+
     return data.user;
   },
 
