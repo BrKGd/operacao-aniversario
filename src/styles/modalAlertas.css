@@ -244,7 +244,7 @@ body[data-theme='dark'] .fec-modal-spinner {
 }
 
 .loading-dots span {
-    animation: blinkDots 1.4s infinite fill-mode: both;
+    animation: blinkDots 1.4s infinite both;
     font-weight: 900;
 }
 
