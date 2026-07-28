@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 
-// Configurações do Firebase extraídas do .env ou fallback seguro
+// Configurações do Firebase do projeto operacao-aniversario
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForBuildAndDev1234567890",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCioYNQt9sn5G-NHryE3UuE",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "operacao-aniversario.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "operacao-aniversario",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "operacao-aniversario.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1234567890",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1234567890:web:abcdef1234567890"
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "896043485741",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:896043485741:web:050c1a9156288e8b7f46a4"
 };
 
 // Inicializa a aplicação Firebase
