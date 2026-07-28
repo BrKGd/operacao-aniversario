@@ -1,6 +1,7 @@
 import './styles/app.css'; 
 import { supabase } from './supabaseClient';
 import { aniversarioService } from './services/aniversarioService';
+import { modalAlerta } from './utils/modalAlertas';
 import { createIcons, icons } from 'lucide';
 
 // Importação das páginas
@@ -13,6 +14,7 @@ import { montarDetalhes } from './pages/detalhes';
 import { montarCalendario } from './pages/calendario';
 import { montarConfiguracoes } from './pages/configuracoes';
 import { montarCategorias } from './pages/categorias';
+import { montarPerfil } from './pages/perfil';
 
 // --- INICIALIZAÇÃO ---
 async function inicializar() {
@@ -27,6 +29,13 @@ async function inicializar() {
         }).catch((err) => {
             console.warn('[PWA] Aviso ao registrar Service Worker:', err);
         });
+    }
+
+    // Verificar se é retorno de e-mail de recuperação de senha (Supabase Auth callback)
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery') || hash.includes('access_token')) {
+        configurarRedefinicaoSenha();
+        return;
     }
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -68,6 +77,10 @@ function configurarLogin() {
                         <i data-lucide="lock-keyhole"></i>
                         <input type="password" id="password" placeholder="Sua senha">
                     </div>
+
+                    <div style="text-align: right; margin-top: -8px; margin-bottom: 18px;">
+                        <a href="#" id="linkEsqueciSenha" style="color: #0052FF; font-size: 0.82rem; font-weight: 700; text-decoration: none;">Esqueci minha senha</a>
+                    </div>
                     
                     <button id="btnAuthAction" class="btn-auth-submit">
                         <span>Acessar Celebrações</span>
@@ -103,6 +116,12 @@ function configurarLogin() {
         montarTelaRegistro();
     });
 
+    // ESQUECI MINHA SENHA
+    document.getElementById('linkEsqueciSenha')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        abrirModalRecuperacaoSenha(emailEl?.value || '');
+    });
+
     document.getElementById('btnAuthAction')?.addEventListener('click', async () => {
         const btn = document.getElementById('btnAuthAction') as HTMLButtonElement;
         
@@ -130,19 +149,136 @@ function configurarLogin() {
     });
 }
 
+// MODAL PARA SOLICITAR RECUPERAÇÃO DE SENHA POR E-MAIL
+function abrirModalRecuperacaoSenha(emailInicial: string) {
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'fec-modal-overlay active';
+    
+    modalOverlay.innerHTML = `
+        <div class="fec-modal-box modal-type-info">
+            <div class="fec-modal-icon info">
+                <i data-lucide="mail"></i>
+            </div>
+            <div class="fec-modal-title">Recuperar Senha</div>
+            <div class="fec-modal-message">Informe seu e-mail para receber as instruções de redefinição de senha</div>
+
+            <input type="email" class="catg-input-text" id="inEmailReset" value="${emailInicial}" placeholder="seu@email.com..." style="margin-bottom: 20px;">
+
+            <div class="fec-modal-footer">
+                <button class="btn-modal btn-modal-secondary" id="btnCancelReset">Cancelar</button>
+                <button class="btn-modal btn-modal-primary" id="btnConfirmReset">Enviar E-mail</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalOverlay);
+    recarregarIcones();
+
+    modalOverlay.querySelector('#btnCancelReset')?.addEventListener('click', () => modalOverlay.remove());
+    modalOverlay.querySelector('#btnConfirmReset')?.addEventListener('click', async () => {
+        const email = (modalOverlay.querySelector('#inEmailReset') as HTMLInputElement).value.trim();
+        if (!email || !email.includes('@')) {
+            return modalAlerta.show({ message: "Digite um e-mail válido.", type: "warning" });
+        }
+
+        modalAlerta.showLoading("Enviando e-mail...");
+        try {
+            await aniversarioService.enviarEmailRecuperacaoSenha(email);
+            modalAlerta.close();
+            modalOverlay.remove();
+            modalAlerta.show({ 
+                title: "E-mail Enviado!",
+                message: "Enviamos as instruções para o seu e-mail. Verifique a caixa de entrada para redefinir a senha.", 
+                type: "success" 
+            });
+        } catch (e: any) {
+            modalAlerta.close();
+            modalAlerta.show({ message: e.message || "Erro ao enviar e-mail de recuperação.", type: "error" });
+        }
+    });
+}
+
+// TELA DE CRIAÇÃO DE NOVA SENHA (APÓS CLICAR NO LINK DO E-MAIL)
+function configurarRedefinicaoSenha() {
+    document.body.innerHTML = `
+        <div class="auth-full-page">
+            <div class="auth-content-wrapper">
+                <header class="auth-hero">
+                    <i data-lucide="sparkles" class="hero-icon"></i>
+                    <h1>Leão Festivo</h1>
+                    <p>Redefinição de Senha de Acesso</p>
+                </header>
+
+                <div class="auth-form-main">
+                    <div id="auth-error" class="error-msg-toast" style="display:none; margin-bottom: 20px;"></div>
+
+                    <div class="input-modern-group">
+                        <i data-lucide="lock-keyhole"></i>
+                        <input type="password" id="novaSenhaInput" placeholder="Sua nova senha (mínimo 6 caracteres)">
+                    </div>
+
+                    <div class="input-modern-group">
+                        <i data-lucide="shield-check"></i>
+                        <input type="password" id="confirmaNovaSenhaInput" placeholder="Confirme a nova senha">
+                    </div>
+                    
+                    <button id="btnSalvarNovaSenha" class="btn-auth-submit">
+                        <span>Salvar Nova Senha</span>
+                        <i data-lucide="check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    recarregarIcones();
+
+    const pass1 = document.getElementById('novaSenhaInput') as HTMLInputElement;
+    const pass2 = document.getElementById('confirmaNovaSenhaInput') as HTMLInputElement;
+    const errEl = document.getElementById('auth-error');
+
+    document.getElementById('btnSalvarNovaSenha')?.addEventListener('click', async () => {
+        if (!pass1.value || pass1.value.length < 6) {
+            if (errEl) { errEl.innerText = "A senha deve conter no mínimo 6 caracteres."; errEl.style.display = 'block'; }
+            return;
+        }
+        if (pass1.value !== pass2.value) {
+            if (errEl) { errEl.innerText = "As senhas não coincidem."; errEl.style.display = 'block'; }
+            return;
+        }
+
+        modalAlerta.showLoading("Atualizando senha...");
+        try {
+            await aniversarioService.atualizarSenha(pass1.value);
+            modalAlerta.close();
+            await modalAlerta.show({ title: "Senha Atualizada!", message: "Sua senha foi redefinida com sucesso. Faça login para continuar.", type: "success" });
+            window.location.hash = '';
+            window.location.reload();
+        } catch (e: any) {
+            modalAlerta.close();
+            if (errEl) { errEl.innerText = e.message || "Erro ao redefinir senha."; errEl.style.display = 'block'; }
+        }
+    });
+}
+
 // --- LAYOUT ESTRUTURAL ---
 function montarLayoutEstrutural() {
     document.body.innerHTML = `
         <div id="app-container">
             <header id="app-header">
                 <div class="header-content">
-                    <div class="header-branding">
+                    <div class="header-branding" onclick="window.navegar('dash')" style="cursor: pointer;">
                         <i data-lucide="sparkles" class="header-icon-gold"></i>
                         <span class="app-title-header">leão festivo</span>
                     </div>
-                    <button id="btnLogoutTop" title="Sair" class="btn-logout-minimal">
-                        <i data-lucide="log-out"></i>
-                    </button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-logout-minimal">
+                            <i data-lucide="user"></i>
+                        </button>
+                        <button id="btnLogoutTop" title="Sair" class="btn-logout-minimal">
+                            <i data-lucide="log-out"></i>
+                        </button>
+                    </div>
                 </div>
             </header>
             
@@ -152,7 +288,12 @@ function montarLayoutEstrutural() {
         </div>
     `;
 
+    document.getElementById('btnPerfilTop')?.addEventListener('click', () => {
+        irPara('perfil');
+    });
+
     document.getElementById('btnLogoutTop')?.addEventListener('click', async () => {
+        aniversarioService.invalidarCache();
         await supabase.auth.signOut();
         window.location.hash = '';
         window.location.reload();
@@ -176,14 +317,12 @@ function processarRotaAtual() {
     const hashCompleto = window.location.hash.replace('#', '') || 'dash';
     const partes = hashCompleto.split('?');
     
-    // CORREÇÃO ERRO 2345: Garantimos que 'tela' é tratada como string
     const tela = partes[0] as string; 
     const query = partes[1] || '';
     
     const paramsURL = new URLSearchParams(query);
     const id = paramsURL.get('id'); 
 
-    // CORREÇÃO ERRO 2345: Convertemos null para undefined para bater com params?
     irPara(tela, id ?? undefined);
 }
 
@@ -216,15 +355,14 @@ function renderizarNavegacao() {
                     <span>Datas</span>
                 </button>
 
-                <button class="nav-item" data-route="config" onclick="window.navegar('config')">
-                    <i data-lucide="settings-2"></i>
-                    <span>Ajustes</span>
+                <button class="nav-item" data-route="perfil" onclick="window.navegar('perfil')">
+                    <i data-lucide="user"></i>
+                    <span>Perfil</span>
                 </button>
             </div>
         </div>
     `;
 
-    // Função global que apenas atualiza o Hash
     // @ts-ignore
     window.navegar = (tela: string, id?: string) => {
         window.location.hash = id ? `${tela}?id=${id}` : tela;
@@ -234,10 +372,6 @@ function renderizarNavegacao() {
 }
 
 // --- RENDERIZADOR DE TELAS ---
-/**
- * @param tela Nome da página a ser montada
- * @param params ID ou dado opcional (aceita undefined para evitar erro 2345)
- */
 export async function irPara(tela: string, params?: any) {
     const container = document.getElementById('main-content');
     if (!container) return;
@@ -263,6 +397,7 @@ export async function irPara(tela: string, params?: any) {
         case 'calendario': await montarCalendario(container); break;
         case 'config': await montarConfiguracoes(container); break;
         case 'categorias': await montarCategorias(container); break;
+        case 'perfil': await montarPerfil(container); break;
         default: await montarDashboard(container);
     }
 

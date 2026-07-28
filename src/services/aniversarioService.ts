@@ -52,9 +52,18 @@ function lerCacheLocal<T>(key: string): T | null {
   }
 }
 
+async function getCurrentUserId(): Promise<string | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export const aniversarioService = {
   /**
-   * Limpa todos os caches locais (útil após alterações de dados)
+   * Limpa todos os caches locais (útil após alterações de dados ou ao fazer logout)
    */
   invalidarCache() {
     inMemoryAniversarios = null;
@@ -63,6 +72,59 @@ export const aniversarioService = {
     localStorage.removeItem(CACHE_KEYS.ANIVERSARIOS);
     localStorage.removeItem(CACHE_KEYS.CATEGORIAS);
     localStorage.removeItem(CACHE_KEYS.TEMPLATES);
+  },
+
+  /**
+   * Retorna os dados do perfil do usuário logado
+   */
+  async getPerfilUsuario() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const metadata = user.user_metadata || {};
+    const nome = metadata.full_name || metadata.nome || user.email?.split('@')[0] || 'Usuário';
+    const avatar = metadata.avatar_url || metadata.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
+
+    return {
+      id: user.id,
+      email: user.email || '',
+      nome,
+      avatar,
+      created_at: user.created_at
+    };
+  },
+
+  /**
+   * Atualiza o nome e avatar do perfil do usuário
+   */
+  async atualizarPerfilUsuario(dados: { nome?: string; avatar?: string }) {
+    const user_metadata: any = {};
+    if (dados.nome) user_metadata.full_name = dados.nome;
+    if (dados.avatar) user_metadata.avatar_url = dados.avatar;
+
+    const { data, error } = await supabase.auth.updateUser({ data: user_metadata });
+    if (error) throw error;
+    return data.user;
+  },
+
+  /**
+   * Envia e-mail de recuperação de senha
+   */
+  async enviarEmailRecuperacaoSenha(email: string) {
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl
+    });
+    if (error) throw error;
+  },
+
+  /**
+   * Atualiza a senha da conta
+   */
+  async atualizarSenha(novaSenha: string) {
+    const { data, error } = await supabase.auth.updateUser({ password: novaSenha });
+    if (error) throw error;
+    return data.user;
   },
 
   /**
@@ -89,14 +151,20 @@ export const aniversarioService = {
   },
 
   /**
-   * Revalidação silenciosa em background
+   * Revalidação silenciosa em background com filtro por usuário (user_id)
    */
   async revalidarAniversariosEmBackground(): Promise<Aniversario[]> {
     try {
-      const { data, error } = await supabase
+      const userId = await getCurrentUserId();
+      let query = supabase
         .from('aniversarios')
-        .select(`*, categorias (id, nome, icone, cor)`)
-        .order('nome', { ascending: true });
+        .select(`*, categorias (id, nome, icone, cor)`);
+
+      if (userId) {
+        query = query.or(`user_id.eq.${userId},user_id.is.null`);
+      }
+
+      const { data, error } = await query.order('nome', { ascending: true });
 
       if (error) throw error;
 
@@ -121,7 +189,7 @@ export const aniversarioService = {
   },
 
   /**
-   * Busca a lista de categorias com cache instantâneo
+   * Busca a lista de categorias com filtro por usuario (user_id)
    */
   async listarCategorias(forceFresh: boolean = false): Promise<Categoria[]> {
     if (!forceFresh && inMemoryCategorias && inMemoryCategorias.length > 0) {
@@ -135,10 +203,14 @@ export const aniversarioService = {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('categorias')
-        .select('*')
-        .order('nome', { ascending: true });
+      const userId = await getCurrentUserId();
+      let query = supabase.from('categorias').select('*');
+
+      if (userId) {
+        query = query.or(`user_id.eq.${userId},user_id.is.null`);
+      }
+
+      const { data, error } = await query.order('nome', { ascending: true });
 
       if (error) throw error;
       const lista = (data as Categoria[]) || [];
@@ -183,9 +255,12 @@ export const aniversarioService = {
   },
 
   async salvarCategoria(categoria: Omit<Categoria, 'id' | 'created_at'>): Promise<Categoria | null> {
+    const userId = await getCurrentUserId();
+    const payload = userId ? { ...categoria, user_id: userId } : categoria;
+
     const { data, error } = await supabase
       .from('categorias')
-      .insert([categoria])
+      .insert([payload])
       .select()
       .single();
 
@@ -245,15 +320,17 @@ export const aniversarioService = {
   },
 
   async adicionar(aniversario: Omit<Aniversario, 'id' | 'created_at' | 'categorias'>): Promise<Aniversario | null> {
+    const userId = await getCurrentUserId();
+    const payload = {
+      ...aniversario,
+      user_id: userId || null,
+      notificacoes_ativas: (aniversario as any).notificacoes_ativas ?? true,
+      id_notificacao: (aniversario as any).id_notificacao || null
+    };
+
     const { data, error } = await supabase
       .from('aniversarios')
-      .insert([
-        {
-          ...aniversario,
-          notificacoes_ativas: (aniversario as any).notificacoes_ativas ?? true,
-          id_notificacao: (aniversario as any).id_notificacao || null
-        }
-      ])
+      .insert([payload])
       .select()
       .single();
 

@@ -20,9 +20,10 @@ export async function montarConfiguracoes(container: HTMLElement) {
     `;
 
     try {
-        const [todos, categorias] = await Promise.all([
+        const [todos, categorias, perfil] = await Promise.all([
             aniversarioService.listarTodos(),
-            aniversarioService.listarCategorias()
+            aniversarioService.listarCategorias(),
+            aniversarioService.getPerfilUsuario()
         ]);
 
         const mesAtual = new Date().getMonth();
@@ -38,21 +39,25 @@ export async function montarConfiguracoes(container: HTMLElement) {
         const temaAtual = localStorage.getItem('theme') || 'light';
         const pushAtivo = webPushService.isEnabled();
 
+        const userAvatar = perfil?.avatar || "https://ui-avatars.com/api/?name=Usuario&background=0052FF&color=fff&bold=true";
+        const userNome = perfil?.nome || "Meu Perfil";
+        const userEmail = perfil?.email || "minha.conta@email.com";
+
         container.innerHTML = `
             <div class="config-container">
                 <header class="config-header-premium">
-                    <div class="profile-card-hero">
+                    <div class="profile-card-hero" id="btnGoPerfil" style="cursor: pointer;">
                         <div class="profile-section">
                             <div class="avatar-wrapper">
-                                <img src="https://ui-avatars.com/api/?name=Admin+Leao&background=4361EE&color=fff&bold=true" alt="User">
+                                <img src="${userAvatar}" alt="User">
                                 <div class="status-indicator online"></div>
                             </div>
                             <div class="profile-info">
-                                <h1>Painel de Ajustes</h1>
-                                <p>Administrador • <strong>${todos.length}</strong> contatos ativos</p>
+                                <h1>${userNome}</h1>
+                                <p>${userEmail} • <strong>${todos.length}</strong> contatos</p>
                             </div>
                         </div>
-                        <span class="badge-rank-pro">PRO</span>
+                        <span class="badge-rank-pro">PERFIL</span>
                     </div>
                 </header>
 
@@ -241,6 +246,15 @@ export async function montarConfiguracoes(container: HTMLElement) {
                 }
             }
             montarConfiguracoes(container);
+        });
+
+        // 0. Navegar para a tela de Perfil
+        document.getElementById('btnGoPerfil')?.addEventListener('click', () => {
+            if (typeof (window as any).navegar === 'function') {
+                (window as any).navegar('perfil');
+            } else {
+                window.location.hash = '#perfil';
+            }
         });
 
         // 4. Instalar Aplicativo (PWA)
