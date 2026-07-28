@@ -9674,7 +9674,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     <i data-lucide="log-out"></i> Encerrar Sessão
                 </button>
             </div>
-        `,Ue({icons:Rn}),(t=document.getElementById("btnVoltarPerfil"))==null||t.addEventListener("click",()=>{typeof window.navegar=="function"?window.navegar("dashboard"):window.location.hash="#dashboard"}),(a=document.getElementById("btnEditAvatar"))==null||a.addEventListener("click",()=>{yX(s.avatar,async l=>{se.showLoading("Atualizando avatar...");try{await ke.atualizarPerfilUsuario({avatar:l}),se.close(),Vi(e),se.show({message:"Avatar atualizado!",type:"success"})}catch{se.close(),se.show({message:"Erro ao atualizar avatar.",type:"error"})}})}),(r=document.getElementById("cardEditNome"))==null||r.addEventListener("click",()=>{MX(s.nome,async l=>{se.showLoading("Atualizando nome...");try{await ke.atualizarPerfilUsuario({nome:l}),se.close(),Vi(e),se.show({message:"Nome atualizado!",type:"success"})}catch{se.close(),se.show({message:"Erro ao atualizar nome.",type:"error"})}})}),(n=document.getElementById("cardAlterarSenha"))==null||n.addEventListener("click",()=>{wX()}),(i=document.getElementById("btnSairConta"))==null||i.addEventListener("click",async()=>{await se.show({title:"Encerrar Sessão?",message:"Deseja realmente sair da sua conta?",type:"confirm",confirmText:"Sim, Sair",cancelText:"Permanecer"})&&(se.showLoading("Saindo..."),ke.invalidarCache(),await Ze.auth.signOut(),se.close(),window.location.reload())})}catch{e.innerHTML='<div class="fec-center-wrapper">Erro ao carregar perfil.</div>'}}function MX(e,t){var r,n;const a=document.createElement("div");a.className="fec-modal-overlay active",a.innerHTML=`
+        `,Ue({icons:Rn,root:e}),(t=document.getElementById("btnVoltarPerfil"))==null||t.addEventListener("click",()=>{typeof window.navegar=="function"?window.navegar("dashboard"):window.location.hash="#dashboard"}),(a=document.getElementById("btnEditAvatar"))==null||a.addEventListener("click",()=>{yX(s.avatar,async l=>{se.showLoading("Atualizando avatar...");try{await ke.atualizarPerfilUsuario({avatar:l}),se.close(),Vi(e),se.show({message:"Avatar atualizado!",type:"success"})}catch{se.close(),se.show({message:"Erro ao atualizar avatar.",type:"error"})}})}),(r=document.getElementById("cardEditNome"))==null||r.addEventListener("click",()=>{MX(s.nome,async l=>{se.showLoading("Atualizando nome...");try{await ke.atualizarPerfilUsuario({nome:l}),se.close(),Vi(e),se.show({message:"Nome atualizado!",type:"success"})}catch{se.close(),se.show({message:"Erro ao atualizar nome.",type:"error"})}})}),(n=document.getElementById("cardAlterarSenha"))==null||n.addEventListener("click",()=>{wX()}),(i=document.getElementById("btnSairConta"))==null||i.addEventListener("click",async()=>{await se.show({title:"Encerrar Sessão?",message:"Deseja realmente sair da sua conta?",type:"confirm",confirmText:"Sim, Sair",cancelText:"Permanecer"})&&(se.showLoading("Saindo..."),ke.invalidarCache(),await Ze.auth.signOut(),se.close(),window.location.reload())})}catch{e.innerHTML='<div class="fec-center-wrapper">Erro ao carregar perfil.</div>'}}function MX(e,t){var r,n;const a=document.createElement("div");a.className="fec-modal-overlay active",a.innerHTML=`
         <div class="fec-modal-box modal-type-info">
             <div class="fec-modal-icon info">
                 <i data-lucide="user"></i>
@@ -9689,7 +9689,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 <button class="btn-modal btn-modal-primary" id="btnConfirmNome">Salvar</button>
             </div>
         </div>
-    `,document.body.appendChild(a),Ue({icons:Rn}),(r=a.querySelector("#btnCancelNome"))==null||r.addEventListener("click",()=>a.remove()),(n=a.querySelector("#btnConfirmNome"))==null||n.addEventListener("click",()=>{const s=a.querySelector("#inNovoNomePerfil").value.trim();s&&(a.remove(),t(s))})}function yX(e,t){var i,s;const a=document.createElement("div");a.className="fec-modal-overlay active";const r=["https://api.dicebear.com/7.x/bottts/svg?seed=Felix","https://api.dicebear.com/7.x/bottts/svg?seed=Aneka","https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe","https://api.dicebear.com/7.x/avataaars/svg?seed=Leo","https://api.dicebear.com/7.x/avataaars/svg?seed=Maya","https://api.dicebear.com/7.x/micah/svg?seed=Alex"];a.innerHTML=`
+    `,document.body.appendChild(a),Ue({icons:Rn,root:a}),(r=a.querySelector("#btnCancelNome"))==null||r.addEventListener("click",()=>a.remove()),(n=a.querySelector("#btnConfirmNome"))==null||n.addEventListener("click",()=>{const s=a.querySelector("#inNovoNomePerfil").value.trim();s&&(a.remove(),t(s))})}function yX(e,t){var i,s;const a=document.createElement("div");a.className="fec-modal-overlay active";const r=["https://api.dicebear.com/7.x/bottts/svg?seed=Felix","https://api.dicebear.com/7.x/bottts/svg?seed=Aneka","https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe","https://api.dicebear.com/7.x/avataaars/svg?seed=Leo","https://api.dicebear.com/7.x/avataaars/svg?seed=Maya","https://api.dicebear.com/7.x/micah/svg?seed=Alex"];a.innerHTML=`
         <div class="fec-modal-box modal-type-info" style="max-width: 440px;">
             <div class="fec-modal-icon info">
                 <i data-lucide="camera"></i>
@@ -9712,7 +9712,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 <button class="btn-modal btn-modal-primary" id="btnConfirmAvatar">Salvar Foto</button>
             </div>
         </div>
-    `,document.body.appendChild(a),Ue({icons:Rn});let n=e;a.querySelectorAll(".avatar-preset-item").forEach(c=>{c.addEventListener("click",()=>{a.querySelectorAll(".avatar-preset-item").forEach(o=>o.classList.remove("active")),c.classList.add("active"),n=c.dataset.url||e,a.querySelector("#inUrlAvatar").value=n})}),(i=a.querySelector("#btnCancelAvatar"))==null||i.addEventListener("click",()=>a.remove()),(s=a.querySelector("#btnConfirmAvatar"))==null||s.addEventListener("click",()=>{const o=a.querySelector("#inUrlAvatar").value.trim()||n;o&&(a.remove(),t(o))})}function wX(){var t,a;const e=document.createElement("div");e.className="fec-modal-overlay active",e.innerHTML=`
+    `,document.body.appendChild(a),Ue({icons:Rn,root:a});let n=e;a.querySelectorAll(".avatar-preset-item").forEach(c=>{c.addEventListener("click",()=>{a.querySelectorAll(".avatar-preset-item").forEach(o=>o.classList.remove("active")),c.classList.add("active"),n=c.dataset.url||e,a.querySelector("#inUrlAvatar").value=n})}),(i=a.querySelector("#btnCancelAvatar"))==null||i.addEventListener("click",()=>a.remove()),(s=a.querySelector("#btnConfirmAvatar"))==null||s.addEventListener("click",()=>{const o=a.querySelector("#inUrlAvatar").value.trim()||n;o&&(a.remove(),t(o))})}function wX(){var t,a;const e=document.createElement("div");e.className="fec-modal-overlay active",e.innerHTML=`
         <div class="fec-modal-box modal-type-confirm">
             <div class="fec-modal-icon confirm">
                 <i data-lucide="key-round"></i>
@@ -9728,7 +9728,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 <button class="btn-modal btn-modal-primary btn-confirm" id="btnConfirmSenha">Atualizar Senha</button>
             </div>
         </div>
-    `,document.body.appendChild(e),Ue({icons:Rn}),(t=e.querySelector("#btnCancelSenha"))==null||t.addEventListener("click",()=>e.remove()),(a=e.querySelector("#btnConfirmSenha"))==null||a.addEventListener("click",async()=>{const r=e.querySelector("#inNovaSenhaPerfil").value.trim(),n=e.querySelector("#inConfirmaNovaSenhaPerfil").value.trim();if(!r||r.length<6)return se.show({message:"A senha deve conter no mínimo 6 caracteres.",type:"warning"});if(r!==n)return se.show({message:"As senhas não coincidem. Tente novamente.",type:"warning"});se.showLoading("Atualizando senha...");try{await ke.atualizarSenha(r),se.close(),e.remove(),se.show({message:"Senha alterada com sucesso!",type:"success"})}catch(i){se.close(),se.show({message:i.message||"Erro ao atualizar senha.",type:"error"})}})}async function _X(){const e=localStorage.getItem("theme")||"light";document.body.setAttribute("data-theme",e),"serviceWorker"in navigator&&navigator.serviceWorker.register("./sw.js").then(r=>{console.log("[PWA] Service Worker ativo:",r.scope)}).catch(r=>{console.warn("[PWA] Aviso ao registrar Service Worker:",r)});const t=window.location.hash;if(t.includes("type=recovery")||t.includes("access_token")){EX();return}const{data:{session:a}}=await Ze.auth.getSession();a?(Promise.all([ke.listarTodos(),ke.listarCategorias(),ke.listarTemplates()]).catch(r=>console.warn("Aviso no pré-carregamento:",r)),SX()):kX()}function kX(){var n,i,s;document.body.innerHTML=`
+    `,document.body.appendChild(e),Ue({icons:Rn,root:e}),(t=e.querySelector("#btnCancelSenha"))==null||t.addEventListener("click",()=>e.remove()),(a=e.querySelector("#btnConfirmSenha"))==null||a.addEventListener("click",async()=>{const r=e.querySelector("#inNovaSenhaPerfil").value.trim(),n=e.querySelector("#inConfirmaNovaSenhaPerfil").value.trim();if(!r||r.length<6)return se.show({message:"A senha deve conter no mínimo 6 caracteres.",type:"warning"});if(r!==n)return se.show({message:"As senhas não coincidem. Tente novamente.",type:"warning"});se.showLoading("Atualizando senha...");try{await ke.atualizarSenha(r),se.close(),e.remove(),se.show({message:"Senha alterada com sucesso!",type:"success"})}catch(i){se.close(),se.show({message:i.message||"Erro ao atualizar senha.",type:"error"})}})}async function _X(){const e=localStorage.getItem("theme")||"light";document.body.setAttribute("data-theme",e),"serviceWorker"in navigator&&navigator.serviceWorker.register("./sw.js").then(r=>{console.log("[PWA] Service Worker ativo:",r.scope)}).catch(r=>{console.warn("[PWA] Aviso ao registrar Service Worker:",r)});const t=window.location.hash;if(t.includes("type=recovery")||t.includes("access_token")){EX();return}const{data:{session:a}}=await Ze.auth.getSession();a?(Promise.all([ke.listarTodos(),ke.listarCategorias(),ke.listarTemplates()]).catch(r=>console.warn("Aviso no pré-carregamento:",r)),SX()):kX()}function kX(){var n,i,s;document.body.innerHTML=`
         <div class="auth-full-page">
             <div class="auth-content-wrapper">
                 <header class="auth-hero">
@@ -9832,6 +9832,11 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
             </header>
             
             <main id="main-content" class="main-content"></main>
+
+            <!-- BOTÃO FLUTUANTE DE ADICIONAR (FAB) COM ANIMAÇÃO DE ROTAÇÃO NO CANTO INFERIOR DIREITO -->
+            <button id="fabAddFloating" class="fab-floating-btn" title="Adicionar Aniversariante" onclick="window.navegar('form')">
+                <i data-lucide="plus"></i>
+            </button>
             
             <nav id="app-nav" class="nav-bottom-container"></nav>
         </div>
@@ -9847,12 +9852,6 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     <i data-lucide="contact-2"></i>
                     <span>Pessoas</span>
                 </button>
-
-                <div class="fab-item-wrapper">
-                    <button class="fab-button" onclick="window.navegar('form')">
-                        <i data-lucide="plus"></i>
-                    </button>
-                </div>
 
                 <button class="nav-item" data-route="calendario" onclick="window.navegar('calendario')">
                     <i data-lucide="calendar-heart"></i>
