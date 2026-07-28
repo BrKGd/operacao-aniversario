@@ -1,0 +1,309 @@
+/* --- PAINEL DE GESTÃO DE USUÁRIOS (ADMIN) --- */
+.users-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+.users-btn-back {
+    position: absolute;
+    top: 15px;
+    left: 0;
+    width: 45px;
+    height: 45px;
+    border-radius: 14px;
+    border: none;
+    background: transparent !important;
+    color: #0052FF !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s;
+    z-index: 100;
+}
+
+.users-header {
+    text-align: center;
+    margin-top: 55px;
+    margin-bottom: 24px;
+}
+
+.admin-badge-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 82, 255, 0.1);
+    color: #0052FF;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+body[data-theme='dark'] .admin-badge-title {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+}
+
+.users-header h2 {
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 1.65rem;
+    margin-bottom: 4px;
+}
+
+body[data-theme='dark'] .users-header h2 {
+    color: #f8fafc;
+}
+
+.users-header p {
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+body[data-theme='dark'] .users-header p {
+    color: #94a3b8;
+}
+
+/* BUSCA DE USUÁRIOS */
+.users-search-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.users-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px !important;
+    height: 20px !important;
+    color: #94a3b8;
+}
+
+.users-search-input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #0f172a;
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    transition: border-color 0.2s ease;
+}
+
+body[data-theme='dark'] .users-search-input {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #f8fafc;
+}
+
+.users-search-input:focus {
+    border-color: #0052FF;
+}
+
+/* LISTA DE USUÁRIOS (CARDS BENTO) */
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.user-card-item {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+}
+
+body[data-theme='dark'] .user-card-item {
+    background: #131b2e;
+    border-color: #1e293b;
+}
+
+.user-card-item.card-is-blocked {
+    background: rgba(254, 242, 242, 0.6);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+body[data-theme='dark'] .user-card-item.card-is-blocked {
+    background: rgba(45, 13, 19, 0.6);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.user-avatar-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.user-avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+.user-card-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-card-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+body[data-theme='dark'] .user-card-name {
+    color: #f8fafc;
+}
+
+.badge-master {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-master i {
+    width: 11px !important;
+    height: 11px !important;
+}
+
+.user-card-email {
+    font-size: 0.82rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+body[data-theme='dark'] .user-card-email {
+    color: #94a3b8;
+}
+
+/* BADGES DE TIPO E STATUS */
+.user-badges-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.badge-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+}
+
+.role-admin { background: rgba(0, 82, 255, 0.12); color: #0052FF; }
+.role-user { background: #f1f5f9; color: #64748b; }
+
+body[data-theme='dark'] .role-admin { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+body[data-theme='dark'] .role-user { background: #1c2842; color: #94a3b8; }
+
+.status-active { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.status-blocked { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+/* AÇÕES DO CARD DE USUÁRIO */
+.user-card-actions {
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 12px;
+}
+
+body[data-theme='dark'] .user-card-actions {
+    border-top-color: #1e293b;
+}
+
+.user-action-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 700;
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.user-action-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+.btn-toggle-role {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+body[data-theme='dark'] .btn-toggle-role {
+    background: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+}
+
+.btn-block {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+body[data-theme='dark'] .btn-block {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.btn-unblock {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+body[data-theme='dark'] .btn-unblock {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.text-protected {
+    font-size: 0.78rem;
+    color: #f59e0b;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}

@@ -15,6 +15,7 @@ import { montarCalendario } from './pages/calendario';
 import { montarConfiguracoes } from './pages/configuracoes';
 import { montarCategorias } from './pages/categorias';
 import { montarPerfil } from './pages/perfil';
+import { montarUsuarios } from './pages/usuarios';
 
 // --- INICIALIZAÇÃO ---
 async function inicializar() {
@@ -43,6 +44,19 @@ async function inicializar() {
     if (!session) {
         configurarLogin();
     } else {
+        const perfil = await aniversarioService.getPerfilUsuario();
+        if (perfil?.status === 'blocked') {
+            await supabase.auth.signOut();
+            aniversarioService.invalidarCache();
+            configurarLogin();
+            modalAlerta.show({ 
+                title: "Acesso Suspenso", 
+                message: "Sua conta de usuário foi temporariamente bloqueada pelo Administrador do sistema.", 
+                type: "error" 
+            });
+            return;
+        }
+
         // Dispara o aquecimento do cache em background para 0ms de latencia
         Promise.all([
             aniversarioService.listarTodos(),
@@ -409,6 +423,7 @@ export async function irPara(tela: string, params?: any) {
         case 'config': await montarConfiguracoes(container); break;
         case 'categorias': await montarCategorias(container); break;
         case 'perfil': await montarPerfil(container); break;
+        case 'usuarios': await montarUsuarios(container); break;
         default: await montarDashboard(container);
     }
 

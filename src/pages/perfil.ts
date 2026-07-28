@@ -88,6 +88,17 @@ export async function montarPerfil(container: HTMLElement) {
 
                 <!-- OPÇÕES E AÇÕES DO PERFIL -->
                 <div class="perfil-actions-list">
+                    ${perfil.isAdmin ? `
+                        <div class="perfil-action-card" id="cardGerenciarUsuarios" style="border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.05);">
+                            <div class="action-icon key" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i data-lucide="crown"></i></div>
+                            <div class="action-info">
+                                <span class="action-title" style="color: #d97706;">Painel do Administrador</span>
+                                <span class="action-sub">Gerenciar usuários, papéis e bloqueios</span>
+                            </div>
+                            <i data-lucide="pencil" class="action-arrow"></i>
+                        </div>
+                    ` : ''}
+
                     <div class="perfil-action-card" id="cardEditNome">
                         <div class="action-icon"><i data-lucide="user"></i></div>
                         <div class="action-info">
@@ -122,6 +133,15 @@ export async function montarPerfil(container: HTMLElement) {
                 (window as any).navegar('dashboard');
             } else {
                 window.location.hash = '#dashboard';
+            }
+        });
+
+        // Ir para Painel Admin de Usuarios
+        document.getElementById('cardGerenciarUsuarios')?.addEventListener('click', () => {
+            if (typeof (window as any).navegar === 'function') {
+                (window as any).navegar('usuarios');
+            } else {
+                window.location.hash = '#usuarios';
             }
         });
 

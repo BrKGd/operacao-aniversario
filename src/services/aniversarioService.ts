@@ -73,23 +73,138 @@ export const aniversarioService = {
   },
 
   /**
-   * Retorna os dados do perfil do usuário logado
+   * Retorna os dados do perfil do usuário logado e sua função no sistema (admin / user)
    */
   async getPerfilUsuario() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
+    const email = (user.email || '').toLowerCase();
+    const isAdmin = email === 'gleidson.fig@gmail.com' || user.user_metadata?.role === 'admin';
+    const isBlocked = user.user_metadata?.status === 'blocked';
+
     const metadata = user.user_metadata || {};
-    const nome = metadata.full_name || metadata.nome || user.email?.split('@')[0] || 'Usuário';
+    const nome = metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
     const avatar = metadata.avatar_url || metadata.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
+
+    // Registra a conta no catalogo local de usuarios para o painel admin
+    this.registrarUsuarioCatalogo({ id: user.id, email, nome, avatar, role: isAdmin ? 'admin' : (metadata.role || 'user'), status: isBlocked ? 'blocked' : 'active', created_at: user.created_at });
 
     return {
       id: user.id,
-      email: user.email || '',
+      email,
       nome,
       avatar,
+      role: (isAdmin ? 'admin' : (metadata.role || 'user')) as 'admin' | 'user',
+      status: (isBlocked ? 'blocked' : 'active') as 'active' | 'blocked',
+      isAdmin,
       created_at: user.created_at
     };
+  },
+
+  /**
+   * Registra/atualiza os dados de usuario no catalogo admin local
+   */
+  registrarUsuarioCatalogo(userItem: any) {
+    try {
+      const RAW = localStorage.getItem('leao_users_registry');
+      let lista: any[] = RAW ? JSON.parse(RAW) : [];
+      
+      const idx = lista.findIndex(u => u.email.toLowerCase() === userItem.email.toLowerCase());
+      if (idx >= 0) {
+        lista[idx] = { ...lista[idx], ...userItem };
+      } else {
+        lista.push(userItem);
+      }
+
+      // Garante que o Admin Mestre gleidson.fig@gmail.com sempre existe no topo como admin ativo
+      const hasMaster = lista.some(u => u.email.toLowerCase() === 'gleidson.fig@gmail.com');
+      if (!hasMaster) {
+        lista.unshift({
+          id: 'master-admin',
+          email: 'gleidson.fig@gmail.com',
+          nome: 'Gleidson (Administrador Mestre)',
+          avatar: 'https://ui-avatars.com/api/?name=Gleidson&background=0052FF&color=fff&bold=true',
+          role: 'admin',
+          status: 'active',
+          created_at: new Date().toISOString()
+        });
+      }
+
+      localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+    } catch (e) {
+      console.warn('Erro ao salvar no catalogo de usuarios:', e);
+    }
+  },
+
+  /**
+   * Retorna a lista de todos os usuarios registrados (Acesso exclusivo Admin)
+   */
+  async listarTodosUsuarios(): Promise<any[]> {
+    const perfil = await this.getPerfilUsuario();
+    if (!perfil?.isAdmin) throw new Error("Acesso restrito ao Administrador.");
+
+    const RAW = localStorage.getItem('leao_users_registry');
+    let lista: any[] = RAW ? JSON.parse(RAW) : [];
+
+    // Garante que o Admin Mestre gleidson.fig@gmail.com esta na lista
+    if (!lista.some(u => u.email.toLowerCase() === 'gleidson.fig@gmail.com')) {
+      lista.unshift({
+        id: 'master-admin',
+        email: 'gleidson.fig@gmail.com',
+        nome: 'Gleidson (Administrador Mestre)',
+        avatar: 'https://ui-avatars.com/api/?name=Gleidson&background=0052FF&color=fff&bold=true',
+        role: 'admin',
+        status: 'active',
+        created_at: new Date().toISOString()
+      });
+    }
+
+    return lista;
+  },
+
+  /**
+   * Altera a funcao (role) de um usuario (admin / user)
+   */
+  async atualizarRoleUsuario(emailTarget: string, novoPapel: 'admin' | 'user') {
+    const perfil = await this.getPerfilUsuario();
+    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem alterar funcoes.");
+
+    const RAW = localStorage.getItem('leao_users_registry');
+    let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    
+    lista = lista.map(u => {
+      if (u.email.toLowerCase() === emailTarget.toLowerCase()) {
+        return { ...u, role: novoPapel };
+      }
+      return u;
+    });
+
+    localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+  },
+
+  /**
+   * Altera o status de um usuario (active / blocked)
+   */
+  async alterarStatusUsuario(emailTarget: string, novoStatus: 'active' | 'blocked') {
+    const perfil = await this.getPerfilUsuario();
+    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem bloquear usuarios.");
+
+    if (emailTarget.toLowerCase() === 'gleidson.fig@gmail.com') {
+      throw new Error("O Administrador Mestre nao pode ser bloqueado.");
+    }
+
+    const RAW = localStorage.getItem('leao_users_registry');
+    let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    
+    lista = lista.map(u => {
+      if (u.email.toLowerCase() === emailTarget.toLowerCase()) {
+        return { ...u, status: novoStatus };
+      }
+      return u;
+    });
+
+    localStorage.setItem('leao_users_registry', JSON.stringify(lista));
   },
 
   /**
