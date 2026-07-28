@@ -59,7 +59,7 @@ export const webPushService = {
   async enviarNotificacao(titulo: string, opcoes?: NotificationOptions) {
     if (!this.isEnabled()) return;
 
-    const notificationOptions: NotificationOptions = {
+    const notificationOptions: any = {
       icon: './favicon.ico',
       badge: './favicon.ico',
       vibrate: [100, 50, 100],
