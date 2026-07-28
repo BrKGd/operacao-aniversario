@@ -94,8 +94,9 @@ function configurarLogin() {
                         <input type="password" id="password" placeholder="Sua senha">
                     </div>
 
-                    <div style="text-align: right; margin-top: -8px; margin-bottom: 18px;">
-                        <a href="#" id="linkEsqueciSenha" style="color: #0052FF; font-size: 0.82rem; font-weight: 700; text-decoration: none;">Esqueci minha senha</a>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -6px; margin-bottom: 20px; font-size: 0.85rem;">
+                        <span style="opacity: 0.85;">Esqueceu sua senha?</span>
+                        <a href="#" id="linkEsqueciSenha" style="color: #FFCC00; font-weight: 700; text-decoration: underline; cursor: pointer;">Recuperar Acesso</a>
                     </div>
                     
                     <button id="btnAuthAction" class="btn-auth-submit">
@@ -298,18 +299,23 @@ function abrirModalRecuperacaoSenha(emailInicial: string) {
     modalOverlay.className = 'fec-modal-overlay active';
     
     modalOverlay.innerHTML = `
-        <div class="fec-modal-box modal-type-info">
-            <div class="fec-modal-icon info">
-                <i data-lucide="mail"></i>
+        <div class="fec-modal-box modal-type-info" style="max-width: 420px; border-top: 4px solid #0052FF;">
+            <div class="fec-modal-icon info" style="background: rgba(0, 82, 255, 0.12); color: #0052FF;">
+                <i data-lucide="key-round"></i>
             </div>
-            <div class="fec-modal-title">Recuperar Senha</div>
-            <div class="fec-modal-message">Informe seu e-mail para receber as instruções de redefinição de senha</div>
+            <div class="fec-modal-title" style="font-size: 1.35rem; font-weight: 800;">Recuperação de Acesso</div>
+            <div class="fec-modal-message" style="margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5; color: var(--fec-text-muted);">
+                Informe seu e-mail cadastrado para receber o link seguro de redefinição de senha.
+            </div>
 
-            <input type="email" class="catg-input-text" id="inEmailReset" value="${emailInicial}" placeholder="seu@email.com..." style="margin-bottom: 20px;">
+            <div class="input-modern-group" style="margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.12);">
+                <i data-lucide="mail"></i>
+                <input type="email" id="inEmailReset" value="${emailInicial}" placeholder="seu@email.com..." spellcheck="false" style="width: 100%; border: none; outline: none; background: transparent; padding: 14px 10px; font-size: 0.95rem;">
+            </div>
 
-            <div class="fec-modal-footer">
-                <button class="btn-modal btn-modal-secondary" id="btnCancelReset">Cancelar</button>
-                <button class="btn-modal btn-modal-primary" id="btnConfirmReset">Enviar E-mail</button>
+            <div class="fec-modal-footer" style="display: flex; gap: 10px;">
+                <button class="btn-modal btn-modal-secondary" id="btnCancelReset" style="flex: 1;">Cancelar</button>
+                <button class="btn-modal btn-modal-primary" id="btnConfirmReset" style="flex: 1.4; background: #0052FF; color: #fff; font-weight: 700;">Enviar Link</button>
             </div>
         </div>
     `;
@@ -321,17 +327,17 @@ function abrirModalRecuperacaoSenha(emailInicial: string) {
     modalOverlay.querySelector('#btnConfirmReset')?.addEventListener('click', async () => {
         const email = (modalOverlay.querySelector('#inEmailReset') as HTMLInputElement).value.trim();
         if (!email || !email.includes('@')) {
-            return modalAlerta.show({ message: "Digite um e-mail válido.", type: "warning" });
+            return modalAlerta.show({ message: "Por favor, digite um e-mail válido.", type: "warning" });
         }
 
-        modalAlerta.showLoading("Enviando e-mail...");
+        modalAlerta.showLoading("Enviando e-mail de recuperação...");
         try {
             await aniversarioService.enviarEmailRecuperacaoSenha(email);
             modalAlerta.close();
             modalOverlay.remove();
             modalAlerta.show({ 
                 title: "E-mail Enviado!",
-                message: "Enviamos as instruções para o seu e-mail. Verifique a caixa de entrada para redefinir a senha.", 
+                message: `Enviamos o link de redefinição de senha para ${email}. Verifique sua caixa de entrada ou spam.`, 
                 type: "success" 
             });
         } catch (e: any) {
