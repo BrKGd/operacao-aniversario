@@ -1,12 +1,13 @@
-/* Container do Modal (Overlay) */
+/* Container do Modal (Overlay com Desfoque de Vidro) */
 .fec-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(9, 13, 22, 0.75);
-    backdrop-filter: blur(10px);
+    background: rgba(9, 13, 22, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -22,38 +23,132 @@
     visibility: visible;
 }
 
-/* Caixa do Modal */
+/* Caixa do Modal Base Semi-Transparente */
 .fec-modal-box {
-    background: #ffffff;
     padding: 36px 28px 28px;
     border-radius: 28px;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.25), 0 10px 20px -10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     transform: scale(0.92) translateY(15px);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease;
     text-align: center;
-    border: 1px solid rgba(0, 0, 0, 0.06);
     position: relative;
     overflow: hidden;
-}
-
-body[data-theme='dark'] .fec-modal-box {
-    background: #131b2e;
-    border-color: #1e293b;
-    color: #f8fafc;
-    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
 }
 
 .fec-modal-overlay.active .fec-modal-box {
     transform: scale(1) translateY(0);
 }
 
-/* Ícones com Efeito Glow Pulse */
+/* ==========================================================================
+   TEMA DE CORES SEMI-TRANSPARENTES POR OCASIÃO
+   ========================================================================== */
+
+/* 1. AGUARDANDO / LOADING & INFO (TONS DE AZUL SEMI-TRANSPARENTE) */
+.fec-modal-box.loading,
+.fec-modal-box.modal-type-info {
+    background: rgba(240, 246, 255, 0.88);
+    border: 1.5px solid rgba(0, 82, 255, 0.25);
+    box-shadow: 0 25px 60px rgba(0, 82, 255, 0.18);
+}
+
+body[data-theme='dark'] .fec-modal-box.loading,
+body[data-theme='dark'] .fec-modal-box.modal-type-info {
+    background: rgba(13, 27, 54, 0.88);
+    border: 1.5px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 25px 60px rgba(0, 82, 255, 0.35);
+}
+
+.fec-modal-box.loading .fec-modal-title,
+.fec-modal-box.modal-type-info .fec-modal-title {
+    color: #003399;
+}
+
+body[data-theme='dark'] .fec-modal-box.loading .fec-modal-title,
+body[data-theme='dark'] .fec-modal-box.modal-type-info .fec-modal-title {
+    color: #38bdf8;
+}
+
+/* 2. CONFIRMAÇÃO & SUCESSO (TONS DE VERDE SEMI-TRANSPARENTE) */
+.fec-modal-box.modal-type-confirm,
+.fec-modal-box.modal-type-success {
+    background: rgba(240, 253, 244, 0.88);
+    border: 1.5px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 25px 60px rgba(16, 185, 129, 0.18);
+}
+
+body[data-theme='dark'] .fec-modal-box.modal-type-confirm,
+body[data-theme='dark'] .fec-modal-box.modal-type-success {
+    background: rgba(6, 44, 30, 0.88);
+    border: 1.5px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 25px 60px rgba(16, 185, 129, 0.35);
+}
+
+.fec-modal-box.modal-type-confirm .fec-modal-title,
+.fec-modal-box.modal-type-success .fec-modal-title {
+    color: #065f46;
+}
+
+body[data-theme='dark'] .fec-modal-box.modal-type-confirm .fec-modal-title,
+body[data-theme='dark'] .fec-modal-box.modal-type-success .fec-modal-title {
+    color: #34d399;
+}
+
+/* 3. EXCLUSÃO & ERRO (TONS DE VERMELHO SEMI-TRANSPARENTE) */
+.fec-modal-box.modal-type-delete,
+.fec-modal-box.modal-type-error {
+    background: rgba(254, 242, 242, 0.88);
+    border: 1.5px solid rgba(239, 68, 68, 0.3);
+    box-shadow: 0 25px 60px rgba(239, 68, 68, 0.2);
+}
+
+body[data-theme='dark'] .fec-modal-box.modal-type-delete,
+body[data-theme='dark'] .fec-modal-box.modal-type-error {
+    background: rgba(45, 13, 19, 0.88);
+    border: 1.5px solid rgba(239, 68, 68, 0.45);
+    box-shadow: 0 25px 60px rgba(239, 68, 68, 0.4);
+}
+
+.fec-modal-box.modal-type-delete .fec-modal-title,
+.fec-modal-box.modal-type-error .fec-modal-title {
+    color: #991b1b;
+}
+
+body[data-theme='dark'] .fec-modal-box.modal-type-delete .fec-modal-title,
+body[data-theme='dark'] .fec-modal-box.modal-type-error .fec-modal-title {
+    color: #f87171;
+}
+
+/* 4. ATENÇÃO / WARNING (TONS DE ÂMBAR SEMI-TRANSPARENTE) */
+.fec-modal-box.modal-type-warning {
+    background: rgba(254, 243, 199, 0.88);
+    border: 1.5px solid rgba(245, 158, 11, 0.35);
+    box-shadow: 0 25px 60px rgba(245, 158, 11, 0.2);
+}
+
+body[data-theme='dark'] .fec-modal-box.modal-type-warning {
+    background: rgba(45, 30, 8, 0.88);
+    border: 1.5px solid rgba(245, 158, 11, 0.45);
+    box-shadow: 0 25px 60px rgba(245, 158, 11, 0.35);
+}
+
+.fec-modal-box.modal-type-warning .fec-modal-title {
+    color: #92400e;
+}
+
+body[data-theme='dark'] .fec-modal-box.modal-type-warning .fec-modal-title {
+    color: #fbbf24;
+}
+
+/* ==========================================================================
+   ÍCONES COM PULSO LUMINOSO (GLOW PULSE)
+   ========================================================================== */
 .fec-modal-icon {
     width: 68px;
     height: 68px;
-    margin: 0 auto 22px;
+    margin: 0 auto 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -83,51 +178,36 @@ body[data-theme='dark'] .fec-modal-box {
     50% { transform: scale(1.15); opacity: 0.7; }
 }
 
-/* CORES DOS ÍCONES POR TIPO */
-.fec-modal-icon.success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-.fec-modal-icon.success .icon-pulse-glow { background: rgba(16, 185, 129, 0.2); }
+.fec-modal-icon.success,
+.fec-modal-icon.confirm { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.fec-modal-icon.success .icon-pulse-glow,
+.fec-modal-icon.confirm .icon-pulse-glow { background: rgba(16, 185, 129, 0.3); }
 
 .fec-modal-icon.error,
-.fec-modal-icon.delete { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.fec-modal-icon.delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 .fec-modal-icon.error .icon-pulse-glow,
-.fec-modal-icon.delete .icon-pulse-glow { background: rgba(239, 68, 68, 0.25); }
+.fec-modal-icon.delete .icon-pulse-glow { background: rgba(239, 68, 68, 0.3); }
 
-.fec-modal-icon.info { background: rgba(0, 82, 255, 0.15); color: #0052ff; }
-.fec-modal-icon.info .icon-pulse-glow { background: rgba(0, 82, 255, 0.2); }
+.fec-modal-icon.info { background: rgba(0, 82, 255, 0.2); color: #0052ff; }
+.fec-modal-icon.info .icon-pulse-glow { background: rgba(0, 82, 255, 0.3); }
 
-.fec-modal-icon.confirm { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-.fec-modal-icon.confirm .icon-pulse-glow { background: rgba(59, 130, 246, 0.25); }
+.fec-modal-icon.warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.fec-modal-icon.warning .icon-pulse-glow { background: rgba(245, 158, 11, 0.3); }
 
-.fec-modal-icon.warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-.fec-modal-icon.warning .icon-pulse-glow { background: rgba(245, 158, 11, 0.25); }
-
-/* Tipografia do Modal */
-.fec-modal-title {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin-bottom: 10px;
-    letter-spacing: -0.3px;
-    line-height: 1.3;
-}
-
-body[data-theme='dark'] .fec-modal-title {
-    color: #f8fafc;
-}
-
+/* MENSAGEM DO MODAL */
 .fec-modal-message {
     font-size: 0.95rem;
-    color: #64748b;
+    color: #475569;
     margin-bottom: 26px;
     line-height: 1.55;
     font-weight: 500;
 }
 
 body[data-theme='dark'] .fec-modal-message {
-    color: #94a3b8;
+    color: #cbd5e1;
 }
 
-/* Rodapé e Botões */
+/* RODAPÉ E BOTÕES DO MODAL */
 .fec-modal-footer {
     display: flex;
     gap: 12px;
@@ -156,7 +236,15 @@ body[data-theme='dark'] .fec-modal-message {
     box-shadow: 0 6px 18px rgba(0, 82, 255, 0.3);
 }
 
-/* BOTÃO DE CONFIRMAÇÃO / EXCLUSÃO */
+/* BOTÃO DE CONFIRMAÇÃO (VERDE) */
+.btn-confirm,
+.btn-success {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* BOTÃO DE EXCLUSÃO (VERMELHO) */
 .btn-delete,
 .btn-error {
     background: #ef4444 !important;
@@ -164,33 +252,28 @@ body[data-theme='dark'] .fec-modal-message {
     box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35) !important;
 }
 
-.btn-success {
-    background: #10b981 !important;
-    color: #ffffff !important;
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
-}
-
 .btn-modal-secondary { 
-    background: #f1f5f9; 
+    background: rgba(255, 255, 255, 0.6); 
     color: #475569; 
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 body[data-theme='dark'] .btn-modal-secondary {
-    background: #1c2842;
-    color: #94a3b8;
-    border: 1px solid #334155;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .btn-modal-secondary:hover { 
-    background: #e2e8f0; 
+    background: rgba(255, 255, 255, 0.9); 
 }
 
 body[data-theme='dark'] .btn-modal-secondary:hover {
-    background: #273754;
-    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
 }
 
-/* ESTADO POPUP DE AGUARDANDO (LOADING) */
+/* ESTADO POPUP DE AGUARDANDO (LOADING EM TONS DE AZUL) */
 .fec-modal-loading-wrapper {
     position: relative;
     width: 72px;
@@ -206,13 +289,13 @@ body[data-theme='dark'] .btn-modal-secondary:hover {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 3px solid rgba(0, 82, 255, 0.15);
+    border: 3.5px solid rgba(0, 82, 255, 0.15);
     border-top-color: #0052ff;
     animation: ringSpin 1.1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
 }
 
 body[data-theme='dark'] .fec-spinner-ring {
-    border-color: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.2);
     border-top-color: #38bdf8;
 }
 
