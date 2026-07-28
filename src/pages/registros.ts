@@ -1,4 +1,5 @@
-import { supabase } from '../supabaseClient';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../config/firebase';
 import '../styles/app.css';
 import '../styles/registros.css';
 import { createIcons, icons } from 'lucide';
@@ -62,13 +63,11 @@ export function montarTelaRegistro() {
     passEl?.addEventListener('input', limparErro);
     confirmEl?.addEventListener('input', limparErro);
 
-    // Evento para voltar ao login (Recarrega a página para acionar a tela de login do main.ts)
     document.getElementById('btnVoltarLogin')?.addEventListener('click', (e) => {
         e.preventDefault();
         window.location.reload();
     });
 
-    // Evento de Cadastro no Supabase Auth
     document.getElementById('btnFinalizarRegistro')?.addEventListener('click', async () => {
         const email = emailEl.value.trim();
         const password = passEl.value;
@@ -95,13 +94,21 @@ export function montarTelaRegistro() {
         btn.innerHTML = `<span>Criando conta...</span>`;
 
         try {
-            const { error } = await supabase.auth.signUp({ email, password });
-            if (error) throw error;
-
-            alert("🎉 Cadastro realizado com sucesso! Se necessário, verifique seu e-mail para confirmar o acesso.");
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("🎉 Cadastro realizado com sucesso!");
             window.location.reload();
         } catch (error: any) {
-            exibirErro(error.message || "Erro ao realizar cadastro.");
+            let msg = "Erro ao realizar cadastro.";
+            if (error.code === 'auth/email-already-in-use') {
+                msg = "Este e-mail já está em uso por outra conta.";
+            } else if (error.code === 'auth/invalid-email') {
+                msg = "O e-mail digitado é inválido.";
+            } else if (error.code === 'auth/weak-password') {
+                msg = "A senha digitada é muito fraca.";
+            } else if (error.message) {
+                msg = error.message;
+            }
+            exibirErro(msg);
             btn.disabled = false;
             btn.innerHTML = originalContent;
             createIcons({ icons });

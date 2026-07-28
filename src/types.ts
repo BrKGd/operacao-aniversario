@@ -1,4 +1,3 @@
-/*  Contém a identidade visual (cor e ícone) para o estilo Cartoon. | */
 export interface Categoria {
   id: string;
   nome: string;
@@ -9,31 +8,44 @@ export interface Categoria {
 
 export interface MensagemTemplate {
   id: string;
-  tipo: string;
-  conteudo: string;
+  tipo?: string;
+  titulo?: string;
+  texto?: string;
+  conteudo?: string;
   created_at?: string;
 }
 
-/* | Interface principal de Aniversariantes. | */
 export interface Aniversario {
   id: string;
   created_at?: string;
   nome: string;
-  apelido: string; 
+  apelido?: string; 
   data_nascimento: string;
   telefone?: string;        
   observacoes?: string;  
   frase_exibicao?: string;
   imagem_url?: string;
-  categoria_id: string;
+  categoria_id?: string;
   categorias?: Categoria;
-  idadeNova: number;
-  favorito: boolean; 
-  send_msg: boolean;
-  ultimo_envio_ano?: number; 
+  idadeNova?: number;
+  favorito?: boolean; 
+  send_msg?: boolean;
+  ultimo_envio_ano?: number;
+  user_id?: string;
+  notificacoes_ativas?: boolean;
+  id_notificacao?: string;
 }
 
-/*Tipos para as rotas e navegação do App */
+export interface Notificacao {
+  id: string;
+  user_id?: string;
+  aniversario_id?: string;
+  titulo: string;
+  mensagem: string;
+  data_envio: string;
+  lida: boolean;
+}
+
 export type TelaDoc = 
   | 'dash' 
   | 'list' 
@@ -41,4 +53,6 @@ export type TelaDoc =
   | 'config' 
   | 'detalhes' 
   | 'notificacoes' 
-  | 'calendario';
+  | 'calendario'
+  | 'usuarios'
+  | 'perfil';

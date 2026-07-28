@@ -1,7 +1,8 @@
 import '../styles/perfil.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { modalAlerta } from '../utils/modalAlertas';
-import { supabase } from '../supabaseClient';
+import { auth } from '../config/firebase';
+import { signOut } from 'firebase/auth';
 import { 
     createIcons, 
     User, 
@@ -196,7 +197,7 @@ export async function montarPerfil(container: HTMLElement) {
             if (confirmou) {
                 modalAlerta.showLoading("Saindo...");
                 aniversarioService.invalidarCache();
-                await supabase.auth.signOut();
+                await signOut(auth);
                 modalAlerta.close();
                 window.location.reload();
             }

@@ -16,7 +16,7 @@ export const excelService = {
       'Data de Nascimento': item.data_nascimento ? formatDateBR(item.data_nascimento) : '',
       'Data ISO (YYYY-MM-DD)': item.data_nascimento || '',
       'Telefone / WhatsApp': item.telefone || '',
-      'Categoria': item.categorias?.nome || mapCategorias.get(item.categoria_id) || 'Geral',
+      'Categoria': item.categorias?.nome || mapCategorias.get(item.categoria_id || '') || 'Geral',
       'Frase de Exibição': item.frase_exibicao || '',
       'Observações': item.observacoes || '',
       'Favorito': item.favorito ? 'Sim' : 'Não',

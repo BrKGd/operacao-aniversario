@@ -1,5 +1,6 @@
 import './styles/app.css'; 
-import { supabase } from './supabaseClient';
+import { auth } from './config/firebase';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { aniversarioService } from './services/aniversarioService';
 import { modalAlerta } from './utils/modalAlertas';
 import { createIcons, icons } from 'lucide';
@@ -44,42 +45,36 @@ async function inicializar() {
         });
     }
 
-    // Verificar se é retorno de e-mail de recuperação de senha (Supabase Auth callback)
-    const hash = window.location.hash;
-    if (hash.includes('type=recovery') || hash.includes('access_token')) {
-        configurarRedefinicaoSenha();
-        return;
-    }
+    // Listener de Autenticação do Firebase Auth em tempo real
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            configurarLogin();
+        } else {
+            const perfil = await aniversarioService.getPerfilUsuario();
+            if (perfil?.status === 'blocked') {
+                await signOut(auth);
+                aniversarioService.invalidarCache();
+                exibirTelaUsuarioBloqueado(perfil.email || user.email || 'Usuário');
+                return;
+            }
 
-    const { data: { session } } = await supabase.auth.getSession();
+            if (perfil?.status === 'deleted') {
+                await signOut(auth);
+                aniversarioService.invalidarCache();
+                exibirTelaUsuarioExcluido(perfil.email || user.email || 'Usuário');
+                return;
+            }
 
-    if (!session) {
-        configurarLogin();
-    } else {
-        const perfil = await aniversarioService.getPerfilUsuario();
-        if (perfil?.status === 'blocked') {
-            await supabase.auth.signOut();
-            aniversarioService.invalidarCache();
-            exibirTelaUsuarioBloqueado(perfil.email || session.user.email || 'Usuário');
-            return;
+            // Dispara o pré-carregamento do cache em background para 0ms de latência
+            Promise.all([
+                aniversarioService.listarTodos(),
+                aniversarioService.listarCategorias(),
+                aniversarioService.listarTemplates()
+            ]).catch(err => console.warn('Aviso no pré-carregamento:', err));
+
+            montarLayoutEstrutural();
         }
-
-        if (perfil?.status === 'deleted') {
-            await supabase.auth.signOut();
-            aniversarioService.invalidarCache();
-            exibirTelaUsuarioExcluido(perfil.email || session.user.email || 'Usuário');
-            return;
-        }
-
-        // Dispara o aquecimento do cache em background para 0ms de latencia
-        Promise.all([
-            aniversarioService.listarTodos(),
-            aniversarioService.listarCategorias(),
-            aniversarioService.listarTemplates()
-        ]).catch(err => console.warn('Aviso no pré-carregamento:', err));
-
-        montarLayoutEstrutural();
-    }
+    });
 }
 
 // --- TELA DE ACESSO ---
@@ -158,35 +153,37 @@ function configurarLogin() {
         const originalContent = btn.innerHTML;
         btn.innerHTML = `<span>Autenticando...</span>`;
 
-        const { error } = await supabase.auth.signInWithPassword({ 
-            email: emailEl.value, 
-            password: passEl.value 
-        });
-
-        if (error) {
-            if (errEl) {
-                errEl.innerText = "E-mail ou senha incorretos.";
-                errEl.style.display = 'block';
-            }
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-            recarregarIcones();
-        } else {
+        try {
+            await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
             const perfil = await aniversarioService.getPerfilUsuario();
             if (perfil?.status === 'blocked') {
-                await supabase.auth.signOut();
+                await signOut(auth);
                 aniversarioService.invalidarCache();
                 exibirTelaUsuarioBloqueado(emailEl.value || perfil.email || 'Usuário');
                 return;
             }
             if (perfil?.status === 'deleted') {
-                await supabase.auth.signOut();
+                await signOut(auth);
                 aniversarioService.invalidarCache();
                 exibirTelaUsuarioExcluido(emailEl.value || perfil.email || 'Usuário');
                 return;
             }
             window.location.hash = '#dash';
             window.location.reload();
+        } catch (error: any) {
+            if (errEl) {
+                let msg = "E-mail ou senha incorretos.";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    msg = "E-mail ou senha incorretos.";
+                } else if (error.message) {
+                    msg = error.message;
+                }
+                errEl.innerText = msg;
+                errEl.style.display = 'block';
+            }
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            recarregarIcones();
         }
     });
 }
@@ -212,61 +209,54 @@ function exibirTelaUsuarioBloqueado(emailTarget: string) {
                     A conta referente ao e-mail <strong style="color: #ffffff;">${emailTarget}</strong> está temporariamente bloqueada ou desativada pelo Administrador do sistema.
                 </p>
 
-                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; margin-bottom: 28px; text-align: left;">
-                    <div style="display: flex; align-items: center; gap: 10px; color: #f87171; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px;">
-                        <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i> Por que isto aconteceu?
+                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 18px; text-align: left; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #fbbf24; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px;">
+                        <i data-lucide="info" style="width: 18px; height: 18px;"></i> Como proceder?
                     </div>
                     <p style="font-size: 0.82rem; color: #94a3b8; margin: 0; line-height: 1.5;">
-                        Sua conta foi suspensa por regras administrativas ou revogação de acessos. Se você acredita que isto é um erro, entre em contato com o Administrador.
+                        Se você acredita que isso foi um engano ou precisa solicitar a reativação do seu acesso, entre em contato com a equipe de administração do sistema.
                     </p>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <a href="mailto:gleidson.fig@gmail.com?subject=Solicitacao%20de%20Desbloqueio%20de%20Conta%20-%20${encodeURIComponent(emailTarget)}" class="btn-auth-submit" style="background: #ef4444; color: #ffffff; text-decoration: none; justify-content: center; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="mail"></i>
-                        <span>Solicitar Desbloqueio ao Suporte</span>
-                    </a>
-
-                    <button id="btnVoltarLoginBlocked" class="btn-auth-submit" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i data-lucide="log-out"></i>
-                        <span>Voltar à Tela de Login</span>
-                    </button>
-                </div>
+                <button id="btnVoltarLoginBloqueado" class="btn-auth-submit" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Voltar à Tela de Login</span>
+                </button>
             </div>
         </div>
     `;
 
     recarregarIcones();
 
-    document.getElementById('btnVoltarLoginBlocked')?.addEventListener('click', async () => {
-        await supabase.auth.signOut();
+    document.getElementById('btnVoltarLoginBloqueado')?.addEventListener('click', async () => {
+        await signOut(auth);
         aniversarioService.invalidarCache();
         configurarLogin();
     });
 }
 
-// --- TELA VISUAL DE USUÁRIO EXCLUÍDO OU REMOVIDO ---
+// --- TELA VISUAL DE USUÁRIO EXCLUÍDO ---
 function exibirTelaUsuarioExcluido(emailTarget: string) {
     document.body.innerHTML = `
-        <div class="auth-full-page" style="background: linear-gradient(135deg, #18181b 0%, #09090b 100%);">
+        <div class="auth-full-page" style="background: linear-gradient(135deg, #27272a 0%, #09090b 100%);">
             <div class="auth-content-wrapper" style="max-width: 440px;">
                 <div class="blocked-card-icon" style="margin-bottom: 24px;">
-                    <div style="width: 84px; height: 84px; margin: 0 auto; background: rgba(220, 38, 38, 0.2); border: 2px dashed #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(220, 38, 38, 0.35);">
-                        <i data-lucide="user-x" style="width: 44px; height: 44px; color: #f87171;"></i>
+                    <div style="width: 84px; height: 84px; margin: 0 auto; background: rgba(244, 63, 94, 0.15); border: 2px solid #f43f5e; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(244, 63, 94, 0.3);">
+                        <i data-lucide="user-x" style="width: 44px; height: 44px; color: #f43f5e;"></i>
                     </div>
                 </div>
 
-                <div class="blocked-badge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(220, 38, 38, 0.25); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.5); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
-                    <i data-lucide="trash-2" style="width: 14px; height: 14px; color: #f87171;"></i> Conta Excluída / Removida
+                <div class="blocked-badge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(244, 63, 94, 0.2); color: #fecdd3; border: 1px solid rgba(244, 63, 94, 0.4); padding: 6px 16px; border-radius: 30px; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                    <i data-lucide="trash-2" style="width: 14px; height: 14px; color: #f43f5e;"></i> Conta Encerrada / Excluída
                 </div>
 
-                <h2 style="font-size: 1.8rem; font-weight: 800; color: #ffffff; margin: 0 0 12px 0;">Acesso Revogado</h2>
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: #ffffff; margin: 0 0 12px 0;">Conta Excluída</h2>
                 
-                <p style="font-size: 0.95rem; color: #e4e4e7; line-height: 1.6; margin-bottom: 24px;">
-                    A conta de usuário associada ao e-mail <strong style="color: #ffffff;">${emailTarget}</strong> foi permanentemente excluída pelo Administrador do sistema.
+                <p style="font-size: 0.95rem; color: #d4d4d8; line-height: 1.6; margin-bottom: 24px;">
+                    A conta vinculada ao e-mail <strong style="color: #ffffff;">${emailTarget}</strong> foi permanentemente excluída do sistema.
                 </p>
 
-                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 16px; margin-bottom: 28px; text-align: left;">
+                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 18px; text-align: left; margin-bottom: 24px;">
                     <div style="display: flex; align-items: center; gap: 10px; color: #f87171; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px;">
                         <i data-lucide="alert-circle" style="width: 18px; height: 18px;"></i> O que isto significa?
                     </div>
@@ -293,13 +283,13 @@ function exibirTelaUsuarioExcluido(emailTarget: string) {
     recarregarIcones();
 
     document.getElementById('btnCriarNovaContaExcluido')?.addEventListener('click', async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         aniversarioService.invalidarCache();
         montarTelaRegistro();
     });
 
     document.getElementById('btnVoltarLoginExcluido')?.addEventListener('click', async () => {
-        await supabase.auth.signOut();
+        await signOut(auth);
         aniversarioService.invalidarCache();
         configurarLogin();
     });
@@ -360,7 +350,7 @@ function abrirModalRecuperacaoSenha(emailInicial: string) {
 }
 
 // TELA DE CRIAÇÃO DE NOVA SENHA (APÓS CLICAR NO LINK DO E-MAIL)
-function configurarRedefinicaoSenha() {
+export function configurarRedefinicaoSenha() {
     document.body.innerHTML = `
         <div class="auth-full-page">
             <div class="auth-content-wrapper">
@@ -467,7 +457,7 @@ function montarLayoutEstrutural() {
 
     document.getElementById('btnLogoutTop')?.addEventListener('click', async () => {
         aniversarioService.invalidarCache();
-        await supabase.auth.signOut();
+        await signOut(auth);
         window.location.hash = '';
         window.location.reload();
     });
@@ -483,125 +473,150 @@ function montarLayoutEstrutural() {
     processarRotaAtual(); 
 }
 
-/**
- * Extrai a rota e o ID da URL de forma segura para o TypeScript
- */
 function processarRotaAtual() {
     const hashCompleto = window.location.hash.replace('#', '') || 'dash';
-    const partes = hashCompleto.split('?');
-    
-    const tela = partes[0] as string; 
-    const query = partes[1] || '';
-    
-    const paramsURL = new URLSearchParams(query);
-    const id = paramsURL.get('id'); 
+    let pagina = hashCompleto;
+    let idParam = '';
 
-    irPara(tela, id ?? undefined);
+    if (hashCompleto.includes('/')) {
+        const partes = hashCompleto.split('/');
+        pagina = partes[0] || 'dash';
+        idParam = partes[1] || '';
+    }
+
+    rotacionarBotaoAdd(pagina);
+    atualizarTabAtivaUI(pagina);
+
+    const container = document.getElementById('main-content');
+    if (!container) return;
+
+    switch (pagina) {
+        case 'dash':
+            montarDashboard(container);
+            break;
+        case 'lista':
+            montarLista(container);
+            break;
+        case 'form':
+            montarCadastro(container, idParam);
+            break;
+        case 'notificacoes':
+            montarNotificacoes(container);
+            break;
+        case 'detalhes':
+            montarDetalhes(container, idParam);
+            break;
+        case 'calendario':
+            montarCalendario(container);
+            break;
+        case 'config':
+            montarConfiguracoes(container);
+            break;
+        case 'categorias':
+            montarCategorias(container);
+            break;
+        case 'perfil':
+            montarPerfil(container);
+            break;
+        case 'usuarios':
+            montarUsuarios(container);
+            break;
+        default:
+            montarDashboard(container);
+    }
+
+    recarregarIcones();
+    window.scrollTo(0, 0);
 }
 
-// --- NAVEGAÇÃO ---
+function rotacionarBotaoAdd(pagina: string) {
+    const fab = document.getElementById('fabAddFloating');
+    if (!fab) return;
+
+    if (pagina === 'form') {
+        fab.classList.add('active-form');
+    } else {
+        fab.classList.remove('active-form');
+    }
+}
+
 function renderizarNavegacao() {
     const nav = document.getElementById('app-nav');
     if (!nav) return;
 
     nav.innerHTML = `
-        <div class="nav-bottom-container">
-            <div class="tab-bar-scrollable">
-                <button class="nav-item" data-route="dash" onclick="window.navegar('dash')">
-                    <i data-lucide="layout-grid"></i>
-                    <span>Início</span>
-                </button>
-                
-                <button class="nav-item" data-route="list" onclick="window.navegar('list')">
-                    <i data-lucide="contact-2"></i>
-                    <span>Pessoas</span>
-                </button>
-
-                <button class="nav-item" data-route="calendario" onclick="window.navegar('calendario')">
-                    <i data-lucide="calendar-heart"></i>
-                    <span>Datas</span>
-                </button>
-
-                <button class="nav-item" data-route="config" onclick="window.navegar('config')">
-                    <i data-lucide="settings-2"></i>
-                    <span>Ajustes</span>
-                </button>
-
-                <button class="nav-item" data-route="perfil" onclick="window.navegar('perfil')">
-                    <i data-lucide="user"></i>
-                    <span>Perfil</span>
-                </button>
-            </div>
+        <div class="tab-bar-scrollable">
+            <button class="nav-item" data-route="dash">
+                <i data-lucide="layout-grid"></i>
+                <span>Painel</span>
+            </button>
+            <button class="nav-item" data-route="lista">
+                <i data-lucide="users"></i>
+                <span>Lista</span>
+            </button>
+            <button class="nav-item" data-route="calendario">
+                <i data-lucide="calendar"></i>
+                <span>Agenda</span>
+            </button>
+            <button class="nav-item" data-route="notificacoes">
+                <i data-lucide="bell"></i>
+                <span>Alertas</span>
+            </button>
         </div>
     `;
 
-    // @ts-ignore
-    window.navegar = (tela: string, id?: string) => {
-        window.location.hash = id ? `${tela}?id=${id}` : tela;
-    };
+    nav.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const route = (btn as HTMLElement).dataset.route;
+            if (route) irPara(route);
+        });
+    });
 
     recarregarIcones();
 }
 
-// --- RENDERIZADOR DE TELAS ---
-export async function irPara(tela: string, params?: any) {
-    const container = document.getElementById('main-content');
-    if (!container) return;
-
-    // Atualiza estado visual da navegação
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.querySelector(`[data-route="${tela}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-
-    container.innerHTML = `
-        <div class="fec-center-wrapper">
-            <div class="fec-loader-minimal">Organizando eventos...</div>
-        </div>
-    `;
-
-    // Roteamento
-    switch (tela) {
-        case 'dash': await montarDashboard(container); break;
-        case 'list': await montarLista(container); break;
-        case 'form': await montarCadastro(container, params); break;
-        case 'notificacoes': await montarNotificacoes(container); break;
-        case 'detalhes': await montarDetalhes(container, params); break;
-        case 'calendario': await montarCalendario(container); break;
-        case 'config': await montarConfiguracoes(container); break;
-        case 'categorias': await montarCategorias(container); break;
-        case 'perfil': await montarPerfil(container); break;
-        case 'usuarios': await montarUsuarios(container); break;
-        default: await montarDashboard(container);
-    }
-
-    recarregarIcones();
+function atualizarTabAtivaUI(pagina: string) {
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        const route = (btn as HTMLElement).dataset.route;
+        if (route === pagina) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
+
+function irPara(pagina: string) {
+    window.location.hash = `#${pagina}`;
+}
+
+(window as any).navegar = irPara;
 
 function recarregarIcones() {
-    // @ts-ignore
-    if (typeof createIcons === 'function') {
+    try {
         createIcons({ icons });
+    } catch (e) {
+        console.warn('Aviso na renderização de ícones:', e);
     }
 }
 
-// --- PWA PROMPT HANDLER ---
-let pwaInstallPrompt: any = null;
+let deferredPromptPWA: any = null;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    pwaInstallPrompt = e;
+    deferredPromptPWA = e;
 });
 
-export function dispararInstalacaoPWA(cbStatus?: (sucesso: boolean) => void) {
-    if (pwaInstallPrompt) {
-        pwaInstallPrompt.prompt();
-        pwaInstallPrompt.userChoice.then((choiceResult: any) => {
-            const aceitou = choiceResult.outcome === 'accepted';
-            if (cbStatus) cbStatus(aceitou);
-            pwaInstallPrompt = null;
+export function dispararInstalacaoPWA(callback?: (aceitou: boolean) => void) {
+    if (deferredPromptPWA) {
+        deferredPromptPWA.prompt();
+        deferredPromptPWA.userChoice.then((choiceResult: any) => {
+            if (callback) callback(choiceResult.outcome === 'accepted');
+            deferredPromptPWA = null;
         });
-    } else if (cbStatus) {
-        cbStatus(false);
+    } else {
+        if (callback) callback(false);
     }
 }
 
+// Inicia a aplicação no carregamento do DOM
 document.addEventListener('DOMContentLoaded', inicializar);

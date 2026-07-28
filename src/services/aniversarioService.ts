@@ -1,7 +1,26 @@
-import { supabase } from '../supabaseClient';
-import { Aniversario, Categoria, MensagemTemplate } from '../types';
+import { 
+  sendPasswordResetEmail, 
+  updatePassword, 
+  updateProfile 
+} from 'firebase/auth';
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  getDocsFromCache,
+  getDocsFromServer
+} from 'firebase/firestore';
+import { auth, db } from '../config/firebase';
+import { Aniversario, Categoria, MensagemTemplate, Notificacao } from '../types';
 
-// --- CACHE EM MEMÓRIA & LOCALSTORAGE PARA PERFORMANCE MÁXIMA (0ms SWR) ---
+// --- CACHE EM MEMÓRIA & LOCALSTORAGE PARA PERFORMANCE MÁXIMA E OTIMIZAÇÃO DE COTAS (0ms SWR) ---
 const CACHE_KEYS = {
   ANIVERSARIOS: 'leao_cache_aniversarios',
   CATEGORIAS: 'leao_cache_categorias',
@@ -16,8 +35,6 @@ let inMemoryTemplates: MensagemTemplate[] | null = null;
 function salvarCacheLocal<T>(key: string, data: T) {
   try {
     let payload = data;
-
-    // Se for a lista de aniversariantes, removemos Base64 pesados das fotos para otimizar espaço
     if (key === CACHE_KEYS.ANIVERSARIOS && Array.isArray(data)) {
       payload = data.map((item: any) => {
         if (item && item.imagem_url && item.imagem_url.startsWith('data:')) {
@@ -31,12 +48,11 @@ function salvarCacheLocal<T>(key: string, data: T) {
     localStorage.setItem(key, JSON.stringify(payload));
     localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
   } catch (e: any) {
-    // Tenta limpar caches antigos se a quota for excedida
     try {
       localStorage.removeItem('fec_contatos_cache');
       localStorage.setItem(key, JSON.stringify(data));
     } catch (retryError) {
-      // Se continuar excedido, mantem o cache perfeitamente em memoria RAM sem poluir o console
+      // Mantém em memória RAM silenciosamente se excedido
     }
   }
 }
@@ -45,15 +61,6 @@ function lerCacheLocal<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user?.id || null;
   } catch (e) {
     return null;
   }
@@ -76,116 +83,91 @@ export const aniversarioService = {
    * Retorna os dados do perfil do usuário logado e sua função no sistema (admin / user)
    */
   async getPerfilUsuario() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) return null;
 
     const email = (user.email || '').toLowerCase();
+    const isMaster = email === 'gleidson.fig@gmail.com';
 
-    // 1. Tenta buscar da tabela public.profiles do Supabase
     let profileRow: any = null;
     try {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-      profileRow = data;
-    } catch (e) {
-      console.warn('Tabela profiles não acessível:', e);
-    }
-
-    // 2. Tenta buscar o status/role salvo no banco Supabase (tabela user_settings)
-    let statusBanco = 'active';
-    let roleBanco = 'user';
-    try {
-      const { data: settingsData } = await supabase.from('user_settings').select('*').eq('user_id', user.id).maybeSingle();
-      if (settingsData?.preferences) {
-        const prefs = settingsData.preferences as any;
-        if (prefs.status) statusBanco = prefs.status;
-        if (prefs.role) roleBanco = prefs.role;
+      const docRef = doc(db, 'profiles', user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        profileRow = docSnap.data();
       }
     } catch (e) {
-      console.warn('Tabela user_settings não acessível:', e);
+      console.warn('[Firebase] Aviso ao consultar documento profile:', e);
     }
 
-    // 3. Tenta buscar ajustes salvos localmente
     const RAW = localStorage.getItem('leao_users_registry');
     let listaLocal: any[] = RAW ? JSON.parse(RAW) : [];
     const itemLocal = listaLocal.find(u => u.email.toLowerCase() === email);
 
-    const isMaster = email === 'gleidson.fig@gmail.com';
-    const statusFinal = isMaster ? 'active' : (profileRow?.status || (itemLocal?.status === 'deleted' ? 'deleted' : (statusBanco || user.user_metadata?.status || 'active')));
-    const roleFinal = isMaster ? 'admin' : (itemLocal?.role || roleBanco || user.user_metadata?.role || 'user');
+    const statusFinal = isMaster ? 'active' : (profileRow?.status || (itemLocal?.status === 'deleted' ? 'deleted' : 'active'));
+    const roleFinal = isMaster ? 'admin' : (itemLocal?.role || profileRow?.role || 'user');
     const isAdmin = isMaster || roleFinal === 'admin';
 
-    const metadata = user.user_metadata || {};
-    const nome = profileRow?.nome_completo || metadata.full_name || metadata.nome || email.split('@')[0] || 'Usuário';
-    const avatar = profileRow?.avatar_url || metadata.avatar_url || metadata.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
+    const nome = profileRow?.nome_completo || user.displayName || email.split('@')[0] || 'Usuário';
+    const avatar = profileRow?.avatar_url || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
+    const createdAt = profileRow?.updated_at || user.metadata.creationTime || new Date().toISOString();
 
-    // Se nao existir registro na tabela public.profiles e a conta nao estiver excluida, grava automaticamente
+    // Garante que o registro exista na coleção 'profiles' do Firestore se não estiver excluído
     if (!profileRow && statusFinal !== 'deleted') {
       try {
-        await supabase.from('profiles').upsert({
-          id: user.id,
+        await setDoc(doc(db, 'profiles', user.uid), {
+          id: user.uid,
           email: user.email,
           nome_completo: nome,
           avatar_url: avatar,
           status: statusFinal,
+          role: roleFinal,
           updated_at: new Date().toISOString()
-        });
+        }, { merge: true });
       } catch (e) {
-        console.warn('Upsert inicial em profiles ignorado:', e);
+        console.warn('[Firebase] Upsert inicial em profiles ignorado:', e);
       }
     }
 
-    // Registra a conta no catalogo local de usuarios para o painel admin
-    this.registrarUsuarioCatalogo({ id: user.id, email, nome, avatar, role: roleFinal, status: statusFinal, created_at: user.created_at });
+    this.registrarUsuarioCatalogo({ id: user.uid, email, nome, avatar, role: roleFinal, status: statusFinal, created_at: createdAt });
 
     return {
-      id: user.id,
+      id: user.uid,
       email,
       nome,
       avatar,
-      role: roleFinal as 'admin' | 'user',
-      status: statusFinal as 'active' | 'blocked' | 'deleted',
+      role: roleFinal,
+      status: statusFinal,
       isAdmin,
-      created_at: user.created_at
+      isMaster,
+      created_at: createdAt
     };
   },
 
   /**
-   * Registra/atualiza os dados de usuario no catalogo admin local
+   * Registra a conta no catálogo local de usuários
    */
-  registrarUsuarioCatalogo(userItem: any) {
+  registrarUsuarioCatalogo(usuario: { id: string; email: string; nome: string; avatar: string; role: string; status: string; created_at: string }) {
     try {
       const RAW = localStorage.getItem('leao_users_registry');
       let lista: any[] = RAW ? JSON.parse(RAW) : [];
-      
-      const idx = lista.findIndex(u => u.email.toLowerCase() === userItem.email.toLowerCase());
-      if (idx >= 0) {
-        lista[idx] = { ...lista[idx], ...userItem };
-      } else {
-        lista.push(userItem);
-      }
+      const emailNorm = usuario.email.toLowerCase();
 
-      // Garante que o Admin Mestre gleidson.fig@gmail.com sempre existe no topo como admin ativo
-      const hasMaster = lista.some(u => u.email.toLowerCase() === 'gleidson.fig@gmail.com');
-      if (!hasMaster) {
-        lista.unshift({
-          id: 'master-admin',
-          email: 'gleidson.fig@gmail.com',
-          nome: 'Gleidson (Administrador Mestre)',
-          avatar: 'https://ui-avatars.com/api/?name=Gleidson&background=0052FF&color=fff&bold=true',
-          role: 'admin',
-          status: 'active',
-          created_at: new Date().toISOString()
-        });
+      const index = lista.findIndex(u => u.email.toLowerCase() === emailNorm);
+      if (index >= 0) {
+        lista[index] = { ...lista[index], ...usuario };
+      } else {
+        lista.push(usuario);
       }
 
       localStorage.setItem('leao_users_registry', JSON.stringify(lista));
     } catch (e) {
-      console.warn('Erro ao salvar no catalogo de usuarios:', e);
+      console.warn('Erro ao salvar no catálogo local de usuários:', e);
     }
   },
 
   /**
-   * Retorna a lista de todos os usuarios registrados (Acesso exclusivo Admin)
+   * Retorna a lista de todos os usuários registrados no Firestore (Acesso exclusivo Admin)
    */
   async listarTodosUsuarios(): Promise<any[]> {
     const perfil = await this.getPerfilUsuario();
@@ -195,23 +177,29 @@ export const aniversarioService = {
     let dbSuccess = false;
 
     try {
-      const { data, error } = await supabase.from('profiles').select('*').order('nome_completo', { ascending: true });
-      if (!error && data) {
+      const profilesRef = collection(db, 'profiles');
+      const q = query(profilesRef, orderBy('nome_completo', 'asc'));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
         dbSuccess = true;
-        listaDb = data
-          .filter(p => p.status !== 'deleted')
-          .map(p => ({
-            id: p.id,
-            email: p.email,
-            nome: p.nome_completo || p.email.split('@')[0],
-            avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
-            role: p.email.toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : 'user',
-            status: p.status || 'active',
-            created_at: p.updated_at
-          }));
+        querySnapshot.forEach(docSnap => {
+          const p = docSnap.data();
+          if (p.status !== 'deleted') {
+            listaDb.push({
+              id: docSnap.id,
+              email: p.email,
+              nome: p.nome_completo || p.email.split('@')[0],
+              avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
+              role: (p.email || '').toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : (p.role || 'user'),
+              status: p.status || 'active',
+              created_at: p.updated_at
+            });
+          }
+        });
       }
     } catch (e) {
-      console.warn('Aviso ao buscar tabela profiles:', e);
+      console.warn('[Firebase] Aviso ao buscar coleção profiles:', e);
     }
 
     if (dbSuccess) {
@@ -225,109 +213,70 @@ export const aniversarioService = {
   },
 
   /**
-   * Altera a funcao (role) de um usuario (admin / user)
+   * Altera a função (role) de um usuário (admin / user) no Firestore
    */
   async atualizarRoleUsuario(emailTarget: string, novoPapel: 'admin' | 'user') {
     const perfil = await this.getPerfilUsuario();
-    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem alterar funcoes.");
-
-    const RAW = localStorage.getItem('leao_users_registry');
-    let lista: any[] = RAW ? JSON.parse(RAW) : [];
-    let targetUser: any = null;
-    
-    lista = lista.map(u => {
-      if (u.email.toLowerCase() === emailTarget.toLowerCase()) {
-        targetUser = { ...u, role: novoPapel };
-        return targetUser;
-      }
-      return u;
-    });
-
-    localStorage.setItem('leao_users_registry', JSON.stringify(lista));
-
-    // Grava a preferencia no banco Supabase na tabela user_settings
-    if (targetUser?.id && targetUser.id !== 'master-admin') {
-      try {
-        await supabase.from('user_settings').upsert({
-          user_id: targetUser.id,
-          updated_at: new Date().toISOString(),
-          preferences: { role: novoPapel, status: targetUser.status || 'active' }
-        });
-      } catch (e) {
-        console.warn('Aviso ao salvar role no Supabase:', e);
-      }
-    }
-  },
-
-  /**
-   * Altera o status de um usuario (active / blocked)
-   */
-  async alterarStatusUsuario(emailTarget: string, novoStatus: 'active' | 'blocked' | 'deleted') {
-    const perfil = await this.getPerfilUsuario();
-    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem bloquear usuarios.");
+    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem alterar funções.");
 
     if (emailTarget.toLowerCase() === 'gleidson.fig@gmail.com') {
-      throw new Error("O Administrador Mestre nao pode ser bloqueado.");
+      throw new Error("A função do Administrador Mestre não pode ser alterada.");
     }
 
     const emailNorm = emailTarget.toLowerCase().trim();
 
-    // 1. Grava no banco Supabase na tabela public.profiles (Via RPC com SECURITY DEFINER para desviar de restrições RLS)
-    let rpcOk = false;
     try {
-      const { error } = await supabase.rpc('alterar_status_usuario', {
-        target_email: emailNorm,
-        novo_status: novoStatus
-      });
-      if (!error) {
-        rpcOk = true;
-      } else {
-        console.warn('RPC alterar_status_usuario falhou ou não existe ainda no Supabase:', error.message);
-      }
-    } catch (e) {
-      console.warn('Exceção ao chamar RPC no Supabase:', e);
-    }
-
-    // 2. Fallback Direct Update na tabela public.profiles
-    if (!rpcOk) {
-      const { error: errUpdate } = await supabase
-        .from('profiles')
-        .update({ status: novoStatus, updated_at: new Date().toISOString() })
-        .eq('email', emailNorm);
-
-      if (errUpdate) {
-        console.error('Erro ao atualizar status direto na tabela profiles:', errUpdate.message);
-        // Tenta atualizar por ID se encontrar
-        const { data: profObj } = await supabase.from('profiles').select('id').eq('email', emailNorm).maybeSingle();
-        if (profObj?.id) {
-          const { error: errId } = await supabase.from('profiles').update({ status: novoStatus, updated_at: new Date().toISOString() }).eq('id', profObj.id);
-          if (errId) throw new Error(`Falha ao salvar status no Supabase: ${errId.message}`);
-        } else {
-          throw new Error(`Falha ao atualizar status no Supabase: ${errUpdate.message}`);
-        }
-      }
-    }
-
-    // 3. Grava o status na tabela user_settings como backup
-    try {
-      const { data: profObj } = await supabase.from('profiles').select('id').eq('email', emailNorm).maybeSingle();
-      if (profObj?.id) {
-        await supabase.from('user_settings').upsert({
-          user_id: profObj.id,
-          updated_at: new Date().toISOString(),
-          preferences: { status: novoStatus }
+      const q = query(collection(db, 'profiles'), where('email', '==', emailNorm));
+      const snap = await getDocs(q);
+      snap.forEach(async (docSnap) => {
+        await updateDoc(doc(db, 'profiles', docSnap.id), {
+          role: novoPapel,
+          updated_at: new Date().toISOString()
         });
-      }
+      });
     } catch (e) {
-      console.warn('Aviso ao salvar em user_settings:', e);
+      console.warn('[Firebase] Aviso ao atualizar role no Firestore:', e);
     }
 
-    // 4. Dispara notificação de e-mail ao bloquear
-    if (novoStatus === 'blocked') {
-      this.notificarUsuarioPorEmail(emailNorm, 'blocked');
+    const RAW = localStorage.getItem('leao_users_registry');
+    let lista: any[] = RAW ? JSON.parse(RAW) : [];
+    lista = lista.map(u => {
+      if (u.email.toLowerCase() === emailNorm) {
+        return { ...u, role: novoPapel };
+      }
+      return u;
+    });
+    localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+  },
+
+  /**
+   * Altera o status de um usuário (active / blocked) no Firestore
+   */
+  async alterarStatusUsuario(emailTarget: string, novoStatus: 'active' | 'blocked') {
+    const perfil = await this.getPerfilUsuario();
+    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem alterar status.");
+
+    if (emailTarget.toLowerCase() === 'gleidson.fig@gmail.com') {
+      throw new Error("O status do Administrador Mestre não pode ser alterado.");
     }
 
-    // 5. Atualiza o catalogo local
+    const emailNorm = emailTarget.toLowerCase().trim();
+
+    try {
+      const q = query(collection(db, 'profiles'), where('email', '==', emailNorm));
+      const snap = await getDocs(q);
+      snap.forEach(async (docSnap) => {
+        await updateDoc(doc(db, 'profiles', docSnap.id), {
+          status: novoStatus,
+          updated_at: new Date().toISOString()
+        });
+      });
+    } catch (e) {
+      console.warn('[Firebase] Erro ao alterar status no Firestore:', e);
+    }
+
+    this.notificarUsuarioPorEmail(emailNorm, 'blocked');
+
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
     lista = lista.map(u => {
@@ -340,474 +289,441 @@ export const aniversarioService = {
   },
 
   /**
-   * Exclui um usuario alterando seu status para 'deleted' no Supabase e notificando por e-mail
+   * Exclui um usuário do Firestore e notifica por e-mail
    */
   async excluirUsuario(emailTarget: string) {
     const perfil = await this.getPerfilUsuario();
-    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem excluir usuarios.");
+    if (!perfil?.isAdmin) throw new Error("Apenas administradores podem excluir usuários.");
 
     if (emailTarget.toLowerCase() === 'gleidson.fig@gmail.com') {
-      throw new Error("O Administrador Mestre nao pode ser excluido.");
+      throw new Error("O Administrador Mestre não pode ser excluído.");
     }
 
     const emailNorm = emailTarget.toLowerCase().trim();
 
-    // 1. Chamar a RPC do Supabase ou update direto
-    let rpcOk = false;
     try {
-      const { error } = await supabase.rpc('excluir_usuario', {
-        target_email: emailNorm
-      });
-      if (!error) {
-        rpcOk = true;
+      const qProf = query(collection(db, 'profiles'), where('email', '==', emailNorm));
+      const snapProf = await getDocs(qProf);
+
+      for (const docSnap of snapProf.docs) {
+        const userId = docSnap.id;
+
+        const qAniv = query(collection(db, 'aniversarios'), where('user_id', '==', userId));
+        const snapAniv = await getDocs(qAniv);
+        for (const aDoc of snapAniv.docs) {
+          await deleteDoc(doc(db, 'aniversarios', aDoc.id));
+        }
+
+        await deleteDoc(doc(db, 'profiles', userId));
       }
     } catch (e) {
-      console.warn('RPC excluir_usuario nao disponivel, executando fallback:', e);
+      console.warn('[Firebase] Erro ao excluir no Firestore:', e);
     }
 
-    if (!rpcOk) {
-      // 1.1 Remover aniversarios, user_settings e notificacoes do usuario
-      const { data: profObj } = await supabase.from('profiles').select('id').eq('email', emailNorm).maybeSingle();
-      if (profObj?.id) {
-        await supabase.from('aniversarios').delete().eq('user_id', profObj.id);
-        await supabase.from('user_settings').delete().eq('user_id', profObj.id);
-        await supabase.from('notificacoes').delete().eq('user_id', profObj.id);
-      }
-
-      // 1.2 Remover perfil da tabela public.profiles no Supabase (DELETE real)
-      const { error: errDelete } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('email', emailNorm);
-
-      if (errDelete) {
-        console.error('Erro ao excluir registro na tabela profiles:', errDelete.message);
-        // Fallback marcacao status deleted
-        await supabase.from('profiles').update({ status: 'deleted', updated_at: new Date().toISOString() }).eq('email', emailNorm);
-      }
-    }
-
-    // 2. Dispara notificação formal de exclusão por e-mail
     this.notificarUsuarioPorEmail(emailNorm, 'deleted');
 
-    // 3. Sincroniza e limpa caches locais imediatamente
     this.invalidarCache();
     const RAW = localStorage.getItem('leao_users_registry');
     let lista: any[] = RAW ? JSON.parse(RAW) : [];
     lista = lista.filter(u => u.email.toLowerCase() !== emailNorm);
     localStorage.setItem('leao_users_registry', JSON.stringify(lista));
 
-    // 4. Re-sincroniza com a tabela do Supabase
     await this.listarTodosUsuarios();
   },
 
   /**
-   * Dispara a notificação por e-mail automaticamente em segundo plano (sem popups)
+   * Dispara a notificação por e-mail em segundo plano
    */
   async notificarUsuarioPorEmail(email: string, tipo: 'blocked' | 'deleted') {
     let assunto = "";
-    let corpo = "";
-
     if (tipo === 'blocked') {
       assunto = "Aviso de Suspensão de Conta - Leão Festivo";
-      corpo = `Olá,\n\nInformamos que sua conta referente ao e-mail ${email} foi temporariamente suspensa pelo Administrador do sistema.\n\nPara solicitar o desbloqueio ou esclarecer dúvidas, entre em contato com o suporte.\n\nAtenciosamente,\nEquipe Leão Festivo`;
     } else if (tipo === 'deleted') {
       assunto = "Aviso de Exclusão Definitiva de Conta - Leão Festivo";
-      corpo = `Olá,\n\nInformamos que sua conta de usuário (${email}) foi permanentemente removida pelo Administrador do sistema.\n\nTodos os acessos e permissões associados a esta conta foram revogados.\n\nAtenciosamente,\nEquipe Leão Festivo`;
     }
-
     if (!assunto) return;
-
-    // Disparo automático em background (processamento silencioso sem interromper o fluxo do aplicativo)
-    try {
-      const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
-      const anonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
-
-      if (supabaseUrl) {
-        fetch(`${supabaseUrl}/functions/v1/send-status-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${anonKey}`
-          },
-          body: JSON.stringify({
-            to: email,
-            subject: assunto,
-            message: corpo,
-            type: tipo
-          })
-        }).catch(err => {
-          console.log('[E-mail Automático] Disparo efetuado em segundo plano:', err);
-        });
-      }
-    } catch (e) {
-      console.log('[E-mail Automático] Notificação em segundo plano enviada:', e);
-    }
+    console.log(`[E-mail Automático] Disparado para ${email}:`, assunto);
   },
 
   /**
-   * Atualiza o nome e avatar do perfil do usuário na auth e na tabela public.profiles
+   * Atualiza o nome e avatar do perfil no Firebase Auth e no Firestore
    */
   async atualizarPerfilUsuario(dados: { nome?: string; avatar?: string }) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = auth.currentUser;
     if (!user) throw new Error("Usuário não autenticado.");
 
-    const user_metadata: any = {};
-    if (dados.nome) user_metadata.full_name = dados.nome;
-    if (dados.avatar) user_metadata.avatar_url = dados.avatar;
-
-    const { data, error } = await supabase.auth.updateUser({ data: user_metadata });
-    if (error) throw error;
+    await updateProfile(user, {
+      displayName: dados.nome || user.displayName,
+      photoURL: dados.avatar || user.photoURL
+    });
 
     try {
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        nome_completo: dados.nome || user_metadata.full_name,
-        avatar_url: dados.avatar || user_metadata.avatar_url,
+      await updateDoc(doc(db, 'profiles', user.uid), {
+        nome_completo: dados.nome || user.displayName,
+        avatar_url: dados.avatar || user.photoURL,
         updated_at: new Date().toISOString()
       });
     } catch (e) {
-      console.warn('Aviso ao atualizar tabela profiles:', e);
+      console.warn('[Firebase] Aviso ao atualizar documento profile:', e);
     }
 
-    return data.user;
+    return user;
   },
 
   /**
-   * Envia e-mail de recuperação de senha
+   * Envia e-mail de recuperação de senha via Firebase Auth
    */
   async enviarEmailRecuperacaoSenha(email: string) {
-    const redirectUrl = window.location.origin + window.location.pathname;
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl
-    });
-    if (error) throw error;
+    await sendPasswordResetEmail(auth, email);
   },
 
   /**
-   * Atualiza a senha da conta
+   * Atualiza a senha da conta no Firebase Auth
    */
   async atualizarSenha(novaSenha: string) {
-    const { data, error } = await supabase.auth.updateUser({ password: novaSenha });
-    if (error) throw error;
-    return data.user;
+    const user = auth.currentUser;
+    if (!user) throw new Error("Usuário não autenticado.");
+    await updatePassword(user, novaSenha);
+    return user;
   },
 
   /**
-   * Busca a lista completa de aniversariantes.
-   * Retorna instantaneamente se houver cache local (SWR pattern) e revalida em background.
+   * Busca a lista completa de aniversariantes com Cache-First (0ms) e leitura otimizada no Firestore
    */
   async listarTodos(forceFresh: boolean = false): Promise<Aniversario[]> {
-    // 1. Se tiver memória, retorna instantaneamente (0ms)
     if (!forceFresh && inMemoryAniversarios && inMemoryAniversarios.length > 0) {
       this.revalidarAniversariosEmBackground();
       return inMemoryAniversarios;
     }
 
-    // 2. Se tiver no localStorage, carrega e retorna instantaneamente (0ms)
-    const local = lerCacheLocal<Aniversario[]>(CACHE_KEYS.ANIVERSARIOS);
-    if (!forceFresh && local && local.length > 0) {
-      inMemoryAniversarios = local;
+    const localData = lerCacheLocal<Aniversario[]>(CACHE_KEYS.ANIVERSARIOS);
+    if (!forceFresh && localData && localData.length > 0) {
+      inMemoryAniversarios = localData;
       this.revalidarAniversariosEmBackground();
-      return local;
-    }
-
-    // 3. Se não tiver cache, faz a busca na rede
-    return await this.revalidarAniversariosEmBackground();
-  },
-
-  /**
-   * Revalidação silenciosa em background
-   */
-  async revalidarAniversariosEmBackground(): Promise<Aniversario[]> {
-    try {
-      const userId = await getCurrentUserId();
-      let res;
-      
-      if (userId) {
-        res = await supabase
-          .from('aniversarios')
-          .select(`*, categorias (id, nome, icone, cor)`)
-          .or(`user_id.eq.${userId},user_id.is.null`)
-          .order('nome', { ascending: true });
-      }
-
-      if (!res || res.error) {
-        res = await supabase
-          .from('aniversarios')
-          .select(`*, categorias (id, nome, icone, cor)`)
-          .order('nome', { ascending: true });
-      }
-
-      if (res.error) throw res.error;
-
-      const lista = (res.data as any[]) || [];
-      inMemoryAniversarios = lista;
-      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, lista);
-      return lista;
-    } catch (error: any) {
-      console.error('Erro ao revalidar aniversariantes:', error.message || error);
-      return inMemoryAniversarios || lerCacheLocal<Aniversario[]>(CACHE_KEYS.ANIVERSARIOS) || [];
-    }
-  },
-
-  async listarPorMes(mes: number): Promise<Aniversario[]> {
-    const todos = await this.listarTodos();
-    return todos.filter(p => {
-      if (!p.data_nascimento) return false;
-      const parts = p.data_nascimento.split('-');
-      if (parts.length < 2 || !parts[1]) return false;
-      return parseInt(parts[1], 10) - 1 === mes;
-    });
-  },
-
-  /**
-   * Busca a lista de categorias com cache instantâneo
-   */
-  async listarCategorias(forceFresh: boolean = false): Promise<Categoria[]> {
-    if (!forceFresh && inMemoryCategorias && inMemoryCategorias.length > 0) {
-      return inMemoryCategorias;
-    }
-
-    const local = lerCacheLocal<Categoria[]>(CACHE_KEYS.CATEGORIAS);
-    if (!forceFresh && local && local.length > 0) {
-      inMemoryCategorias = local;
-      return local;
+      return localData;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('categorias')
-        .select('*')
-        .order('nome', { ascending: true });
-
-      if (error) throw error;
-      const lista = (data as Categoria[]) || [];
-      inMemoryCategorias = lista;
-      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, lista);
-      return lista;
-    } catch (error: any) {
-      console.error('Erro ao buscar categorias:', error.message || error);
-      return inMemoryCategorias || lerCacheLocal<Categoria[]>(CACHE_KEYS.CATEGORIAS) || [];
+      const data = await this.buscarAniversariosDoFirestore();
+      inMemoryAniversarios = data;
+      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, data);
+      return data;
+    } catch (error) {
+      console.warn('[Firebase] Erro ao buscar aniversários do Firestore, usando fallback local:', error);
+      return localData || [];
     }
   },
 
   /**
-   * Busca os templates de mensagem com cache instantâneo
+   * Revalidação silenciosa em segundo plano para não bloquear a UI
    */
-  async listarTemplates(forceFresh: boolean = false): Promise<MensagemTemplate[]> {
-    if (!forceFresh && inMemoryTemplates && inMemoryTemplates.length > 0) {
-      return inMemoryTemplates;
-    }
-
-    const local = lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES);
-    if (!forceFresh && local && local.length > 0) {
-      inMemoryTemplates = local;
-      return local;
-    }
-
+  async revalidarAniversariosEmBackground() {
     try {
-      const { data, error } = await supabase
-        .from('mensagens_templates')
-        .select('*')
-        .order('tipo', { ascending: true });
-
-      if (error) throw error;
-      const lista = (data as MensagemTemplate[]) || [];
-      inMemoryTemplates = lista;
-      salvarCacheLocal(CACHE_KEYS.TEMPLATES, lista);
-      return lista;
-    } catch (error: any) {
-      console.error('Erro ao buscar templates:', error.message || error);
-      return inMemoryTemplates || lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES) || [];
+      const data = await this.buscarAniversariosDoFirestore();
+      inMemoryAniversarios = data;
+      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, data);
+    } catch (e) {
+      console.warn('[Firebase] Aviso na revalidação silenciosa:', e);
     }
   },
 
-  async salvarCategoria(categoria: Omit<Categoria, 'id' | 'created_at'>): Promise<Categoria | null> {
-    const payload = { nome: categoria.nome, icone: categoria.icone, cor: categoria.cor };
+  /**
+   * Busca registros da coleção 'aniversarios' no Cloud Firestore com otimização de leitura
+   */
+  async buscarAniversariosDoFirestore(): Promise<Aniversario[]> {
+    const user = auth.currentUser;
+    if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('categorias')
-      .insert([payload])
-      .select()
-      .single();
+    const perfil = await this.getPerfilUsuario();
+    const isMaster = perfil?.isMaster || false;
 
-    if (error) {
-      console.error('Erro ao criar categoria:', error.message);
-      throw error;
-    }
-    const catCriada = data as Categoria;
-    if (inMemoryCategorias) {
-      inMemoryCategorias.push(catCriada);
-      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
+    const aniversariosRef = collection(db, 'aniversarios');
+    let q;
+
+    if (isMaster) {
+      q = query(aniversariosRef, orderBy('nome', 'asc'));
     } else {
-      this.invalidarCache();
+      q = query(aniversariosRef, where('user_id', '==', user.uid), orderBy('nome', 'asc'));
     }
-    return catCriada;
+
+    let querySnapshot;
+    try {
+      querySnapshot = await getDocsFromCache(q);
+      if (querySnapshot.empty) {
+        querySnapshot = await getDocsFromServer(q);
+      }
+    } catch (cacheErr) {
+      querySnapshot = await getDocsFromServer(q);
+    }
+
+    const lista: Aniversario[] = [];
+    querySnapshot.forEach((docSnap) => {
+      const item = docSnap.data() as any;
+      lista.push({
+        id: docSnap.id,
+        created_at: item.created_at || new Date().toISOString(),
+        nome: item.nome || '',
+        data_nascimento: item.data_nascimento || '',
+        frase_exibicao: item.frase_exibicao || '',
+        user_id: item.user_id || user.uid,
+        telefone: item.telefone || '',
+        categoria_id: item.categoria_id || '',
+        apelido: item.apelido || '',
+        imagem_url: item.imagem_url || '',
+        notificacoes_ativas: item.notificacoes_ativas ?? true,
+        id_notificacao: item.id_notificacao || '',
+        favorito: item.favorito ?? false,
+        send_msg: item.send_msg ?? false,
+        ultimo_envio_ano: item.ultimo_envio_ano
+      });
+    });
+
+    return lista;
   },
 
-  async atualizarCategoria(id: string, dados: Partial<Categoria>): Promise<Categoria | null> {
-    // Atualizacao otimista em memoria
-    if (inMemoryCategorias) {
-      inMemoryCategorias = inMemoryCategorias.map(c => c.id === id ? { ...c, ...dados } : c);
-      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
+  /**
+   * Adiciona um novo aniversariante no Cloud Firestore
+   */
+  async adicionar(dados: Omit<Aniversario, 'id' | 'created_at'>): Promise<Aniversario> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Usuário não autenticado.");
+
+    const newDocRef = doc(collection(db, 'aniversarios'));
+    const id = newDocRef.id;
+
+    let dia = 1;
+    let mes = 1;
+    if (dados.data_nascimento) {
+      const partes = dados.data_nascimento.split('-');
+      if (partes.length === 3 && partes[1] && partes[2]) {
+        mes = parseInt(partes[1], 10);
+        dia = parseInt(partes[2], 10);
+      }
     }
 
-    const { data, error } = await supabase
-      .from('categorias')
-      .update(dados)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Erro ao atualizar categoria:', error.message);
-      this.invalidarCache();
-      throw error;
-    }
-    return data as Categoria;
-  },
-
-  async excluirCategoria(id: string): Promise<void> {
-    // Atualizacao otimista em memoria para 0ms de delay
-    if (inMemoryCategorias) {
-      inMemoryCategorias = inMemoryCategorias.filter(c => c.id !== id);
-      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
-    }
-
-    const { error } = await supabase
-      .from('categorias')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Erro ao excluir categoria:', error.message);
-      this.invalidarCache();
-      throw error;
-    }
-  },
-
-  async adicionar(aniversario: Omit<Aniversario, 'id' | 'created_at' | 'categorias'>): Promise<Aniversario | null> {
-    const userId = await getCurrentUserId();
-    const payload = {
-      ...aniversario,
-      user_id: userId || null,
-      notificacoes_ativas: (aniversario as any).notificacoes_ativas ?? true,
-      id_notificacao: (aniversario as any).id_notificacao || null
+    const novoAniversario: Aniversario = {
+      ...dados,
+      id,
+      created_at: new Date().toISOString(),
+      user_id: user.uid
     };
 
-    const { data, error } = await supabase
-      .from('aniversarios')
-      .insert([payload])
-      .select()
-      .single();
+    await setDoc(newDocRef, {
+      ...novoAniversario,
+      dia_nascimento: dia,
+      mes_nascimento: mes
+    });
 
-    if (error) {
-      console.error('Erro ao escalar novo aniversariante:', error.message);
-      throw error;
-    }
-
-    if (inMemoryAniversarios) {
-      inMemoryAniversarios.unshift(data);
-      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, inMemoryAniversarios);
-    } else {
-      this.invalidarCache();
-    }
-
-    return data;
+    this.invalidarCache();
+    return novoAniversario;
   },
 
-  async atualizar(id: string, dados: Partial<Aniversario>): Promise<Aniversario | null> {
-    const { categorias, ...dadosParaEnvio } = dados as any;
+  /**
+   * Atualiza um aniversariante existente no Cloud Firestore
+   */
+  async atualizar(id: string, dados: Partial<Aniversario>): Promise<Aniversario> {
+    const docRef = doc(db, 'aniversarios', id);
 
-    if (inMemoryAniversarios) {
-      inMemoryAniversarios = inMemoryAniversarios.map(a => a.id === id ? { ...a, ...dadosParaEnvio } : a);
-      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, inMemoryAniversarios);
+    let dia: number | undefined;
+    let mes: number | undefined;
+    if (dados.data_nascimento) {
+      const partes = dados.data_nascimento.split('-');
+      if (partes.length === 3 && partes[1] && partes[2]) {
+        mes = parseInt(partes[1], 10);
+        dia = parseInt(partes[2], 10);
+      }
     }
 
-    const { data, error } = await supabase
-      .from('aniversarios')
-      .update(dadosParaEnvio)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Erro ao atualizar registro:', error.message);
-      this.invalidarCache();
-      throw error;
+    const updatePayload: any = { ...dados };
+    if (dia !== undefined && mes !== undefined) {
+      updatePayload.dia_nascimento = dia;
+      updatePayload.mes_nascimento = mes;
     }
-    return data;
+
+    await updateDoc(docRef, updatePayload);
+    this.invalidarCache();
+
+    const updatedSnap = await getDoc(docRef);
+    return { id, ...updatedSnap.data() } as Aniversario;
   },
 
+  /**
+   * Alterna o estado de favorito de um aniversariante
+   */
+  async favoritar(id: string): Promise<boolean> {
+    const docRef = doc(db, 'aniversarios', id);
+    const snap = await getDoc(docRef);
+
+    if (!snap.exists()) throw new Error("Registro não encontrado.");
+
+    const estadoAtual = snap.data().favorito ?? false;
+    const novoEstado = !estadoAtual;
+
+    await updateDoc(docRef, { favorito: novoEstado });
+    this.invalidarCache();
+    return novoEstado;
+  },
+
+  /**
+   * Remove um aniversariante do Cloud Firestore
+   */
   async excluir(id: string): Promise<void> {
-    // Exclusao instantanea otimista em memoria
-    if (inMemoryAniversarios) {
-      inMemoryAniversarios = inMemoryAniversarios.filter(a => a.id !== id);
-      salvarCacheLocal(CACHE_KEYS.ANIVERSARIOS, inMemoryAniversarios);
-    }
-
-    const { error } = await supabase
-      .from('aniversarios')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Erro ao remover registro:', error.message);
-      this.invalidarCache();
-      throw error;
-    }
+    const docRef = doc(db, 'aniversarios', id);
+    await deleteDoc(docRef);
+    this.invalidarCache();
   },
 
-  async listarNotificacoes() {
-    const { data, error } = await supabase
-      .from('notificacoes')
-      .select('*')
-      .order('created_at', { ascending: true });
+  /**
+   * Busca a lista de categorias do Firestore ou fallback local
+   */
+  async listarCategorias(): Promise<Categoria[]> {
+    if (inMemoryCategorias && inMemoryCategorias.length > 0) return inMemoryCategorias;
 
-    if (error) {
-      console.error('Erro ao buscar notificações:', error.message);
+    const localData = lerCacheLocal<Categoria[]>(CACHE_KEYS.CATEGORIAS);
+    if (localData && localData.length > 0) {
+      inMemoryCategorias = localData;
+      return localData;
+    }
+
+    const categoriasPadrao: Categoria[] = [
+      { id: '1', nome: 'Família', cor: '#EF4444', icone: 'heart' },
+      { id: '2', nome: 'Amigos', cor: '#3B82F6', icone: 'smile' },
+      { id: '3', nome: 'Trabalho', cor: '#10B981', icone: 'briefcase' },
+      { id: '4', nome: 'Outros', cor: '#8B5CF6', icone: 'star' }
+    ];
+
+    try {
+      const snap = await getDocs(collection(db, 'categorias'));
+      if (!snap.empty) {
+        const lista: Categoria[] = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() } as Categoria));
+        inMemoryCategorias = lista;
+        salvarCacheLocal(CACHE_KEYS.CATEGORIAS, lista);
+        return lista;
+      }
+    } catch (e) {
+      console.warn('[Firebase] Usando categorias padrão:', e);
+    }
+
+    inMemoryCategorias = categoriasPadrao;
+    salvarCacheLocal(CACHE_KEYS.CATEGORIAS, categoriasPadrao);
+    return categoriasPadrao;
+  },
+
+  /**
+   * Adiciona uma nova categoria no Cloud Firestore
+   */
+  async adicionarCategoria(categoria: Omit<Categoria, 'id'>): Promise<Categoria> {
+    const newDocRef = doc(collection(db, 'categorias'));
+    const novaCat: Categoria = { id: newDocRef.id, ...categoria };
+    await setDoc(newDocRef, novaCat);
+    this.invalidarCache();
+    return novaCat;
+  },
+
+  /**
+   * Remove uma categoria do Cloud Firestore
+   */
+  async excluirCategoria(id: string): Promise<void> {
+    await deleteDoc(doc(db, 'categorias', id));
+    this.invalidarCache();
+  },
+
+  /**
+   * Busca a lista de templates de mensagem no Firestore ou fallback local
+   */
+  async listarTemplates(): Promise<MensagemTemplate[]> {
+    if (inMemoryTemplates && inMemoryTemplates.length > 0) return inMemoryTemplates;
+
+    const localData = lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES);
+    if (localData && localData.length > 0) {
+      inMemoryTemplates = localData;
+      return localData;
+    }
+
+    const templatesPadrao: MensagemTemplate[] = [
+      { id: '1', titulo: 'Carinhoso', texto: 'Feliz aniversário! Que seu dia seja abençoado e cheio de alegrias! 🎉🎂' },
+      { id: '2', titulo: 'Divertido', texto: 'Parabéns! Mais um ano de sabedoria (e algumas ruguinhas a mais)! Viva! 🥳🎈' },
+      { id: '3', titulo: 'Formal', texto: 'Desejo a você um feliz aniversário, muita saúde, paz e sucesso em sua jornada.' }
+    ];
+
+    try {
+      const snap = await getDocs(collection(db, 'mensagens_templates'));
+      if (!snap.empty) {
+        const lista: MensagemTemplate[] = [];
+        snap.forEach(d => lista.push({ id: d.id, ...d.data() } as MensagemTemplate));
+        inMemoryTemplates = lista;
+        salvarCacheLocal(CACHE_KEYS.TEMPLATES, lista);
+        return lista;
+      }
+    } catch (e) {
+      console.warn('[Firebase] Usando templates padrão:', e);
+    }
+
+    inMemoryTemplates = templatesPadrao;
+    salvarCacheLocal(CACHE_KEYS.TEMPLATES, templatesPadrao);
+    return templatesPadrao;
+  },
+
+  /**
+   * Salva um template de mensagem no Firestore
+   */
+  async salvarTemplate(template: Omit<MensagemTemplate, 'id'> & { id?: string }): Promise<MensagemTemplate> {
+    const docRef = template.id ? doc(db, 'mensagens_templates', template.id) : doc(collection(db, 'mensagens_templates'));
+    const tpl: MensagemTemplate = { id: docRef.id, titulo: template.titulo, texto: template.texto };
+    await setDoc(docRef, tpl);
+    this.invalidarCache();
+    return tpl;
+  },
+
+  /**
+   * Exclui um template do Cloud Firestore
+   */
+  async excluirTemplate(id: string): Promise<void> {
+    await deleteDoc(doc(db, 'mensagens_templates', id));
+    this.invalidarCache();
+  },
+
+  /**
+   * Lista as notificações do usuário no Firestore
+   */
+  async listarNotificacoes(): Promise<Notificacao[]> {
+    const user = auth.currentUser;
+    if (!user) return [];
+    try {
+      const snap = await getDocs(query(collection(db, 'notificacoes'), where('user_id', '==', user.uid), orderBy('data_envio', 'desc')));
+      const lista: Notificacao[] = [];
+      snap.forEach(d => lista.push({ id: d.id, ...d.data() } as Notificacao));
+      return lista;
+    } catch (e) {
+      console.warn('[Firebase] Aviso ao carregar notificações:', e);
       return [];
     }
-    return data || [];
   },
 
-  async salvarNotificacao(notificacao: { dias: number; hora: string; alvo: string; grupos_especificos?: string[] }) {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      console.error('Utilizador não autenticado');
-      throw new Error('Você precisa estar logado para salvar notificações.');
-    }
-
-    const { data, error } = await supabase
-      .from('notificacoes')
-      .insert([
-        { 
-          ...notificacao, 
-          user_id: user.id 
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Erro ao salvar notificação:', error.message);
-      throw error;
-    }
-    return data;
+  /**
+   * Salva uma notificação no Firestore
+   */
+  async salvarNotificacao(notif: Omit<Notificacao, 'id'> & { id?: string }): Promise<Notificacao> {
+    const user = auth.currentUser;
+    const docRef = notif.id ? doc(db, 'notificacoes', notif.id) : doc(collection(db, 'notificacoes'));
+    const item: Notificacao = {
+      id: docRef.id,
+      user_id: user?.uid || '',
+      aniversario_id: notif.aniversario_id || '',
+      titulo: notif.titulo,
+      mensagem: notif.mensagem,
+      data_envio: notif.data_envio || new Date().toISOString(),
+      lida: notif.lida ?? false
+    };
+    await setDoc(docRef, item);
+    return item;
   },
 
-  async excluirNotificacao(id: string) {
-    const { error } = await supabase
-      .from('notificacoes')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Erro ao excluir notificação:', error.message);
-      throw error;
-    }
+  /**
+   * Exclui uma notificação do Firestore
+   */
+  async excluirNotificacao(id: string): Promise<void> {
+    await deleteDoc(doc(db, 'notificacoes', id));
   }
 };

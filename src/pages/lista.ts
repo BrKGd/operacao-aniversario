@@ -117,9 +117,9 @@ export async function montarLista(container: HTMLElement) {
             : templatesGlobais;
     
         listContainer.innerHTML = filtrados.map(t => `
-            <div class="template-item-cal js-send-zap" data-tel="${tel}" data-msg="${encodeURIComponent(t.conteudo)}">
+            <div class="template-item-cal js-send-zap" data-tel="${tel}" data-msg="${encodeURIComponent(t.conteudo || t.texto || '')}">
                 <div class="template-info">
-                    <span class="badge-categoria-msg">${t.tipo}</span>
+                    <span class="badge-categoria-msg">${t.tipo || 'Mensagem'}</span>
                     <p class="template-texto-cal"></p>
                 </div>
                 <div class="btn-enviar-template-cal">
@@ -128,7 +128,8 @@ export async function montarLista(container: HTMLElement) {
             </div>`).join('');
     
         listContainer.querySelectorAll('.template-texto-cal').forEach((el, index) => {
-            if (filtrados[index]) (el as HTMLElement).textContent = filtrados[index].conteudo;
+            const tpl = filtrados[index];
+            if (tpl) (el as HTMLElement).textContent = tpl.conteudo || tpl.texto || '';
         });
     };
 

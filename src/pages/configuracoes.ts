@@ -259,7 +259,7 @@ export async function montarConfiguracoes(container: HTMLElement) {
 
         // 4. Instalar Aplicativo (PWA)
         document.getElementById('btnInstalarPWA')?.addEventListener('click', () => {
-            dispararInstalacaoPWA((aceitou) => {
+            dispararInstalacaoPWA((aceitou: boolean) => {
                 if (aceitou) {
                     modalAlerta.show({
                         title: 'Aplicativo Instalado!',
