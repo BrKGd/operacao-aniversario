@@ -23,10 +23,22 @@ async function inicializar() {
     const temaSalvo = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', temaSalvo);
 
-    // Registro do Service Worker PWA
+    // Registro do Service Worker PWA com verificação instantânea de atualização
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then((reg) => {
             console.log('[PWA] Service Worker ativo:', reg.scope);
+            reg.update();
+            reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                if (installingWorker) {
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('[PWA] Nova versão instalada! Recarregando...');
+                            window.location.reload();
+                        }
+                    };
+                }
+            };
         }).catch((err) => {
             console.warn('[PWA] Aviso ao registrar Service Worker:', err);
         });

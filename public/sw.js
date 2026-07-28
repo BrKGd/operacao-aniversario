@@ -1,23 +1,23 @@
-const CACHE_NAME = 'leao-festivo-v1';
+const CACHE_NAME = 'leao-festivo-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './favicon.ico',
-  './favicon.svg'
+  './favicon.ico'
 ];
 
-// 1. Instalacao do Service Worker
+// 1. Instalação do Service Worker com skipWaiting imediato
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[PWA SW] Pré-carregando arquivos estáticos...');
+      console.log('[PWA SW] Pré-carregando ativos...');
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// 2. Ativacao e Limpeza de Caches Antigos
+// 2. Ativação e Limpeza Imediata de Caches Antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -33,14 +33,31 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Estrategia Stale-While-Revalidate para requisições de assets
+// 3. Estratégia Network-First para navegação HTML / index.html e Stale-While-Revalidate para o restante
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Não interceptar requisições para a API do Supabase
+  // Não interceptar requisições do Supabase API
   if (url.origin.includes('supabase.co')) return;
 
+  // Para navegação principal (HTML): Network-First para garantir atualizações em tempo real no PWA Mobile
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/operacao-aniversario/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Para scripts, CSS e imagens: Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
@@ -58,7 +75,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 4. Recebimento de Notificacoes Push em Segundo Plano
+// 4. Notificações Push
 self.addEventListener('push', (event) => {
   let data = { title: '🎉 Leão Festivo', body: 'Confira os aniversariantes do dia!' };
   if (event.data) {
@@ -82,7 +99,7 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// 5. Clique na Notificacao
+// 5. Clique na Notificação
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
