@@ -143,7 +143,7 @@ export const aniversarioService = {
       nome,
       avatar,
       role: roleFinal as 'admin' | 'user',
-      status: statusFinal as 'active' | 'blocked',
+      status: statusFinal as 'active' | 'blocked' | 'deleted',
       isAdmin,
       created_at: user.created_at
     };
@@ -312,7 +312,7 @@ export const aniversarioService = {
   /**
    * Altera o status de um usuario (active / blocked)
    */
-  async alterarStatusUsuario(emailTarget: string, novoStatus: 'active' | 'blocked') {
+  async alterarStatusUsuario(emailTarget: string, novoStatus: 'active' | 'blocked' | 'deleted') {
     const perfil = await this.getPerfilUsuario();
     if (!perfil?.isAdmin) throw new Error("Apenas administradores podem bloquear usuarios.");
 
