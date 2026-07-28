@@ -271,7 +271,10 @@ function montarLayoutEstrutural() {
                         <i data-lucide="sparkles" class="header-icon-gold"></i>
                         <span class="app-title-header">leão festivo</span>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <button id="btnConfigTop" title="Painel de Ajustes" class="btn-logout-minimal">
+                            <i data-lucide="settings-2"></i>
+                        </button>
                         <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-logout-minimal">
                             <i data-lucide="user"></i>
                         </button>
@@ -287,6 +290,10 @@ function montarLayoutEstrutural() {
             <nav id="app-nav" class="nav-bottom-container"></nav>
         </div>
     `;
+
+    document.getElementById('btnConfigTop')?.addEventListener('click', () => {
+        irPara('config');
+    });
 
     document.getElementById('btnPerfilTop')?.addEventListener('click', () => {
         irPara('perfil');
@@ -353,6 +360,11 @@ function renderizarNavegacao() {
                 <button class="nav-item" data-route="calendario" onclick="window.navegar('calendario')">
                     <i data-lucide="calendar-heart"></i>
                     <span>Datas</span>
+                </button>
+
+                <button class="nav-item" data-route="config" onclick="window.navegar('config')">
+                    <i data-lucide="settings-2"></i>
+                    <span>Ajustes</span>
                 </button>
 
                 <button class="nav-item" data-route="perfil" onclick="window.navegar('perfil')">
