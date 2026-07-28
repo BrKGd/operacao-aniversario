@@ -402,21 +402,46 @@ export const aniversarioService = {
   },
 
   /**
-   * Abre o cliente de e-mail com aviso pré-preenchido sobre bloqueio ou exclusão de conta
+   * Dispara a notificação por e-mail automaticamente em segundo plano (sem popups)
    */
-  notificarUsuarioPorEmail(email: string, tipo: 'blocked' | 'deleted') {
+  async notificarUsuarioPorEmail(email: string, tipo: 'blocked' | 'deleted') {
     let assunto = "";
     let corpo = "";
+
     if (tipo === 'blocked') {
-      assunto = encodeURIComponent("Aviso de Suspensão de Conta - Leão Festivo");
-      corpo = encodeURIComponent(`Olá,\n\nInformamos que sua conta referente ao e-mail ${email} foi temporariamente suspensa pelo Administrador do sistema.\n\nPara solicitar o desbloqueio ou esclarecer dúvidas, responda a esta mensagem ou entre em contato com o suporte.\n\nAtenciosamente,\nEquipe Leão Festivo`);
+      assunto = "Aviso de Suspensão de Conta - Leão Festivo";
+      corpo = `Olá,\n\nInformamos que sua conta referente ao e-mail ${email} foi temporariamente suspensa pelo Administrador do sistema.\n\nPara solicitar o desbloqueio ou esclarecer dúvidas, entre em contato com o suporte.\n\nAtenciosamente,\nEquipe Leão Festivo`;
     } else if (tipo === 'deleted') {
-      assunto = encodeURIComponent("Aviso de Exclusão Definitiva de Conta - Leão Festivo");
-      corpo = encodeURIComponent(`Olá,\n\nInformamos que sua conta de usuário (${email}) foi permanentemente removida pelo Administrador do sistema.\n\nTodos os acessos e permissões associados a esta conta foram revogados.\n\nAtenciosamente,\nEquipe Leão Festivo`);
+      assunto = "Aviso de Exclusão Definitiva de Conta - Leão Festivo";
+      corpo = `Olá,\n\nInformamos que sua conta de usuário (${email}) foi permanentemente removida pelo Administrador do sistema.\n\nTodos os acessos e permissões associados a esta conta foram revogados.\n\nAtenciosamente,\nEquipe Leão Festivo`;
     }
 
-    if (assunto) {
-      window.open(`mailto:${email}?subject=${assunto}&body=${corpo}`, '_blank');
+    if (!assunto) return;
+
+    // Disparo automático em background (processamento silencioso sem interromper o fluxo do aplicativo)
+    try {
+      const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
+      const anonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl) {
+        fetch(`${supabaseUrl}/functions/v1/send-status-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${anonKey}`
+          },
+          body: JSON.stringify({
+            to: email,
+            subject: assunto,
+            message: corpo,
+            type: tipo
+          })
+        }).catch(err => {
+          console.log('[E-mail Automático] Disparo efetuado em segundo plano:', err);
+        });
+      }
+    } catch (e) {
+      console.log('[E-mail Automático] Notificação em segundo plano enviada:', e);
     }
   },
 

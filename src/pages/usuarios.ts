@@ -240,7 +240,7 @@ function vincularEventosUsuarios(container: HTMLElement, onRefresh: () => void) 
                     modalAlerta.close();
                     onRefresh();
                     modalAlerta.show({ 
-                        message: `A conta ${email} foi marcada como excluída e o e-mail de aviso foi acionado!`, 
+                        message: `A conta ${email} foi excluída com sucesso e o e-mail de aviso foi enviado automaticamente!`, 
                         type: 'success' 
                     });
                 } catch (e: any) {
