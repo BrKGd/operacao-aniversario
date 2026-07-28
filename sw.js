@@ -1,4 +1,4 @@
-const CACHE_NAME = 'leao-festivo-v2';
+const CACHE_NAME = 'operacao-aniversario-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -38,8 +38,8 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Não interceptar requisições do Supabase API
-  if (url.origin.includes('supabase.co')) return;
+  // Não interceptar requisições de APIs (Supabase, Firebase, Google APIs)
+  if (url.origin.includes('supabase.co') || url.origin.includes('googleapis.com') || url.origin.includes('firebase')) return;
 
   // Para navegação principal (HTML): Network-First para garantir atualizações em tempo real no PWA Mobile
   if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/operacao-aniversario/')) {
