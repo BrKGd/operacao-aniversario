@@ -99,7 +99,9 @@ export function montarTelaRegistro() {
             window.location.reload();
         } catch (error: any) {
             let msg = "Erro ao realizar cadastro.";
-            if (error.code === 'auth/email-already-in-use') {
+            if (error.code === 'auth/api-key-not-valid') {
+                msg = "⚠️ Credenciais do Firebase não configuradas! Cole sua API Key real no arquivo .env.";
+            } else if (error.code === 'auth/email-already-in-use') {
                 msg = "Este e-mail já está em uso por outra conta.";
             } else if (error.code === 'auth/invalid-email') {
                 msg = "O e-mail digitado é inválido.";

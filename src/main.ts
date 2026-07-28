@@ -173,7 +173,9 @@ function configurarLogin() {
         } catch (error: any) {
             if (errEl) {
                 let msg = "E-mail ou senha incorretos.";
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                if (error.code === 'auth/api-key-not-valid') {
+                    msg = "⚠️ Credenciais do Firebase não configuradas! Cole sua API Key real no arquivo .env.";
+                } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                     msg = "E-mail ou senha incorretos.";
                 } else if (error.message) {
                     msg = error.message;
