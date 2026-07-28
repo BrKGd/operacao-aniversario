@@ -9,8 +9,6 @@ const CACHE_KEYS = {
   TIMESTAMP: 'leao_cache_timestamp'
 };
 
-const TTL_MS = 5 * 60 * 1000; // 5 minutos de validade antes da revalidação automatizada
-
 let inMemoryAniversarios: Aniversario[] | null = null;
 let inMemoryCategorias: Categoria[] | null = null;
 let inMemoryTemplates: MensagemTemplate[] | null = null;

@@ -286,6 +286,11 @@ function montarLayoutEstrutural() {
             </header>
             
             <main id="main-content" class="main-content"></main>
+
+            <!-- BOTÃO FLUTUANTE DE ADICIONAR (FAB) COM ANIMAÇÃO DE ROTAÇÃO NO CANTO INFERIOR DIREITO -->
+            <button id="fabAddFloating" class="fab-floating-btn" title="Adicionar Aniversariante" onclick="window.navegar('form')">
+                <i data-lucide="plus"></i>
+            </button>
             
             <nav id="app-nav" class="nav-bottom-container"></nav>
         </div>
@@ -350,12 +355,6 @@ function renderizarNavegacao() {
                     <i data-lucide="contact-2"></i>
                     <span>Pessoas</span>
                 </button>
-
-                <div class="fab-item-wrapper">
-                    <button class="fab-button" onclick="window.navegar('form')">
-                        <i data-lucide="plus"></i>
-                    </button>
-                </div>
 
                 <button class="nav-item" data-route="calendario" onclick="window.navegar('calendario')">
                     <i data-lucide="calendar-heart"></i>

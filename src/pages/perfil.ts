@@ -114,7 +114,7 @@ export async function montarPerfil(container: HTMLElement) {
             </div>
         `;
 
-        createIcons({ icons: ICON_MAP });
+        createIcons({ icons: ICON_MAP, root: container });
 
         // Voltar
         document.getElementById('btnVoltarPerfil')?.addEventListener('click', () => {
@@ -209,7 +209,7 @@ function abrirModalAlterarNome(nomeAtual: string, onSave: (novoNome: string) => 
     `;
 
     document.body.appendChild(modalOverlay);
-    createIcons({ icons: ICON_MAP });
+    createIcons({ icons: ICON_MAP, root: modalOverlay });
 
     modalOverlay.querySelector('#btnCancelNome')?.addEventListener('click', () => modalOverlay.remove());
     modalOverlay.querySelector('#btnConfirmNome')?.addEventListener('click', () => {
@@ -262,7 +262,7 @@ function abrirModalAlterarAvatar(avatarAtual: string, onSave: (novoAvatar: strin
     `;
 
     document.body.appendChild(modalOverlay);
-    createIcons({ icons: ICON_MAP });
+    createIcons({ icons: ICON_MAP, root: modalOverlay });
 
     let urlSelecionada = avatarAtual;
 
@@ -310,7 +310,7 @@ function abrirModalAlterarSenha() {
     `;
 
     document.body.appendChild(modalOverlay);
-    createIcons({ icons: ICON_MAP });
+    createIcons({ icons: ICON_MAP, root: modalOverlay });
 
     modalOverlay.querySelector('#btnCancelSenha')?.addEventListener('click', () => modalOverlay.remove());
     modalOverlay.querySelector('#btnConfirmSenha')?.addEventListener('click', async () => {
