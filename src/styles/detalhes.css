@@ -125,50 +125,125 @@ body[data-theme='dark'] .dropdown-options {
 .name-info span { font-size: 0.75rem; color: var(--fec-vermelho-vibrante); font-weight: bold; text-transform: uppercase; }
 
 .btn-more-options {
-    background: transparent;
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    background: rgba(0, 51, 153, 0.05);
+    border: 1px solid rgba(0, 51, 153, 0.1);
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--fec-azul-vibrante);
+    transition: all 0.2s ease;
 }
 
-/* --- DROPDOWN --- */
+.btn-more-options:hover {
+    background: rgba(0, 51, 153, 0.12);
+    transform: scale(1.05);
+}
+
+body[data-theme='dark'] .btn-more-options {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--fec-azul-vibrante);
+}
+
+/* --- DROPDOWN POPUP MODERNIZADO --- */
 .dropdown-options {
     position: absolute;
-    right: 0px;
-    top: 50px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    display: none;
+    right: 5px;
+    top: 60px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 16px 36px rgba(0, 31, 63, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
     flex-direction: column;
-    min-width: 150px;
-    border: 2px solid var(--fec-bg-dark);
-    z-index: 120;
-    padding: 2px;
+    min-width: 170px;
+    border: 1px solid rgba(0, 31, 63, 0.12);
+    z-index: 999;
+    padding: 6px;
+    gap: 4px;
+    
+    /* Animação suave de entrada */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transform-origin: top right;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                visibility 0.2s ease;
+    pointer-events: none;
 }
-.dropdown-options.active { display: flex; }
+
+.dropdown-options.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
 .dropdown-options button {
     background: transparent;
-    border: none;
-    padding: 12px 15px;
+    border: 1px solid transparent;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
+    gap: 12px;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: var(--fec-azul-vibrante);
-    border-radius: 10px;
+    color: #1e293b;
+    border-radius: 12px;
     cursor: pointer;
     text-align: left;
+    transition: all 0.2s ease;
+    width: 100%;
 }
-.dropdown-options button:hover { background: white; border: 1px solid var(--fec-azul-vibrante);}
-.dropdown-options .delete-opt { color: var(--fec-vermelho-vibrante); }
+
+.dropdown-options button i {
+    width: 18px;
+    height: 18px;
+    color: var(--fec-azul-vibrante);
+    transition: transform 0.2s ease;
+}
+
+.dropdown-options button:hover {
+    background: rgba(0, 51, 153, 0.07);
+    color: var(--fec-azul-vibrante);
+    border-color: rgba(0, 51, 153, 0.1);
+    transform: translateX(3px);
+}
+
+.dropdown-options button:hover i {
+    transform: scale(1.15);
+}
+
+.dropdown-options .delete-opt {
+    color: #ef4444;
+}
+
+.dropdown-options .delete-opt i {
+    color: #ef4444;
+}
+
+.dropdown-options .delete-opt:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+/* Oculta o FAB flutuante de adicionar (+) quando qualquer drawer estiver aberto */
+body:has(.drawer-overlay-premium.active) #fabAddFloating,
+body:has(.drawer-overlay-premium.active) .fab-floating-btn,
+body:has(.drawer-overlay-premium.active) .fab-button,
+.drawer-overlay-premium.active ~ #fabAddFloating,
+.drawer-overlay-premium.active ~ .fab-floating-btn {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: scale(0.4) translateY(25px) !important;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease !important;
+}
 
 /* --- CONTEÚDO --- */
 .section-details-white { padding: 60px 24px 30px; flex: 1; display: flex; flex-direction: column; }

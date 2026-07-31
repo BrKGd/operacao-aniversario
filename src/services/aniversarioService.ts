@@ -353,10 +353,20 @@ export const aniversarioService = {
     const user = auth.currentUser;
     if (!user) throw new Error("Usuário não autenticado.");
 
-    await updateProfile(user, {
-      displayName: dados.nome || user.displayName,
-      photoURL: dados.avatar || user.photoURL
-    });
+    // Firebase Auth limita photoURL a 2048 chars. Se for base64 longo, salva fallback no Auth e completo no Firestore.
+    let photoURLForAuth = dados.avatar || user.photoURL;
+    if (photoURLForAuth && photoURLForAuth.startsWith('data:') && photoURLForAuth.length > 2000) {
+      photoURLForAuth = `https://ui-avatars.com/api/?name=${encodeURIComponent(dados.nome || user.displayName || 'Usuario')}&background=0052FF&color=fff&bold=true`;
+    }
+
+    try {
+      await updateProfile(user, {
+        displayName: dados.nome || user.displayName,
+        photoURL: photoURLForAuth
+      });
+    } catch (errAuth) {
+      console.warn('[Firebase] Aviso ao atualizar foto no Firebase Auth profile:', errAuth);
+    }
 
     try {
       await updateDoc(doc(db, 'profiles', user.uid), {
@@ -365,7 +375,7 @@ export const aniversarioService = {
         updated_at: new Date().toISOString()
       });
     } catch (e) {
-      console.warn('[Firebase] Aviso ao atualizar documento profile:', e);
+      console.warn('[Firebase] Aviso ao atualizar documento profile no Firestore:', e);
     }
 
     return user;

@@ -1,6 +1,25 @@
 /**
  * Utilitário de Mensagens - Padrão Tricolor
  */
+
+/**
+ * Formata um número de telefone para o padrão internacional do WhatsApp.
+ * Se o número possuir 10 ou 11 dígitos (DDD + número), adiciona o código de país '55' (Brasil).
+ */
+export const formatarTelefoneWhatsapp = (telefone?: string): string => {
+    if (!telefone) return '';
+    let limpo = telefone.replace(/\D/g, '');
+    if (!limpo) return '';
+
+    // Se tiver 10 ou 11 dígitos (DDD + número no Brasil), adiciona o DDI 55
+    if (limpo.length === 10 || limpo.length === 11) {
+        limpo = `55${limpo}`;
+    } else if (!limpo.startsWith('55') && limpo.length <= 11) {
+        limpo = `55${limpo}`;
+    }
+    return limpo;
+};
+
 export const gerarLinkWhatsapp = (nome: string, telefone?: string): string => {
     const mensagens: string[] = [
         `Parabéns, ${nome}! Que seu dia seja repleto de alegrias e muitas conquistas. 🎂`,
@@ -17,8 +36,8 @@ export const gerarLinkWhatsapp = (nome: string, telefone?: string): string => {
     
     const textoEncodado = encodeURIComponent(mensagemSelecionada);
     
-    // Limpa o telefone de caracteres especiais (apenas números)
-    const telefoneLimpo = telefone ? telefone.replace(/\D/g, '') : '';
+    // Limpa e formata o telefone garantindo o DDI 55
+    const telefoneLimpo = formatarTelefoneWhatsapp(telefone);
     
     return `https://wa.me/${telefoneLimpo}?text=${textoEncodado}`;
 };

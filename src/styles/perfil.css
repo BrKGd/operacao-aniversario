@@ -286,6 +286,176 @@ body[data-theme='dark'] .action-title { color: #f8fafc; }
     transform: translateY(-2px);
 }
 
+/* --- MODAL DE ALTERAÇÃO DE AVATAR REDESENHADO --- */
+.perfil-avatar-modal-box {
+    max-width: 440px !important;
+    padding: 24px !important;
+    border-radius: 28px !important;
+    background: #ffffff;
+    border: 1px solid rgba(0, 82, 255, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 51, 153, 0.18);
+}
+
+body[data-theme='dark'] .perfil-avatar-modal-box {
+    background: #0f172a;
+    border-color: #1e293b;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+.perfil-avatar-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.perfil-avatar-modal-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(0, 82, 255, 0.1);
+    color: #0052FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+body[data-theme='dark'] .perfil-avatar-modal-icon {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+}
+
+.perfil-avatar-modal-titles {
+    display: flex;
+    flex-direction: column;
+}
+
+.perfil-avatar-modal-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+body[data-theme='dark'] .perfil-avatar-modal-title {
+    color: #f8fafc;
+}
+
+.perfil-avatar-modal-subtitle {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 2px 0 0 0;
+}
+
+body[data-theme='dark'] .perfil-avatar-modal-subtitle {
+    color: #94a3b8;
+}
+
+/* HERO PREVIEW INTERATIVO */
+.perfil-avatar-preview-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.perfil-avatar-preview-hero {
+    position: relative;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-bottom: 8px;
+    box-shadow: 0 10px 25px rgba(0, 82, 255, 0.25);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.perfil-avatar-preview-hero:hover {
+    transform: scale(1.06);
+    box-shadow: 0 14px 30px rgba(0, 82, 255, 0.4);
+}
+
+.perfil-avatar-preview-hero img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #0052FF;
+    background: #f1f5f9;
+}
+
+body[data-theme='dark'] .perfil-avatar-preview-hero img {
+    border-color: #38bdf8;
+    background: #1c2842;
+}
+
+/* HOVER OVERLAY COM ÍCONE DE CÂMERA */
+.preview-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 82, 255, 0.75);
+    backdrop-filter: blur(2px);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.perfil-avatar-preview-hero:hover .preview-hero-overlay {
+    opacity: 1;
+}
+
+.preview-hero-overlay i {
+    width: 22px;
+    height: 22px;
+}
+
+.preview-hero-overlay span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.preview-hero-hint {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #0052FF;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 82, 255, 0.08);
+    padding: 4px 12px;
+    border-radius: 14px;
+}
+
+body[data-theme='dark'] .preview-hero-hint {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+}
+
+.perfil-avatar-preset-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+body[data-theme='dark'] .perfil-avatar-preset-label {
+    color: #94a3b8;
+}
+
 /* PRESET AVATARS GRID */
 .perfil-avatar-preset-grid {
     display: grid;
@@ -296,12 +466,12 @@ body[data-theme='dark'] .action-title { color: #f8fafc; }
 
 .avatar-preset-item {
     aspect-ratio: 1;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 2px solid transparent;
     padding: 4px;
     cursor: pointer;
     background: #f1f5f9;
-    transition: transform 0.2s, border-color 0.2s;
+    transition: all 0.2s ease;
 }
 
 body[data-theme='dark'] .avatar-preset-item {
@@ -311,15 +481,291 @@ body[data-theme='dark'] .avatar-preset-item {
 .avatar-preset-item img {
     width: 100%;
     height: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     object-fit: cover;
 }
 
 .avatar-preset-item:hover {
-    transform: scale(1.1);
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
 }
 
 .avatar-preset-item.active {
     border-color: #0052FF;
-    background: rgba(0, 82, 255, 0.15);
+    background: rgba(0, 82, 255, 0.12);
+    box-shadow: 0 0 14px rgba(0, 82, 255, 0.35);
+    transform: scale(1.05);
 }
+
+body[data-theme='dark'] .avatar-preset-item.active {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.2);
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+}
+
+/* INPUT DE URL PERFIL AVATAR */
+.perfil-avatar-url-input {
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 14px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.perfil-avatar-url-input:focus-within {
+    border-color: #0052FF;
+    background: #ffffff;
+}
+
+body[data-theme='dark'] .perfil-avatar-url-input {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body[data-theme='dark'] .perfil-avatar-url-input:focus-within {
+    border-color: #38bdf8;
+    background: #131b2e;
+}
+
+.perfil-avatar-url-input i {
+    width: 16px;
+    height: 16px;
+    color: #64748b;
+}
+
+.perfil-avatar-url-input input {
+    border: none !important;
+    background: transparent !important;
+    font-size: 0.82rem !important;
+    width: 100% !important;
+    padding: 6px 0 !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================================================
+   ESTILOS DO MODAL INTERATIVO DE CORTE (FEC CROPPER)
+   ========================================================================== */
+.fec-cropper-overlay {
+    backdrop-filter: blur(16px) !important;
+    background: rgba(4, 8, 16, 0.82) !important;
+}
+
+.fec-cropper-box {
+    max-width: 440px !important;
+    padding: 20px !important;
+    background: #ffffff;
+    border-radius: 28px !important;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+body[data-theme='dark'] .fec-cropper-box {
+    background: #0f172a;
+    border-color: #1e293b !important;
+    color: #f8fafc;
+}
+
+.fec-cropper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body[data-theme='dark'] .fec-cropper-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.fec-cropper-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--fec-text-main, #0f172a);
+}
+
+body[data-theme='dark'] .fec-cropper-title {
+    color: #f8fafc;
+}
+
+.fec-cropper-title i {
+    color: #0052FF;
+}
+
+.fec-cropper-btn-close {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.fec-cropper-btn-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #0f172a;
+}
+
+body[data-theme='dark'] .fec-cropper-btn-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+/* ÁREA DO CANVAS DO CROPPER */
+.fec-cropper-canvas-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 320px;
+    margin: 0 auto 16px auto;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #090d16;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+    touch-action: none;
+}
+
+#cropperCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+}
+
+/* MÁSCARA CIRCULAR DE GUIA DE CORTE */
+.fec-cropper-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 20px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.fec-cropper-mask::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 88%;
+    height: 88%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2.5px solid #0052FF;
+    box-shadow: 0 0 0 9999px rgba(9, 13, 22, 0.65), 0 0 20px rgba(0, 82, 255, 0.7);
+}
+
+/* BARRA DE FERRAMENTAS DO CROPPER */
+.fec-cropper-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+}
+
+body[data-theme='dark'] .fec-cropper-toolbar {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.fec-cropper-slider-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #64748b;
+}
+
+.fec-cropper-slider-group input[type="range"] {
+    flex: 1;
+    accent-color: #0052FF;
+    cursor: pointer;
+    height: 6px;
+    border-radius: 4px;
+}
+
+.fec-cropper-tools {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.fec-cropper-tool-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body[data-theme='dark'] .fec-cropper-tool-btn {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+}
+
+.fec-cropper-tool-btn:hover {
+    background: #0052FF;
+    color: #ffffff;
+    border-color: #0052FF;
+    transform: translateY(-2px);
+}
+
+/* RODAPÉ DO CROPPER */
+.fec-cropper-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fec-cropper-preview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+#cropperPreviewCanvas {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #0052FF;
+    box-shadow: 0 4px 10px rgba(0, 82, 255, 0.3);
+    background: #f1f5f9;
+}
+
+.fec-cropper-preview-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fec-cropper-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+

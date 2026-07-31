@@ -1,7 +1,6 @@
 import '../styles/perfil.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { modalAlerta } from '../utils/modalAlertas';
-import { compressImageFile } from '../utils/imageCompressor';
 import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import { 
@@ -245,10 +244,13 @@ function abrirModalAlterarNome(nomeAtual: string, onSave: (novoNome: string) => 
     });
 }
 
-// MODAL PARA ALTERAR AVATAR
+import { abrirCropperModal } from '../utils/imageCropper';
+
+// MODAL PARA ALTERAR AVATAR (REDESENHADO COM CROPPER & PREVIEW INTEGRADO)
 function abrirModalAlterarAvatar(avatarAtual: string, onSave: (novoAvatar: string) => void) {
     const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'fec-modal-overlay active';
+    modalOverlay.className = 'fec-modal-overlay active perfil-avatar-modal-overlay';
+    modalOverlay.style.zIndex = '15000';
 
     const avataresOpcoes = [
         'https://api.dicebear.com/7.x/bottts/svg?seed=Felix',
@@ -258,36 +260,60 @@ function abrirModalAlterarAvatar(avatarAtual: string, onSave: (novoAvatar: strin
         'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya',
         'https://api.dicebear.com/7.x/micah/svg?seed=Alex'
     ];
-    
+
+    let urlSelecionada = avatarAtual;
+
     modalOverlay.innerHTML = `
-        <div class="fec-modal-box modal-type-info" style="max-width: 440px;">
-            <div class="fec-modal-icon info">
-                <i data-lucide="camera"></i>
+        <div class="fec-modal-box modal-type-info perfil-avatar-modal-box">
+            <div class="perfil-avatar-modal-header">
+                <div class="perfil-avatar-modal-icon">
+                    <i data-lucide="camera"></i>
+                </div>
+                <div class="perfil-avatar-modal-titles">
+                    <h3 class="perfil-avatar-modal-title">Escolher Foto de Perfil</h3>
+                    <p class="perfil-avatar-modal-subtitle">Toque no avatar para enviar foto ou selecione uma ilustração</p>
+                </div>
             </div>
-            <div class="fec-modal-title">Escolher Avatar</div>
-            <div class="fec-modal-message">Selecione uma ilustração ou insira uma URL de imagem</div>
+
+            <!-- HERO PREVIEW INTERATIVO (CLIQUE PARA ENVIAR FOTO) -->
+            <div class="perfil-avatar-preview-section">
+                <div class="perfil-avatar-preview-hero" id="btnUploadAvatarHero" title="Clique para enviar ou cortar uma foto">
+                    <img id="imgAvatarPreviewModal" src="${avatarAtual}" alt="Preview do Avatar">
+                    <div class="preview-hero-overlay">
+                        <i data-lucide="camera"></i>
+                        <span>Alterar Foto</span>
+                    </div>
+                </div>
+                <span class="preview-hero-hint">
+                    <i data-lucide="sparkles"></i> Clique no avatar para enviar da galeria/câmera
+                </span>
+                <input type="file" id="inputFotoPerfilModal" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- GRID DE ILUSTRAÇÕES / PRESETS -->
+            <div class="perfil-avatar-preset-label">
+                <span>Ou escolha uma ilustração:</span>
+            </div>
 
             <div class="perfil-avatar-preset-grid">
                 ${avataresOpcoes.map(url => `
-                    <div class="avatar-preset-item ${avatarAtual === url ? 'active' : ''}" data-url="${url}">
+                    <div class="avatar-preset-item ${avatarAtual === url ? 'active' : ''}" data-url="${url}" title="Selecionar ilustração">
                         <img src="${url}">
                     </div>
                 `).join('')}
             </div>
 
-            <div style="margin-bottom: 16px;">
-                <label for="inputFotoPerfilModal" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 1.5px dashed rgba(0,82,255,0.4); border-radius: 14px; background: rgba(0,82,255,0.04); color: var(--fec-primary, #0052FF); font-weight: 700; font-size: 0.88rem; cursor: pointer;">
-                    <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
-                    <span>Carregar Foto da Galeria / Câmera</span>
-                </label>
-                <input type="file" id="inputFotoPerfilModal" accept="image/*" style="display: none;">
+            <!-- ENTRADA DE URL OPCIONAL -->
+            <div class="fec-input-group-line perfil-avatar-url-input">
+                <i data-lucide="link-2"></i>
+                <input type="text" class="catg-input-text" id="inUrlAvatar" placeholder="Cole a URL da imagem (https://...)" value="${avatarAtual.startsWith('http') && !avatarAtual.startsWith('data:') ? avatarAtual : ''}">
             </div>
-
-            <input type="text" class="catg-input-text" id="inUrlAvatar" placeholder="OU cole a URL de uma foto (https://...)" value="${avatarAtual.startsWith('http') ? avatarAtual : ''}" style="margin-bottom: 20px; font-size: 0.82rem;">
 
             <div class="fec-modal-footer">
                 <button class="btn-modal btn-modal-secondary" id="btnCancelAvatar">Cancelar</button>
-                <button class="btn-modal btn-modal-primary" id="btnConfirmAvatar">Salvar Foto</button>
+                <button class="btn-modal btn-modal-primary" id="btnConfirmAvatar">
+                    <i data-lucide="check"></i> Salvar Foto
+                </button>
             </div>
         </div>
     `;
@@ -295,40 +321,62 @@ function abrirModalAlterarAvatar(avatarAtual: string, onSave: (novoAvatar: strin
     document.body.appendChild(modalOverlay);
     createIcons({ icons: ICON_MAP, root: modalOverlay });
 
-    let urlSelecionada = avatarAtual;
-
+    const imgPreviewModal = modalOverlay.querySelector('#imgAvatarPreviewModal') as HTMLImageElement;
+    const inputUrl = modalOverlay.querySelector('#inUrlAvatar') as HTMLInputElement;
+    const btnUploadHero = modalOverlay.querySelector('#btnUploadAvatarHero');
     const inputFotoFile = modalOverlay.querySelector('#inputFotoPerfilModal') as HTMLInputElement;
-    inputFotoFile?.addEventListener('change', async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) {
-            try {
-                modalAlerta.showLoading("Processando foto...");
-                const compressedBase64 = await compressImageFile(file, { maxWidth: 500, maxHeight: 500, quality: 0.8 });
-                modalAlerta.close();
-                urlSelecionada = compressedBase64;
-                (modalOverlay.querySelector('#inUrlAvatar') as HTMLInputElement).value = compressedBase64;
-                modalAlerta.show({ message: "Foto pronta! Clique em Salvar Foto para confirmar.", type: "success" });
-            } catch (err) {
-                modalAlerta.close();
-            } finally {
-                inputFotoFile.value = '';
-            }
+
+    // Clique no avatar aciona o input de arquivo
+    btnUploadHero?.addEventListener('click', () => {
+        inputFotoFile.click();
+    });
+
+    // Atualiza preview ao digitar URL personalizada
+    inputUrl?.addEventListener('input', () => {
+        const urlTyped = inputUrl.value.trim();
+        if (urlTyped) {
+            urlSelecionada = urlTyped;
+            imgPreviewModal.src = urlTyped;
+            modalOverlay.querySelectorAll('.avatar-preset-item').forEach(i => i.classList.remove('active'));
         }
     });
 
+    // UPLOAD E ACIONAMENTO DO CROPPER
+    inputFotoFile?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+            abrirCropperModal(file, {
+                title: "Ajustar Foto do Perfil",
+                outputWidth: 500,
+                outputHeight: 500,
+                onCrop: (croppedBase64) => {
+                    urlSelecionada = croppedBase64;
+                    imgPreviewModal.src = croppedBase64;
+                    inputUrl.value = ""; // Limpa a URL de texto pois agora é imagem cortada
+                    modalOverlay.querySelectorAll('.avatar-preset-item').forEach(i => i.classList.remove('active'));
+                },
+                onCancel: () => {
+                    inputFotoFile.value = '';
+                }
+            });
+            inputFotoFile.value = '';
+        }
+    });
+
+    // SELEÇÃO DE AVATAR PRESET
     modalOverlay.querySelectorAll('.avatar-preset-item').forEach(item => {
         item.addEventListener('click', () => {
             modalOverlay.querySelectorAll('.avatar-preset-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
             urlSelecionada = (item as HTMLElement).dataset.url || avatarAtual;
-            (modalOverlay.querySelector('#inUrlAvatar') as HTMLInputElement).value = urlSelecionada;
+            imgPreviewModal.src = urlSelecionada;
+            inputUrl.value = urlSelecionada.startsWith('http') ? urlSelecionada : '';
         });
     });
 
     modalOverlay.querySelector('#btnCancelAvatar')?.addEventListener('click', () => modalOverlay.remove());
     modalOverlay.querySelector('#btnConfirmAvatar')?.addEventListener('click', () => {
-        const input = modalOverlay.querySelector('#inUrlAvatar') as HTMLInputElement;
-        const val = input.value.trim() || urlSelecionada;
+        const val = inputUrl.value.trim() || urlSelecionada;
         if (val) {
             modalOverlay.remove();
             onSave(val);

@@ -80,7 +80,6 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                         <div class="dropdown-options" id="dropdown-menu">
                             <button id="btn-editar-perfil"><i data-lucide="user-round-pen"></i> Editar Perfil</button>
                             <button id="btn-abrir-drawer"><i data-lucide="bookmark"></i> Mudar Grupo</button>
-                            <button id="btn-ir-notificacoes"><i data-lucide="bell"></i> Notificações</button>
                             <button class="delete-opt" id="btn-excluir-integrante"><i data-lucide="trash-2"></i> Excluir</button>
                         </div>
                     </div>
@@ -136,12 +135,18 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         const inicializarIcones = () => createIcons({ icons });
         const dropdown = document.getElementById('dropdown-menu');
         const drawer = document.getElementById('drawer-categoria');
+        const fabFloating = document.getElementById('fabAddFloating');
 
         // Navegação
         document.getElementById('btn-voltar-list')?.addEventListener('click', () => (window as any).navegar('list'));
-        document.getElementById('btn-ir-notificacoes')?.addEventListener('click', () => (window as any).navegar('notificacoes'));
-        document.getElementById('btn-nav-categorias')?.addEventListener('click', () => (window as any).navegar('categorias'));
-        document.getElementById('btn-editar-perfil')?.addEventListener('click', () => (window as any).navegar('form', pessoa.id));
+        document.getElementById('btn-nav-categorias')?.addEventListener('click', () => {
+            fecharDrawer();
+            (window as any).navegar('categorias');
+        });
+        document.getElementById('btn-editar-perfil')?.addEventListener('click', () => {
+            dropdown?.classList.remove('active');
+            (window as any).navegar('form', pessoa.id);
+        });
 
         // Controle Dropdown
         document.getElementById('btn-abrir-menu')?.addEventListener('click', (e) => {
@@ -151,8 +156,17 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         document.addEventListener('click', () => dropdown?.classList.remove('active'));
 
         // Controle Drawer
-        const fecharDrawer = () => drawer?.classList.remove('active');
-        document.getElementById('btn-abrir-drawer')?.addEventListener('click', () => drawer?.classList.add('active'));
+        const fecharDrawer = () => {
+            drawer?.classList.remove('active');
+            if (fabFloating) fabFloating.classList.remove('fab-hidden');
+        };
+        const abrirDrawer = () => {
+            drawer?.classList.add('active');
+            dropdown?.classList.remove('active');
+            if (fabFloating) fabFloating.classList.add('fab-hidden');
+        };
+
+        document.getElementById('btn-abrir-drawer')?.addEventListener('click', () => abrirDrawer());
         drawer?.addEventListener('click', (e) => { if (e.target === drawer) fecharDrawer(); });
 
         // Troca de Categoria

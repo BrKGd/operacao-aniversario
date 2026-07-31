@@ -434,6 +434,8 @@ body[data-theme='dark'] .fec-contact-card {
     padding: 8px 4px 12px;
     font-size: 0.82rem;
     color: var(--fec-text-body);
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .fec-list-counter-bar strong {
@@ -441,24 +443,126 @@ body[data-theme='dark'] .fec-contact-card {
     font-weight: 700;
 }
 
-.btn-toggle-multi {
+.fec-multi-actions-group {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--fec-primary);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
+    flex-wrap: nowrap;
 }
 
-.btn-toggle-multi:hover, .btn-toggle-multi.active {
+.btn-toggle-multi,
+.btn-multi-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    user-select: none;
+    line-height: 1;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.btn-toggle-multi i,
+.btn-toggle-multi svg,
+.btn-multi-pill i,
+.btn-multi-pill svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.2;
+    flex-shrink: 0;
+}
+
+/* Estado Inicial: Botão Exclusão Múltipla */
+.btn-toggle-multi {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--fec-primary);
+    border-color: rgba(99, 102, 241, 0.25);
+    font-weight: 700;
+}
+
+.btn-toggle-multi:hover {
     background: var(--fec-primary);
     color: white;
+    border-color: var(--fec-primary);
+    transform: translateY(-1px);
+}
+
+/* Pill 1: Todos */
+.btn-multi-pill.pill-todos {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--fec-primary);
+    border-color: rgba(99, 102, 241, 0.25);
+}
+
+.btn-multi-pill.pill-todos:hover,
+.btn-multi-pill.pill-todos.active {
+    background: var(--fec-primary);
+    color: white;
+    border-color: var(--fec-primary);
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+}
+
+/* Pill 2: Cancelar */
+.btn-multi-pill.pill-cancelar {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+.btn-multi-pill.pill-cancelar:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+/* Pill 3: Excluir */
+.btn-multi-pill.pill-excluir {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+    font-weight: 700;
+}
+
+.btn-multi-pill.pill-excluir:hover:not(:disabled) {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.35);
+}
+
+.btn-multi-pill.pill-excluir:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    box-shadow: none;
+}
+
+/* Suporte Dark Mode */
+body[data-theme='dark'] .btn-multi-pill.pill-cancelar {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+body[data-theme='dark'] .btn-multi-pill.pill-cancelar:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+body[data-theme='dark'] .btn-multi-pill.pill-excluir:disabled {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 /* --- CHECKBOX NOS CARDS --- */

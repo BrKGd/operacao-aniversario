@@ -1,9 +1,10 @@
-const CACHE_NAME = 'operacao-aniversario-v5';
+const CACHE_NAME = 'operacao-aniversario-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './favicon.ico'
+  './favicon.ico',
+  './favicon.svg'
 ];
 
 // 1. Instalação do Service Worker com skipWaiting imediato
@@ -12,7 +13,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[PWA SW] Pré-carregando ativos...');
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(ASSETS_TO_CACHE).catch(err => console.warn('[PWA SW] Cache addAll warning:', err));
     })
   );
 });
@@ -38,11 +39,16 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Não interceptar requisições de APIs (Supabase, Firebase, Google APIs)
-  if (url.origin.includes('supabase.co') || url.origin.includes('googleapis.com') || url.origin.includes('firebase')) return;
+  // Não interceptar requisições de APIs externas (Supabase, Firebase DB/Auth, Google APIs)
+  if (
+    url.hostname.includes('supabase.co') ||
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('firebaseio.com') ||
+    url.hostname.includes('identitytoolkit')
+  ) return;
 
-  // Para navegação principal (HTML): Network-First para garantir atualizações em tempo real no PWA Mobile
-  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/operacao-aniversario/')) {
+  // Para navegação principal (HTML): Network-First com fallback robusto para o index.html em cache
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
@@ -52,7 +58,13 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => caches.match(event.request))
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+          const indexCached = await caches.match('./index.html') || await caches.match('./');
+          if (indexCached) return indexCached;
+          return fetch(event.request);
+        })
     );
     return;
   }

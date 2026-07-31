@@ -2,6 +2,7 @@ import '../styles/lista.css';
 import '../styles/dashboard.css'; 
 import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
+import { formatarTelefoneWhatsapp } from '../utils/messages';
 import { Aniversario, Categoria, MensagemTemplate } from '../types';
 import { diasAteAniversario } from '../utils/dateUtils';
 import { modalAlerta } from '../utils/modalAlertas';
@@ -115,17 +116,45 @@ export async function montarLista(container: HTMLElement) {
 
         filtrados.sort((a, b) => calcularDias(a.data_nascimento) - calcularDias(b.data_nascimento));
 
-        // 1. RENDERIZAR BARRA DE CONTAGEM & BOTAO SELECAO MULTIPLA
+        // 1. RENDERIZAR BARRA DE CONTAGEM & BOTOES SELECAO MULTIPLA
         if (counterContainer) {
-            counterContainer.innerHTML = `
-                <div class="fec-list-counter-bar">
-                    <span>Exibindo <strong>${filtrados.length}</strong> de <strong>${state.contatosBase.length}</strong> aniversariantes</span>
-                    <button class="btn-toggle-multi ${state.modoSelecao ? 'active' : ''}" id="btnToggleMulti">
-                        <i data-lucide="${state.modoSelecao ? 'x' : 'check-square'}"></i>
-                        <span>${state.modoSelecao ? 'Cancelar Seleção' : 'Exclusão Múltipla'}</span>
-                    </button>
-                </div>
-            `;
+            const totalFiltrados = filtrados.length;
+            const selecionadosCount = state.idsSelecionados.size;
+            const todosSelecionados = totalFiltrados > 0 && selecionadosCount === totalFiltrados;
+
+            if (!state.modoSelecao) {
+                counterContainer.innerHTML = `
+                    <div class="fec-list-counter-bar">
+                        <span>Exibindo <strong>${filtrados.length}</strong> de <strong>${state.contatosBase.length}</strong> aniversariantes</span>
+                        <div class="fec-multi-actions-group">
+                            <button class="btn-toggle-multi" id="btnToggleMulti">
+                                <i data-lucide="check-square"></i>
+                                <span>Exclusão Múltipla</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                counterContainer.innerHTML = `
+                    <div class="fec-list-counter-bar">
+                        <span>Exibindo <strong>${filtrados.length}</strong> de <strong>${state.contatosBase.length}</strong> aniversariantes</span>
+                        <div class="fec-multi-actions-group">
+                            <button class="btn-multi-pill pill-todos ${todosSelecionados ? 'active' : ''}" id="btnSelectAllPill" title="${todosSelecionados ? 'Desmarcar todos' : 'Selecionar todos'}">
+                                <i data-lucide="${todosSelecionados ? 'check-square' : 'square'}"></i>
+                                <span>Todos</span>
+                            </button>
+                            <button class="btn-multi-pill pill-cancelar" id="btnCancelMultiPill" title="Cancelar exclusão múltipla">
+                                <i data-lucide="x"></i>
+                                <span>Cancelar</span>
+                            </button>
+                            <button class="btn-multi-pill pill-excluir" id="btnDeleteSelectedPill" ${selecionadosCount === 0 ? 'disabled' : ''} title="${selecionadosCount === 0 ? 'Nenhum item selecionado' : 'Excluir selecionados'}">
+                                <i data-lucide="trash-2"></i>
+                                <span>Excluir${selecionadosCount > 0 ? ` (${selecionadosCount})` : ''}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         // 2. RENDERIZAR GRID DE CONTATOS
@@ -185,52 +214,23 @@ export async function montarLista(container: HTMLElement) {
             }).join('');
         }
 
-        // 3. RENDERIZAR BARRA FLUTUANTE DE SELEÇÃO MÚLTIPLA
+        // 3. LIMPEZA DA BARRA FLUTUANTE INFERIOR (substituída pelos 3 pills superiores)
         if (multiBarContainer) {
-            if (state.modoSelecao) {
-                const totalFiltrados = filtrados.length;
-                const selecionadosCount = state.idsSelecionados.size;
-                const todosSelecionados = totalFiltrados > 0 && selecionadosCount === totalFiltrados;
-
-                multiBarContainer.innerHTML = `
-                    <div class="fec-multi-bar">
-                        <div class="multi-bar-info">
-                            <span class="multi-bar-badge">
-                                <i data-lucide="check-square"></i>
-                                ${selecionadosCount}
-                            </span>
-                            <span class="multi-bar-label">de ${totalFiltrados} selecionados</span>
-                        </div>
-                        <div class="multi-bar-actions">
-                            <button class="btn-multi-action" id="btnSelectAll">
-                                <i data-lucide="${todosSelecionados ? 'square' : 'check-square'}"></i>
-                                <span>${todosSelecionados ? 'Desmarcar' : 'Marcar Todos'}</span>
-                            </button>
-                            <button class="btn-multi-action danger" id="btnDeleteSelected" ${selecionadosCount === 0 ? 'disabled' : ''}>
-                                <i data-lucide="trash-2"></i>
-                                <span>Excluir ${selecionadosCount > 0 ? `(${selecionadosCount})` : ''}</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                multiBarContainer.innerHTML = '';
-            }
+            multiBarContainer.innerHTML = '';
         }
 
         createIcons({ icons });
 
-        // Event listener do botão de Seleção Múltipla
-        document.getElementById('btnToggleMulti')?.addEventListener('click', () => {
-            state.modoSelecao = !state.modoSelecao;
-            if (!state.modoSelecao) state.idsSelecionados.clear();
-            render();
-        });
-
-        // Listeners da Barra Flutuante
-        if (state.modoSelecao) {
-            document.getElementById('btnSelectAll')?.addEventListener('click', () => {
-                if (state.idsSelecionados.size === filtrados.length) {
+        // Event listeners dos botões de Seleção Múltipla
+        if (!state.modoSelecao) {
+            document.getElementById('btnToggleMulti')?.addEventListener('click', () => {
+                state.modoSelecao = true;
+                render();
+            });
+        } else {
+            // Pill: Todos
+            document.getElementById('btnSelectAllPill')?.addEventListener('click', () => {
+                if (state.idsSelecionados.size === filtrados.length && filtrados.length > 0) {
                     state.idsSelecionados.clear();
                 } else {
                     filtrados.forEach(c => state.idsSelecionados.add(c.id));
@@ -238,7 +238,15 @@ export async function montarLista(container: HTMLElement) {
                 render();
             });
 
-            document.getElementById('btnDeleteSelected')?.addEventListener('click', async () => {
+            // Pill: Cancelar
+            document.getElementById('btnCancelMultiPill')?.addEventListener('click', () => {
+                state.modoSelecao = false;
+                state.idsSelecionados.clear();
+                render();
+            });
+
+            // Pill: Excluir
+            document.getElementById('btnDeleteSelectedPill')?.addEventListener('click', async () => {
                 const count = state.idsSelecionados.size;
                 if (count === 0) return;
 
@@ -402,7 +410,8 @@ export async function montarLista(container: HTMLElement) {
             if (templateItem) {
                 const tel = templateItem.dataset.tel;
                 const msg = decodeURIComponent(templateItem.dataset.msg || '');
-                window.open(`https://api.whatsapp.com/send?phone=55${tel?.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
+                const telFormatted = formatarTelefoneWhatsapp(tel);
+                window.open(`https://api.whatsapp.com/send?phone=${telFormatted}&text=${encodeURIComponent(msg)}`, '_blank');
             }
         });
 

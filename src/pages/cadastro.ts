@@ -2,7 +2,7 @@ import '../styles/cadastro.css';
 import { modalAlerta } from '../utils/modalAlertas';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
-import { compressImageFile } from '../utils/imageCompressor';
+import { abrirCropperModal } from '../utils/imageCropper';
 import { createIcons, icons } from 'lucide';
 import * as XLSX from 'xlsx';
 
@@ -148,26 +148,26 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const inputHiddenImagem = document.getElementById('imagem_url') as HTMLInputElement;
         const previewAvatar = document.getElementById('avatarPreview')!;
 
-        // LÓGICA DE CARREGAMENTO DE FOTO LOCAL (ARQUIVO E CÂMERA) COM COMPRESSÃO AUTOMÁTICA
-        inputFotoLocal?.addEventListener('change', async (e: Event) => {
+        // LÓGICA DE CARREGAMENTO DE FOTO LOCAL COM CROPPER INTERATIVO
+        inputFotoLocal?.addEventListener('change', (e: Event) => {
             const target = e.target as HTMLInputElement;
             const file = target.files?.[0];
 
             if (file) {
-                try {
-                    modalAlerta.showLoading("Otimizando foto...");
-                    const base64Otimizada = await compressImageFile(file, { maxWidth: 600, maxHeight: 600, quality: 0.8 });
-                    modalAlerta.close();
-
-                    inputHiddenImagem.value = base64Otimizada; // Define a foto comprimida para o formulário
-                    previewAvatar.innerHTML = `<img src="${base64Otimizada}" class="img-preview-fec">`;
-                    createIcons({ icons });
-                } catch (err: any) {
-                    modalAlerta.close();
-                    // O próprio compressImageFile exibe alerta específico se necessário
-                } finally {
-                    inputFotoLocal.value = '';
-                }
+                abrirCropperModal(file, {
+                    title: "Ajustar Foto do Aniversariante",
+                    outputWidth: 600,
+                    outputHeight: 600,
+                    onCrop: (base64Cortada) => {
+                        inputHiddenImagem.value = base64Cortada; // Define a foto cortada para o formulário
+                        previewAvatar.innerHTML = `<img src="${base64Cortada}" class="img-preview-fec">`;
+                        createIcons({ icons });
+                    },
+                    onCancel: () => {
+                        inputFotoLocal.value = '';
+                    }
+                });
+                inputFotoLocal.value = '';
             }
         });
 

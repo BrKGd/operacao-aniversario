@@ -1,6 +1,7 @@
 import '../styles/dashboard.css';
 import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
+import { formatarTelefoneWhatsapp } from '../utils/messages';
 import { Aniversario, MensagemTemplate } from '../types';
 import { 
     parseLocalDate, 
@@ -198,11 +199,11 @@ export async function montarDashboard(container: HTMLElement) {
                 </div>
             </div>
         `;
-
         // Funções Globais (WhatsApp e Drawer)
         (window as any).enviarZapDireto = (tel: string, msg: string) => {
             if (!tel) return alert("Telefone não cadastrado.");
-            window.open(`https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent(msg)}`, '_blank');
+            const telFormatted = formatarTelefoneWhatsapp(tel);
+            window.open(`https://api.whatsapp.com/send?phone=${telFormatted}&text=${encodeURIComponent(msg)}`, '_blank');
         };
 
         (window as any).abrirSeletorDash = (nome: string, tel: string) => {
