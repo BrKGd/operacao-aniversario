@@ -1,28 +1,29 @@
 import '../styles/categorias.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { modalAlerta } from '../utils/modalAlertas';
-import { 
-    Sparkles, LogOut, LayoutGrid, Contact2, CalendarHeart, Settings2,
-    createIcons, Wallet, X, RotateCcw, Check, Search, ChevronLeft, 
-    Pencil, Trash2, Plus, Star, Heart, Church, Tag, Home, Utensils, 
-    Music, Coffee, User, Camera, Gift, Stethoscope, Activity, Pill, 
-    Baby, Dumbbell, HelpCircle, Brain, Syringe, Thermometer,
-    Users, PartyPopper, Cake, Briefcase, Building, Laptop, Calculator,
-    Trophy, Flame, Plane, Car, Gamepad2, Palette, Globe, Sun,
-    Moon, Compass, Flag, Bookmark, Crown, Shield, Award, Smile
-} from 'lucide';
+import { createIcons, icons } from 'lucide';
 
 const ORIGEM_KEY = 'fec_catg_origem';
 
-const ICON_MAP = { 
-    ChevronLeft, Pencil, Trash2, Plus, Star, Tag, Heart, Church, Sparkles, 
-    LogOut, LayoutGrid, Contact2, CalendarHeart, Settings2, Wallet, X, 
-    RotateCcw, Check, Search, Home, Utensils, Music, Coffee, User, Camera, 
-    Gift, Stethoscope, Activity, Pill, Baby, Dumbbell, HelpCircle, Brain, 
-    Syringe, Thermometer, Users, PartyPopper, Cake, Briefcase, Building, 
-    Laptop, Calculator, Trophy, Flame, Plane, Car, Gamepad2, Palette, 
-    Globe, Sun, Moon, Compass, Flag, Bookmark, Crown, Shield, Award, Smile
-};
+// Converte nomes de ícones em PascalCase do objeto `icons` para kebab-case para compatibilidade com data-lucide
+function pascalToKebab(str: string): string {
+    return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+// Lista completa de todos os ícones da biblioteca Lucide disponíveis no sistema
+const TODOS_ICONES_LUCIDE = Array.from(
+    new Set(Object.keys(icons).map(pascalToKebab))
+).sort();
+
+// Ícones mais comuns para exibição inicial na grade do modal
+const ICONES_COMUNS_DEFAULT = [
+    'star', 'heart', 'users', 'user', 'briefcase', 'building', 'dumbbell', 'church', 
+    'stethoscope', 'home', 'utensils', 'music', 'coffee', 'gift', 'cake', 'party-popper', 
+    'sparkles', 'crown', 'shield', 'award', 'smile', 'camera', 'plane', 'car', 
+    'gamepad-2', 'palette', 'globe', 'sun', 'moon', 'compass', 'flag', 'bookmark', 
+    'tag', 'laptop', 'calculator', 'trophy', 'flame', 'pill', 'baby', 'brain', 
+    'syringe', 'thermometer', 'wallet', 'phone', 'mail', 'map-pin', 'lock', 'bell'
+];
 
 export async function montarCategorias(container: HTMLElement) {
     const salvarOrigem = () => {
@@ -44,6 +45,8 @@ export async function montarCategorias(container: HTMLElement) {
             aniversarioService.listarTodos()
         ]);
 
+        let categoriaSelecionadaId: string | null = null;
+
         container.innerHTML = `
             <div class="catg-container">
                 <button class="catg-btn-back" id="btnVoltarApp" title="Voltar">
@@ -61,33 +64,35 @@ export async function montarCategorias(container: HTMLElement) {
                     <input type="text" id="catgSearchInput" placeholder="Buscar grupo por nome..." autocomplete="off">
                 </div>
 
-                <div class="catg-list" id="catgListContainer">
+                <!-- BARRA DE AÇÕES NO CANTO SUPERIOR ESQUERDO ENTRE BUSCA E LISTA -->
+                <div class="catg-action-toolbar">
+                    <button class="catg-action-btn catg-action-add" id="btnNovaCat" title="Criar Nova Categoria">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button class="catg-action-btn catg-action-edit" id="btnEditarCat" title="Editar Categoria Selecionada" style="display: none;">
+                        <i data-lucide="pencil"></i>
+                    </button>
+                    <button class="catg-action-btn catg-action-del" id="btnExcluirCat" title="Excluir Categoria Selecionada" style="display: none;">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+
+                <!-- LISTA EM GRID 3 COLUNAS DE CARDS COMPACTOS -->
+                <div class="catg-grid" id="catgListContainer">
                     ${categorias.map(cat => {
                         const count = todos.filter(t => t.categoria_id === cat.id).length;
                         return `
-                        <div class="catg-item" data-nome="${cat.nome.toLowerCase()}" style="border-left: 4px solid ${cat.cor};">
-                            <div class="catg-icon-box" style="background: ${cat.cor}20; color: ${cat.cor}">
+                        <div class="catg-card" data-id="${cat.id}" data-nome="${cat.nome.toLowerCase()}" data-count="${count}" style="border: 2px solid ${cat.cor};">
+                            <div class="catg-card-icon" style="background: ${cat.cor}18; color: ${cat.cor}">
                                 <i data-lucide="${cat.icone || 'tag'}"></i>
                             </div>
-                            <div class="catg-info">
-                                <span class="catg-name">${cat.nome}</span>
-                                <span class="catg-count-tag">${count} ${count === 1 ? 'integrante' : 'integrantes'}</span>
-                            </div>
-                            <div class="catg-actions">
-                                <button class="catg-btn-mini catg-edit" data-id="${cat.id}" title="Editar Categoria">
-                                    <i data-lucide="pencil"></i>
-                                </button>
-                                <button class="catg-btn-mini catg-del" data-id="${cat.id}" data-nome="${cat.nome}" data-count="${count}" title="Excluir Categoria">
-                                    <i data-lucide="trash-2"></i>
-                                </button>
+                            <div class="catg-card-info">
+                                <span class="catg-card-name">${cat.nome}</span>
+                                <span class="catg-card-count">${count} ${count === 1 ? 'integrante' : 'integrantes'}</span>
                             </div>
                         </div>
                     `}).join('')}
                 </div>
-                
-                <button class="catg-btn-add" id="btnNovaCat">
-                    <i data-lucide="plus"></i> Criar Nova Categoria
-                </button>
             </div>
         `;
 
@@ -102,64 +107,104 @@ export async function montarCategorias(container: HTMLElement) {
 
         document.getElementById('btnVoltarApp')?.addEventListener('click', acaoVoltar);
 
+        const btnEditar = container.querySelector('#btnEditarCat') as HTMLElement;
+        const btnExcluir = container.querySelector('#btnExcluirCat') as HTMLElement;
+
+        const atualizarToolbarAcoes = () => {
+            if (categoriaSelecionadaId) {
+                if (btnEditar) btnEditar.style.display = 'flex';
+                if (btnExcluir) btnExcluir.style.display = 'flex';
+            } else {
+                if (btnEditar) btnEditar.style.display = 'none';
+                if (btnExcluir) btnExcluir.style.display = 'none';
+            }
+        };
+
+        // Seleção de Card
+        container.querySelectorAll('#catgListContainer .catg-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = (card as HTMLElement).dataset.id!;
+                if (categoriaSelecionadaId === id) {
+                    categoriaSelecionadaId = null;
+                    card.classList.remove('selected');
+                } else {
+                    container.querySelectorAll('.catg-card').forEach(c => c.classList.remove('selected'));
+                    categoriaSelecionadaId = id;
+                    card.classList.add('selected');
+                }
+                atualizarToolbarAcoes();
+            });
+        });
+
+        // Clique fora deseleciona os cards
+        document.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('.catg-card') && !target.closest('.catg-action-toolbar')) {
+                categoriaSelecionadaId = null;
+                container.querySelectorAll('.catg-card').forEach(c => c.classList.remove('selected'));
+                atualizarToolbarAcoes();
+            }
+        });
+
         // Busca em tempo real na lista de categorias
         const searchInput = document.getElementById('catgSearchInput') as HTMLInputElement;
         searchInput?.addEventListener('input', () => {
             const query = searchInput.value.toLowerCase().trim();
-            container.querySelectorAll('#catgListContainer .catg-item').forEach(item => {
+            container.querySelectorAll('#catgListContainer .catg-card').forEach(item => {
                 const name = (item as HTMLElement).dataset.nome || '';
                 (item as HTMLElement).style.display = name.includes(query) ? 'flex' : 'none';
             });
         });
 
+        // Botão Nova Categoria (Ícone +)
         document.getElementById('btnNovaCat')?.addEventListener('click', () => {
             abrirModalCategoria(null, () => montarCategorias(container), acaoVoltar);
         });
 
-        container.querySelectorAll('.catg-edit').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = (btn as HTMLElement).dataset.id;
-                const categoria = categorias.find(c => c.id === id);
-                if (categoria) {
-                    abrirModalCategoria(categoria, () => montarCategorias(container), acaoVoltar);
-                }
-            });
+        // Botão Editar Categoria Selecionada
+        btnEditar?.addEventListener('click', () => {
+            if (!categoriaSelecionadaId) return;
+            const categoria = categorias.find(c => c.id === categoriaSelecionadaId);
+            if (categoria) {
+                abrirModalCategoria(categoria, () => montarCategorias(container), acaoVoltar);
+            }
         });
 
-        container.querySelectorAll('.catg-del').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = (btn as HTMLElement).dataset.id!;
-                const nome = (btn as HTMLElement).dataset.nome || 'grupo';
-                const count = parseInt((btn as HTMLElement).dataset.count || '0', 10);
+        // Botão Excluir Categoria Selecionada
+        btnExcluir?.addEventListener('click', async () => {
+            if (!categoriaSelecionadaId) return;
+            const categoria = categorias.find(c => c.id === categoriaSelecionadaId);
+            if (!categoria) return;
 
-                const avisoMembros = count > 0 
-                    ? `⚠️ Este grupo possui ${count} integrante(s) vinculado(s). Deseja realmente remover "${nome}"?`
-                    : `Deseja realmente remover o grupo "${nome}"?`;
+            const count = todos.filter(t => t.categoria_id === categoria.id).length;
+            const avisoMembros = count > 0 
+                ? `⚠️ Este grupo possui ${count} integrante(s) vinculado(s). Deseja realmente remover "${categoria.nome}"?`
+                : `Deseja realmente remover o grupo "${categoria.nome}"?`;
 
-                const confirmar = await modalAlerta.show({
-                    title: "Excluir Categoria?",
-                    message: avisoMembros,
-                    type: "delete",
-                    confirmText: "Sim, excluir",
-                    cancelText: "Cancelar"
-                });
-
-                if (confirmar) {
-                    modalAlerta.showLoading("Excluindo categoria...");
-                    try {
-                        await aniversarioService.excluirCategoria(id);
-                        modalAlerta.close();
-                        await modalAlerta.show({ message: "Categoria removida com sucesso!", type: "success" });
-                        montarCategorias(container);
-                    } catch (err) {
-                        modalAlerta.close();
-                        modalAlerta.show({ title: "Erro", message: "Falha ao excluir categoria.", type: "error" });
-                    }
-                }
+            const confirmar = await modalAlerta.show({
+                title: "Excluir Categoria?",
+                message: avisoMembros,
+                type: "delete",
+                confirmText: "Sim, excluir",
+                cancelText: "Cancelar"
             });
+
+            if (confirmar) {
+                modalAlerta.showLoading("Excluindo categoria...");
+                try {
+                    await aniversarioService.excluirCategoria(categoria.id);
+                    modalAlerta.close();
+                    await modalAlerta.show({ message: "Categoria removida com sucesso!", type: "success" });
+                    montarCategorias(container);
+                } catch (err) {
+                    modalAlerta.close();
+                    modalAlerta.show({ title: "Erro", message: "Falha ao excluir categoria.", type: "error" });
+                }
+            }
         });
 
-        createIcons({ icons: ICON_MAP });
+        createIcons({ icons });
 
     } catch (e) {
         container.innerHTML = `<div class="fec-center-wrapper">Erro ao carregar dados.</div>`;
@@ -170,18 +215,8 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'catg-modal-overlay';
     
-    let iconeSelecionado = dados?.icone || 'star';
+    let iconeSelecionado = (dados?.icone || 'star').toLowerCase();
     let corSelecionada = dados?.cor || '#0052FF';
-
-    // Lista Expandida de Ícones Lucide (45+ Ícones Úteis)
-    const listaIcones = [
-        'star', 'heart', 'users', 'user', 'party-popper', 'cake', 'gift', 'sparkles',
-        'crown', 'shield', 'award', 'smile', 'briefcase', 'building', 'laptop',
-        'calculator', 'trophy', 'flame', 'stethoscope', 'activity', 'pill', 'baby',
-        'dumbbell', 'brain', 'syringe', 'thermometer', 'church', 'home', 'utensils',
-        'music', 'coffee', 'camera', 'plane', 'car', 'gamepad-2', 'palette', 'globe',
-        'sun', 'moon', 'compass', 'flag', 'bookmark', 'tag'
-    ];
 
     const coresPredefinidas = [
         '#0052FF', '#FF3B30', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#64748B'
@@ -195,7 +230,7 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
             </div>
 
             <div class="catg-modal-body">
-                <!-- PREVIEW EM TEMPO REAL -->
+                <!-- PRÉ-VISUALIZAÇÃO DA CATEGORIA -->
                 <div class="catg-preview-hero">
                     <span class="preview-label">PRÉ-VISUALIZAÇÃO DA CATEGORIA</span>
                     <div class="catg-preview-card" id="cardPreview" style="background: ${corSelecionada}15; border-color: ${corSelecionada}40;">
@@ -215,27 +250,21 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
                     <input type="text" class="catg-input-text" id="inNomeCat" placeholder="Ex: Amigos, Trabalho, Família..." value="${dados?.nome || ''}">
                 </div>
 
-                <!-- ESCOLHA DO ÍCONE -->
+                <!-- ESCOLHA DO ÍCONE LUCIDE COM BUSCA GLOBAL -->
                 <div class="catg-input-group">
                     <div class="label-row">
-                        <label><i data-lucide="sparkles" class="label-icon"></i> ESCOLHA UM ÍCONE LUCIDE (${listaIcones.length} OPÇÕES)</label>
+                        <label id="labelIconesCount"><i data-lucide="sparkles" class="label-icon"></i> ESCOLHA UM ÍCONE LUCIDE</label>
                     </div>
                     <div class="catg-icon-grid-box">
                         <div class="icon-search-wrapper">
                             <i data-lucide="search" class="search-icon-inside"></i>
-                            <input type="text" class="catg-input-text icon-search-input" id="searchIcon" placeholder="Buscar ícone (ex: heart, gift, star)...">
+                            <input type="text" class="catg-input-text icon-search-input" id="searchIcon" placeholder="Buscar ícone na biblioteca (ex: heart, gift, star, phone)...">
                         </div>
-                        <div class="catg-icon-grid" id="gridIconesContainer">
-                            ${listaIcones.map(icon => `
-                                <div class="catg-icon-item ${iconeSelecionado === icon ? 'active' : ''}" data-icon="${icon}">
-                                    <i data-lucide="${icon}"></i>
-                                </div>
-                            `).join('')}
-                        </div>
+                        <div class="catg-icon-grid" id="gridIconesContainer"></div>
                     </div>
                 </div>
 
-                <!-- COR DA IDENTIDADE -->
+                <!-- PALETA DE COR DA IDENTIDADE -->
                 <div class="catg-input-group">
                     <label><i data-lucide="palette" class="label-icon"></i> PALETA DE COR DA IDENTIDADE</label>
                     <div class="color-preset-row">
@@ -259,13 +288,15 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
     `;
 
     document.body.appendChild(modalOverlay);
-    createIcons({ icons: ICON_MAP });
+    createIcons({ icons });
 
     const inputNome = modalOverlay.querySelector('#inNomeCat') as HTMLInputElement;
     const textPreviewTitle = modalOverlay.querySelector('#textPreviewTitle') as HTMLElement;
     const iconPreview = modalOverlay.querySelector('#iconPreview') as HTMLElement;
     const cardPreview = modalOverlay.querySelector('#cardPreview') as HTMLElement;
     const searchIcon = modalOverlay.querySelector('#searchIcon') as HTMLInputElement;
+    const gridIconesContainer = modalOverlay.querySelector('#gridIconesContainer') as HTMLElement;
+    const labelIconesCount = modalOverlay.querySelector('#labelIconesCount') as HTMLElement;
 
     const atualizarPreview = () => {
         const nomeVal = inputNome.value.trim() || 'Nome da Categoria';
@@ -274,33 +305,50 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
         cardPreview.style.borderColor = `${corSelecionada}40`;
         iconPreview.style.background = corSelecionada;
         iconPreview.innerHTML = `<i data-lucide="${iconeSelecionado}"></i>`;
-        createIcons({ icons: ICON_MAP });
+        createIcons({ icons });
     };
+
+    // Função de renderização rápida da grade de ícones
+    const renderIconGrid = (icones: string[]) => {
+        if (labelIconesCount) {
+            labelIconesCount.innerHTML = `<i data-lucide="sparkles" class="label-icon"></i> ESCOLHA UM ÍCONE LUCIDE (${icones.length} OPÇÕES)`;
+        }
+        gridIconesContainer.innerHTML = icones.map(icon => `
+            <div class="catg-icon-item ${iconeSelecionado === icon ? 'active' : ''}" data-icon="${icon}" title="${icon}">
+                <i data-lucide="${icon}"></i>
+            </div>
+        `).join('');
+        
+        createIcons({ icons, root: gridIconesContainer });
+
+        gridIconesContainer.querySelectorAll('.catg-icon-item').forEach(item => {
+            item.addEventListener('click', () => {
+                gridIconesContainer.querySelectorAll('.catg-icon-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                iconeSelecionado = (item as HTMLElement).dataset.icon || 'star';
+                atualizarPreview();
+            });
+        });
+    };
+
+    // Renderiza inicialmente os ícones mais comuns
+    renderIconGrid(ICONES_COMUNS_DEFAULT);
+
+    // Busca dinâmica em tempo real em TODA a biblioteca de ícones Lucide
+    searchIcon?.addEventListener('input', () => {
+        const query = searchIcon.value.toLowerCase().trim();
+        if (!query) {
+            renderIconGrid(ICONES_COMUNS_DEFAULT);
+        } else {
+            const resultados = TODOS_ICONES_LUCIDE.filter(ic => ic.includes(query)).slice(0, 70);
+            renderIconGrid(resultados.length > 0 ? resultados : [iconeSelecionado]);
+        }
+    });
 
     // Live update do nome
     inputNome.addEventListener('input', atualizarPreview);
 
-    // Busca de ícones em tempo real
-    searchIcon?.addEventListener('input', () => {
-        const query = searchIcon.value.toLowerCase().trim();
-        modalOverlay.querySelectorAll('.catg-icon-item').forEach(item => {
-            const iconName = (item as HTMLElement).dataset.icon || '';
-            const visivel = iconName.toLowerCase().includes(query);
-            (item as HTMLElement).style.display = visivel ? 'flex' : 'none';
-        });
-    });
-
     modalOverlay.querySelector('#closeCatForm')?.addEventListener('click', () => modalOverlay.remove());
-
-    // Seleção de ícones
-    modalOverlay.querySelectorAll('.catg-icon-item').forEach(item => {
-        item.addEventListener('click', () => {
-            modalOverlay.querySelectorAll('.catg-icon-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            iconeSelecionado = (item as HTMLElement).dataset.icon || 'star';
-            atualizarPreview();
-        });
-    });
 
     const preview = modalOverlay.querySelector('#previewCor') as HTMLElement;
     const picker = modalOverlay.querySelector('#hiddenPicker') as HTMLInputElement;
@@ -367,12 +415,9 @@ function abrirModalCategoria(dados: any | null, onSuccess: () => void, onFinaliz
     // Resetar para valores originais
     modalOverlay.querySelector('#btnResetCat')?.addEventListener('click', () => {
         inputNome.value = dados?.nome || '';
-        iconeSelecionado = dados?.icone || 'star';
+        iconeSelecionado = (dados?.icone || 'star').toLowerCase();
         setCor(dados?.cor || '#0052FF');
-        modalOverlay.querySelectorAll('.catg-icon-item').forEach(i => {
-            const el = i as HTMLElement;
-            el.classList.toggle('active', el.dataset.icon === iconeSelecionado);
-        });
+        renderIconGrid(ICONES_COMUNS_DEFAULT);
         atualizarPreview();
     });
 }
