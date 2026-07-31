@@ -101,6 +101,8 @@ export function montarTelaRegistro() {
             let msg = "Erro ao realizar cadastro.";
             if (error.code === 'auth/api-key-not-valid') {
                 msg = "⚠️ Credenciais do Firebase não configuradas! Cole sua API Key real no arquivo .env.";
+            } else if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
+                msg = "⚠️ O método de login por E-mail/Senha precisa ser ativado no Firebase Console (Autenticação -> Métodos de login -> E-mail/senha -> Ativar -> Salvar).";
             } else if (error.code === 'auth/email-already-in-use') {
                 msg = "Este e-mail já está em uso por outra conta.";
             } else if (error.code === 'auth/invalid-email') {

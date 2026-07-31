@@ -160,7 +160,7 @@ export async function montarConfiguracoes(container: HTMLElement) {
                         <div class="menu-item-clean" id="btnSyncCloud">
                             <div class="item-lead">
                                 <i data-lucide="cloud-lightning"></i>
-                                <span>Backup Cloud (Supabase)</span>
+                                <span>Backup Cloud (Firebase)</span>
                             </div>
                             <span class="status-text">Sincronizado</span>
                         </div>
@@ -201,7 +201,7 @@ export async function montarConfiguracoes(container: HTMLElement) {
                 aniversarioService.invalidarCache();
                 modalAlerta.show({
                     title: 'Sistema Otimizado!',
-                    message: 'Cache local renovado e dados revalidados com o Supabase.',
+                    message: 'Cache local renovado e dados revalidados com o Firebase.',
                     type: 'success'
                 });
             }, 1200);
@@ -332,7 +332,7 @@ export async function montarConfiguracoes(container: HTMLElement) {
 
                 modalAlerta.show({
                     title: 'Importação Concluída!',
-                    message: `${importados} de ${novosRegistros.length} aniversariantes foram cadastrados no Supabase!`,
+                    message: `${importados} de ${novosRegistros.length} aniversariantes foram cadastrados no Firebase!`,
                     type: 'success'
                 });
                 
@@ -353,7 +353,7 @@ export async function montarConfiguracoes(container: HTMLElement) {
         document.getElementById('btnSyncCloud')?.addEventListener('click', () => {
             modalAlerta.showLoading('Sincronizando com a Nuvem...');
             aniversarioService.revalidarAniversariosEmBackground().then(() => {
-                modalAlerta.show({ title: 'Nuvem Atualizada', message: 'Dados sincronizados com o Supabase.', type: 'success' });
+                modalAlerta.show({ title: 'Nuvem Atualizada', message: 'Dados sincronizados com o Firebase.', type: 'success' });
             });
         });
 

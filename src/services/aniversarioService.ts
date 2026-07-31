@@ -20,6 +20,20 @@ import {
 import { auth, db } from '../config/firebase';
 import { Aniversario, Categoria, MensagemTemplate, Notificacao } from '../types';
 
+/**
+ * Gerador de UUID v4 padronizado (8-4-4-4-12) para identificadores do sistema
+ */
+export function gerarUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // --- CACHE EM MEMÓRIA & LOCALSTORAGE PARA PERFORMANCE MÁXIMA E OTIMIZAÇÃO DE COTAS (0ms SWR) ---
 const CACHE_KEYS = {
   ANIVERSARIOS: 'leao_cache_aniversarios',
@@ -34,18 +48,7 @@ let inMemoryTemplates: MensagemTemplate[] | null = null;
 
 function salvarCacheLocal<T>(key: string, data: T) {
   try {
-    let payload = data;
-    if (key === CACHE_KEYS.ANIVERSARIOS && Array.isArray(data)) {
-      payload = data.map((item: any) => {
-        if (item && item.imagem_url && item.imagem_url.startsWith('data:')) {
-          const { imagem_url, ...resto } = item;
-          return resto;
-        }
-        return item;
-      }) as unknown as T;
-    }
-
-    localStorage.setItem(key, JSON.stringify(payload));
+    localStorage.setItem(key, JSON.stringify(data));
     localStorage.setItem(CACHE_KEYS.TIMESTAMP, Date.now().toString());
   } catch (e: any) {
     try {
@@ -92,8 +95,10 @@ export const aniversarioService = {
     let profileRow: any = null;
     try {
       const docRef = doc(db, 'profiles', user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
+      const fetchPromise = getDoc(docRef);
+      const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1500));
+      const docSnap = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      if (docSnap && docSnap.exists()) {
         profileRow = docSnap.data();
       }
     } catch (e) {
@@ -112,21 +117,17 @@ export const aniversarioService = {
     const avatar = profileRow?.avatar_url || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
     const createdAt = profileRow?.updated_at || user.metadata.creationTime || new Date().toISOString();
 
-    // Garante que o registro exista na coleção 'profiles' do Firestore se não estiver excluído
+    // Executa o upsert em background sem travar o carregamento inicial da interface
     if (!profileRow && statusFinal !== 'deleted') {
-      try {
-        await setDoc(doc(db, 'profiles', user.uid), {
-          id: user.uid,
-          email: user.email,
-          nome_completo: nome,
-          avatar_url: avatar,
-          status: statusFinal,
-          role: roleFinal,
-          updated_at: new Date().toISOString()
-        }, { merge: true });
-      } catch (e) {
-        console.warn('[Firebase] Upsert inicial em profiles ignorado:', e);
-      }
+      setDoc(doc(db, 'profiles', user.uid), {
+        id: user.uid,
+        email: user.email,
+        nome_completo: nome,
+        avatar_url: avatar,
+        status: statusFinal,
+        role: roleFinal,
+        updated_at: new Date().toISOString()
+      }, { merge: true }).catch(e => console.warn('[Firebase] Upsert background profiles ignorado:', e));
     }
 
     this.registrarUsuarioCatalogo({ id: user.uid, email, nome, avatar, role: roleFinal, status: statusFinal, created_at: createdAt });
@@ -488,8 +489,8 @@ export const aniversarioService = {
     const user = auth.currentUser;
     if (!user) throw new Error("Usuário não autenticado.");
 
-    const newDocRef = doc(collection(db, 'aniversarios'));
-    const id = newDocRef.id;
+    const id = gerarUUID();
+    const newDocRef = doc(db, 'aniversarios', id);
 
     let dia = 1;
     let mes = 1;
@@ -574,6 +575,15 @@ export const aniversarioService = {
   },
 
   /**
+   * Remove múltiplos aniversariantes do Cloud Firestore de uma vez
+   */
+  async excluirVarios(ids: string[]): Promise<void> {
+    if (!ids || ids.length === 0) return;
+    await Promise.all(ids.map(id => deleteDoc(doc(db, 'aniversarios', id))));
+    this.invalidarCache();
+  },
+
+  /**
    * Busca a lista de categorias do Firestore ou fallback local
    */
   async listarCategorias(): Promise<Categoria[]> {
@@ -586,10 +596,9 @@ export const aniversarioService = {
     }
 
     const categoriasPadrao: Categoria[] = [
-      { id: '1', nome: 'Família', cor: '#EF4444', icone: 'heart' },
-      { id: '2', nome: 'Amigos', cor: '#3B82F6', icone: 'smile' },
-      { id: '3', nome: 'Trabalho', cor: '#10B981', icone: 'briefcase' },
-      { id: '4', nome: 'Outros', cor: '#8B5CF6', icone: 'star' }
+      { id: 'cfdc7628-37da-441a-a4d4-bc1b5b4abfcf', nome: 'Família', cor: '#d71921', icone: 'heart' },
+      { id: '0fdf4dad-4967-492d-9a49-aa3540e34aa1', nome: 'Trabalho', cor: '#4361EE', icone: 'stethoscope' },
+      { id: '694bd2ec-0d65-4fcb-abba-565d048f298b', nome: 'Amigos', cor: '#06B6D4', icone: 'star' }
     ];
 
     try {
@@ -600,9 +609,18 @@ export const aniversarioService = {
         inMemoryCategorias = lista;
         salvarCacheLocal(CACHE_KEYS.CATEGORIAS, lista);
         return lista;
+      } else {
+        // Se a coleção no Firestore estiver vazia, migra as categorias originais do Supabase para o Firebase Firestore
+        for (const cat of categoriasPadrao) {
+          try {
+            await setDoc(doc(db, 'categorias', cat.id), cat);
+          } catch (e) {
+            console.warn('[Firebase] Aviso ao migrar categoria para o Firestore:', e);
+          }
+        }
       }
     } catch (e) {
-      console.warn('[Firebase] Usando categorias padrão:', e);
+      console.warn('[Firebase] Usando categorias salvas:', e);
     }
 
     inMemoryCategorias = categoriasPadrao;
@@ -611,21 +629,49 @@ export const aniversarioService = {
   },
 
   /**
-   * Adiciona uma nova categoria no Cloud Firestore
+   * Adiciona uma nova categoria no Cloud Firestore com UUID v4
    */
   async adicionarCategoria(categoria: Omit<Categoria, 'id'>): Promise<Categoria> {
-    const newDocRef = doc(collection(db, 'categorias'));
-    const novaCat: Categoria = { id: newDocRef.id, ...categoria };
+    const id = gerarUUID();
+    const newDocRef = doc(db, 'categorias', id);
+    const novaCat: Categoria = { id, ...categoria };
     await setDoc(newDocRef, novaCat);
     this.invalidarCache();
     return novaCat;
   },
 
   /**
-   * Remove uma categoria do Cloud Firestore
+   * Alias para salvarCategoria (compatibilidade)
+   */
+  async salvarCategoria(categoria: Omit<Categoria, 'id'>): Promise<Categoria> {
+    return this.adicionarCategoria(categoria);
+  },
+
+  /**
+   * Atualiza uma categoria existente no Cloud Firestore
+   */
+  async atualizarCategoria(id: string, dados: Partial<Categoria>): Promise<void> {
+    const docRef = doc(db, 'categorias', id);
+    await updateDoc(docRef, dados);
+    this.invalidarCache();
+  },
+
+  /**
+   * Remove uma categoria do Cloud Firestore e invalida caches locais
    */
   async excluirCategoria(id: string): Promise<void> {
-    await deleteDoc(doc(db, 'categorias', id));
+    try {
+      const docRef = doc(db, 'categorias', id);
+      await deleteDoc(docRef);
+    } catch (e) {
+      console.warn('[Firebase] Aviso ao excluir categoria do Firestore:', e);
+    }
+    
+    // Atualiza cache em memória e localStorage imediatamente
+    if (inMemoryCategorias) {
+      inMemoryCategorias = inMemoryCategorias.filter(c => c.id !== id);
+      salvarCacheLocal(CACHE_KEYS.CATEGORIAS, inMemoryCategorias);
+    }
     this.invalidarCache();
   },
 

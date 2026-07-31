@@ -57,6 +57,10 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
         const idade = calcularIdade(pessoa.data_nascimento);
         const diasFaltantes = diasAteAniversario(pessoa.data_nascimento);
 
+        // Busca o nome do grupo/categoria correspondente
+        const catEncontrada = categorias.find(c => c.id === pessoa.categoria_id);
+        const nomeCategoria = catEncontrada?.nome || pessoa.categorias?.nome || 'Sem Grupo';
+
         // 3. RENDERIZAÇÃO DO CONTEÚDO REAL
         container.innerHTML = `
             <div class="detalhes-page-wrapper">
@@ -69,7 +73,7 @@ export async function montarDetalhes(container: HTMLElement, id?: string) {
                     <div class="name-floating-card">
                         <div class="name-info">
                             <h1>${pessoa.apelido || pessoa.nome.split(' ')[0]}</h1>
-                            <span id="categoria-label">${pessoa.categorias?.nome || 'Sem Grupo'}</span>
+                            <span id="categoria-label">${nomeCategoria}</span>
                         </div>
                         <button class="btn-more-options" id="btn-abrir-menu"><i data-lucide="more-vertical"></i></button>
                         

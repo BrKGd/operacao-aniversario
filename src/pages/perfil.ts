@@ -1,6 +1,7 @@
 import '../styles/perfil.css';
 import { aniversarioService } from '../services/aniversarioService';
 import { modalAlerta } from '../utils/modalAlertas';
+import { compressImageFile } from '../utils/imageCompressor';
 import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import { 
@@ -274,6 +275,14 @@ function abrirModalAlterarAvatar(avatarAtual: string, onSave: (novoAvatar: strin
                 `).join('')}
             </div>
 
+            <div style="margin-bottom: 16px;">
+                <label for="inputFotoPerfilModal" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 1.5px dashed rgba(0,82,255,0.4); border-radius: 14px; background: rgba(0,82,255,0.04); color: var(--fec-primary, #0052FF); font-weight: 700; font-size: 0.88rem; cursor: pointer;">
+                    <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+                    <span>Carregar Foto da Galeria / Câmera</span>
+                </label>
+                <input type="file" id="inputFotoPerfilModal" accept="image/*" style="display: none;">
+            </div>
+
             <input type="text" class="catg-input-text" id="inUrlAvatar" placeholder="OU cole a URL de uma foto (https://...)" value="${avatarAtual.startsWith('http') ? avatarAtual : ''}" style="margin-bottom: 20px; font-size: 0.82rem;">
 
             <div class="fec-modal-footer">
@@ -287,6 +296,25 @@ function abrirModalAlterarAvatar(avatarAtual: string, onSave: (novoAvatar: strin
     createIcons({ icons: ICON_MAP, root: modalOverlay });
 
     let urlSelecionada = avatarAtual;
+
+    const inputFotoFile = modalOverlay.querySelector('#inputFotoPerfilModal') as HTMLInputElement;
+    inputFotoFile?.addEventListener('change', async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+            try {
+                modalAlerta.showLoading("Processando foto...");
+                const compressedBase64 = await compressImageFile(file, { maxWidth: 500, maxHeight: 500, quality: 0.8 });
+                modalAlerta.close();
+                urlSelecionada = compressedBase64;
+                (modalOverlay.querySelector('#inUrlAvatar') as HTMLInputElement).value = compressedBase64;
+                modalAlerta.show({ message: "Foto pronta! Clique em Salvar Foto para confirmar.", type: "success" });
+            } catch (err) {
+                modalAlerta.close();
+            } finally {
+                inputFotoFile.value = '';
+            }
+        }
+    });
 
     modalOverlay.querySelectorAll('.avatar-preset-item').forEach(item => {
         item.addEventListener('click', () => {

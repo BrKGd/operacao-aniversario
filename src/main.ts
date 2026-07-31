@@ -10,7 +10,6 @@ import { montarTelaRegistro } from './pages/registros';
 import { montarDashboard } from './pages/dashboard';
 import { montarLista } from './pages/lista';
 import { montarCadastro } from './pages/cadastro';
-import { montarNotificacoes } from './pages/notificacoes';
 import { montarDetalhes } from './pages/detalhes';
 import { montarCalendario } from './pages/calendario';
 import { montarConfiguracoes } from './pages/configuracoes';
@@ -175,8 +174,10 @@ function configurarLogin() {
                 let msg = "E-mail ou senha incorretos.";
                 if (error.code === 'auth/api-key-not-valid') {
                     msg = "⚠️ Credenciais do Firebase não configuradas! Cole sua API Key real no arquivo .env.";
+                } else if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
+                    msg = "⚠️ O método de login por E-mail/Senha precisa ser ativado no Firebase Console (Autenticação -> Métodos de login -> E-mail/senha -> Ativar -> Salvar).";
                 } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                    msg = "E-mail ou senha incorretos.";
+                    msg = "E-mail ou senha incorretos. Se ainda não se cadastrou, clique em 'Criar conta' abaixo.";
                 } else if (error.message) {
                     msg = error.message;
                 }
@@ -425,9 +426,6 @@ function montarLayoutEstrutural() {
                         <span class="app-title-header">leão festivo</span>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center;">
-                        <button id="btnConfigTop" title="Painel de Ajustes" class="btn-logout-minimal">
-                            <i data-lucide="settings-2"></i>
-                        </button>
                         <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-logout-minimal">
                             <i data-lucide="user"></i>
                         </button>
@@ -448,10 +446,6 @@ function montarLayoutEstrutural() {
             <nav id="app-nav" class="nav-bottom-container"></nav>
         </div>
     `;
-
-    document.getElementById('btnConfigTop')?.addEventListener('click', () => {
-        irPara('config');
-    });
 
     document.getElementById('btnPerfilTop')?.addEventListener('click', () => {
         irPara('perfil');
@@ -501,9 +495,6 @@ function processarRotaAtual() {
             break;
         case 'form':
             montarCadastro(container, idParam);
-            break;
-        case 'notificacoes':
-            montarNotificacoes(container);
             break;
         case 'detalhes':
             montarDetalhes(container, idParam);
@@ -560,9 +551,9 @@ function renderizarNavegacao() {
                 <i data-lucide="calendar"></i>
                 <span>Agenda</span>
             </button>
-            <button class="nav-item" data-route="notificacoes">
-                <i data-lucide="bell"></i>
-                <span>Alertas</span>
+            <button class="nav-item" data-route="config">
+                <i data-lucide="settings-2"></i>
+                <span>Ajustes</span>
             </button>
         </div>
     `;
@@ -588,8 +579,12 @@ function atualizarTabAtivaUI(pagina: string) {
     });
 }
 
-function irPara(pagina: string) {
-    window.location.hash = `#${pagina}`;
+function irPara(pagina: string, paramOrId?: string) {
+    if (paramOrId) {
+        window.location.hash = `#${pagina}/${paramOrId}`;
+    } else {
+        window.location.hash = `#${pagina}`;
+    }
 }
 
 (window as any).navegar = irPara;

@@ -2,6 +2,7 @@ import '../styles/cadastro.css';
 import { modalAlerta } from '../utils/modalAlertas';
 import { aniversarioService } from '../services/aniversarioService';
 import { Aniversario, Categoria } from '../types';
+import { compressImageFile } from '../utils/imageCompressor';
 import { createIcons, icons } from 'lucide';
 import * as XLSX from 'xlsx';
 
@@ -147,25 +148,26 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const inputHiddenImagem = document.getElementById('imagem_url') as HTMLInputElement;
         const previewAvatar = document.getElementById('avatarPreview')!;
 
-        // LÓGICA DE CARREGAMENTO DE FOTO LOCAL (ARQUIVO)
-        inputFotoLocal?.addEventListener('change', (e: Event) => {
+        // LÓGICA DE CARREGAMENTO DE FOTO LOCAL (ARQUIVO E CÂMERA) COM COMPRESSÃO AUTOMÁTICA
+        inputFotoLocal?.addEventListener('change', async (e: Event) => {
             const target = e.target as HTMLInputElement;
             const file = target.files?.[0];
 
             if (file) {
-                if (!file.type.startsWith('image/')) {
-                    modalAlerta.show({ title: "Erro", message: "Selecione um arquivo de imagem.", type: "error" });
-                    return;
-                }
+                try {
+                    modalAlerta.showLoading("Otimizando foto...");
+                    const base64Otimizada = await compressImageFile(file, { maxWidth: 600, maxHeight: 600, quality: 0.8 });
+                    modalAlerta.close();
 
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    const base64 = evt.target?.result as string;
-                    inputHiddenImagem.value = base64; // Define o valor para o formulário
-                    previewAvatar.innerHTML = `<img src="${base64}" class="img-preview-fec">`;
+                    inputHiddenImagem.value = base64Otimizada; // Define a foto comprimida para o formulário
+                    previewAvatar.innerHTML = `<img src="${base64Otimizada}" class="img-preview-fec">`;
                     createIcons({ icons });
-                };
-                reader.readAsDataURL(file);
+                } catch (err: any) {
+                    modalAlerta.close();
+                    // O próprio compressImageFile exibe alerta específico se necessário
+                } finally {
+                    inputFotoLocal.value = '';
+                }
             }
         });
 
@@ -281,8 +283,14 @@ export async function montarCadastro(container: HTMLElement, idEdicao?: string) 
         const toggleDrawer = (open: boolean) => {
             const drawer = document.getElementById('avatarDrawer');
             const overlay = document.getElementById('drawerOverlay');
+            const fab = document.getElementById('fabAddFloating');
+            
             drawer?.classList.toggle('active', open);
             overlay?.classList.toggle('active', open);
+
+            if (fab) {
+                fab.style.display = open ? 'none' : 'flex';
+            }
         };
 
         document.getElementById('btnAbrirGaleria')?.addEventListener('click', () => toggleDrawer(true));

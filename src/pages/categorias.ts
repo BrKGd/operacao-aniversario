@@ -39,7 +39,10 @@ export async function montarCategorias(container: HTMLElement) {
     container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando categorias...</div></div>`;
 
     try {
-        const categorias = await aniversarioService.listarCategorias();
+        const [categorias, todos] = await Promise.all([
+            aniversarioService.listarCategorias(),
+            aniversarioService.listarTodos()
+        ]);
 
         container.innerHTML = `
             <div class="catg-container">
@@ -48,33 +51,42 @@ export async function montarCategorias(container: HTMLElement) {
                 </button>
 
                 <div class="catg-header">
-                    <h2>Categorias</h2>
-                    <p style="color: var(--fec-text-muted, #64748b); margin-top: -5px;">Gerencie seus grupos de aniversariantes</p>
+                    <h2>Grupos & Categorias</h2>
+                    <p style="color: var(--fec-text-muted, #64748b); margin-top: -5px;">Gerencie seus grupos e acompanhe o total de integrantes</p>
+                    <span class="catg-total-badge">${categorias.length} ${categorias.length === 1 ? 'grupo' : 'grupos'} cadastrados</span>
                 </div>
 
-                <div class="catg-list">
-                    ${categorias.map(cat => `
-                        <div class="catg-item">
+                <div class="catg-search-box">
+                    <i data-lucide="search" class="catg-search-icon"></i>
+                    <input type="text" id="catgSearchInput" placeholder="Buscar grupo por nome..." autocomplete="off">
+                </div>
+
+                <div class="catg-list" id="catgListContainer">
+                    ${categorias.map(cat => {
+                        const count = todos.filter(t => t.categoria_id === cat.id).length;
+                        return `
+                        <div class="catg-item" data-nome="${cat.nome.toLowerCase()}" style="border-left: 4px solid ${cat.cor};">
                             <div class="catg-icon-box" style="background: ${cat.cor}20; color: ${cat.cor}">
                                 <i data-lucide="${cat.icone || 'tag'}"></i>
                             </div>
                             <div class="catg-info">
-                                <span>${cat.nome}</span>
+                                <span class="catg-name">${cat.nome}</span>
+                                <span class="catg-count-tag">${count} ${count === 1 ? 'integrante' : 'integrantes'}</span>
                             </div>
                             <div class="catg-actions">
-                                <button class="catg-btn-mini catg-edit" data-id="${cat.id}">
+                                <button class="catg-btn-mini catg-edit" data-id="${cat.id}" title="Editar Categoria">
                                     <i data-lucide="pencil"></i>
                                 </button>
-                                <button class="catg-btn-mini catg-del" data-id="${cat.id}">
+                                <button class="catg-btn-mini catg-del" data-id="${cat.id}" data-nome="${cat.nome}" data-count="${count}" title="Excluir Categoria">
                                     <i data-lucide="trash-2"></i>
                                 </button>
                             </div>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
                 
                 <button class="catg-btn-add" id="btnNovaCat">
-                    <i data-lucide="plus"></i> Nova Categoria
+                    <i data-lucide="plus"></i> Criar Nova Categoria
                 </button>
             </div>
         `;
@@ -89,6 +101,16 @@ export async function montarCategorias(container: HTMLElement) {
         };
 
         document.getElementById('btnVoltarApp')?.addEventListener('click', acaoVoltar);
+
+        // Busca em tempo real na lista de categorias
+        const searchInput = document.getElementById('catgSearchInput') as HTMLInputElement;
+        searchInput?.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            container.querySelectorAll('#catgListContainer .catg-item').forEach(item => {
+                const name = (item as HTMLElement).dataset.nome || '';
+                (item as HTMLElement).style.display = name.includes(query) ? 'flex' : 'none';
+            });
+        });
 
         document.getElementById('btnNovaCat')?.addEventListener('click', () => {
             abrirModalCategoria(null, () => montarCategorias(container), acaoVoltar);
@@ -107,18 +129,32 @@ export async function montarCategorias(container: HTMLElement) {
         container.querySelectorAll('.catg-del').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = (btn as HTMLElement).dataset.id!;
+                const nome = (btn as HTMLElement).dataset.nome || 'grupo';
+                const count = parseInt((btn as HTMLElement).dataset.count || '0', 10);
+
+                const avisoMembros = count > 0 
+                    ? `⚠️ Este grupo possui ${count} integrante(s) vinculado(s). Deseja realmente remover "${nome}"?`
+                    : `Deseja realmente remover o grupo "${nome}"?`;
+
                 const confirmar = await modalAlerta.show({
                     title: "Excluir Categoria?",
-                    message: "Deseja realmente remover este grupo?",
-                    type: "delete"
+                    message: avisoMembros,
+                    type: "delete",
+                    confirmText: "Sim, excluir",
+                    cancelText: "Cancelar"
                 });
 
                 if (confirmar) {
-                    modalAlerta.showLoading("Excluindo...");
-                    await aniversarioService.excluirCategoria(id);
-                    modalAlerta.close();
-                    montarCategorias(container);
-                    modalAlerta.show({ message: "Categoria removida!", type: "success" });
+                    modalAlerta.showLoading("Excluindo categoria...");
+                    try {
+                        await aniversarioService.excluirCategoria(id);
+                        modalAlerta.close();
+                        await modalAlerta.show({ message: "Categoria removida com sucesso!", type: "success" });
+                        montarCategorias(container);
+                    } catch (err) {
+                        modalAlerta.close();
+                        modalAlerta.show({ title: "Erro", message: "Falha ao excluir categoria.", type: "error" });
+                    }
                 }
             });
         });

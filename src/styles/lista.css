@@ -93,28 +93,65 @@ body[data-theme='dark'] .fec-contact-card {
 /* --- CHIPS DE FILTRO --- */
 .fec-filter-group {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
     overflow-x: auto;
-    padding: 12px 0 4px;
+    padding: 10px 0 4px;
+    margin-top: 4px;
     scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.fec-filter-group::-webkit-scrollbar {
+    display: none;
 }
 
 .fec-chip {
-    padding: 6px 16px;
-    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: 20px;
     background: var(--fec-card);
     border: 1px solid var(--fec-border);
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 0.78rem;
+    font-weight: 600;
     color: var(--fec-text-body);
-    transition: 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.fec-chip i,
+.fec-chip svg {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.2;
+    flex-shrink: 0;
+}
+
+.fec-chip:hover {
+    border-color: var(--fec-primary);
+    color: var(--fec-primary);
+    transform: translateY(-1px);
 }
 
 .fec-chip.active {
     background: var(--fec-primary);
-    color: white;
+    color: #ffffff;
     border-color: var(--fec-primary);
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+}
+
+.fec-chip.active i,
+.fec-chip.active svg {
+    color: #ffffff;
 }
 
 /* --- CARD DE CONTATO --- */
@@ -303,31 +340,48 @@ body[data-theme='dark'] .fec-contact-card {
 /* PILLS DE FILTRO DENTRO DO DRAWER */
 .pills-container-scroll {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
     overflow-x: auto;
-    padding: 15px 25px;
+    padding: 12px 20px;
     scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.pills-container-scroll::-webkit-scrollbar {
+    display: none;
 }
 
 .btn-pill-filter {
-    height: 28px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 26px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.72rem;
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s;
-    padding: 0 12px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0 10px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.btn-pill-filter:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
 }
 
 .btn-pill-filter.active {
     background: var(--fec-azul-vibrante);
-    color: white;
+    color: #ffffff;
     border-color: var(--fec-azul-vibrante);
-    box-shadow: 0 4px 12px rgba(0, 136, 255, 0.3);
+    box-shadow: 0 3px 10px rgba(0, 136, 255, 0.4);
 }
 
 /* LISTA DE TEMPLATES DENTRO DO DRAWER */
@@ -371,3 +425,181 @@ body[data-theme='dark'] .fec-contact-card {
     line-height: 1.4;
     margin: 0;
 }
+
+/* --- BARRA DE CONTAGEM & SELEÇÃO MÚLTIPLA --- */
+.fec-list-counter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 12px;
+    font-size: 0.82rem;
+    color: var(--fec-text-body);
+}
+
+.fec-list-counter-bar strong {
+    color: var(--fec-primary);
+    font-weight: 700;
+}
+
+.btn-toggle-multi {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--fec-primary);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-toggle-multi:hover, .btn-toggle-multi.active {
+    background: var(--fec-primary);
+    color: white;
+}
+
+/* --- CHECKBOX NOS CARDS --- */
+.fec-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 10px;
+    cursor: pointer;
+}
+
+.fec-checkbox-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--fec-text-body);
+    transition: all 0.2s;
+}
+
+.fec-checkbox-icon.checked {
+    color: var(--fec-primary);
+    fill: var(--fec-primary);
+}
+
+/* --- BARRA FLUTUANTE DE AÇÕES EM MASSA --- */
+.fec-multi-bar {
+    position: fixed;
+    bottom: 96px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 500px;
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    z-index: 9995;
+    animation: slideUpMulti 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpMulti {
+    from { 
+        transform: translate(-50%, 30px) scale(0.95); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translate(-50%, 0) scale(1); 
+        opacity: 1; 
+    }
+}
+
+.multi-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.multi-bar-badge {
+    background: rgba(99, 102, 241, 0.25);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    line-height: 1;
+}
+
+.multi-bar-badge i {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.multi-bar-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.multi-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-multi-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.btn-multi-action i {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+.btn-multi-action:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-multi-action.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.btn-multi-action.danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-multi-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}

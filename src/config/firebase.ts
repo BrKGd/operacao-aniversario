@@ -1,6 +1,10 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
+import { 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager 
+} from 'firebase/firestore';
 
 // Configurações do Firebase do projeto operacao-aniversario
 const firebaseConfig = {
@@ -18,18 +22,10 @@ export const app = initializeApp(firebaseConfig);
 // Inicializa o serviço de Autenticação
 export const auth = getAuth(app);
 
-// Inicializa o banco de dados Cloud Firestore
-export const db = getFirestore(app);
-
-// Habilita Persistência Offline Nativa em IndexedDB para 0ms de leitura e otimização de cota
-try {
-  enableMultiTabIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.warn('[Firebase Firestore] Múltiplas abas abertas, persistência habilitada na aba primária.');
-    } else if (err.code === 'unimplemented') {
-      console.warn('[Firebase Firestore] O navegador atual não suporta suporte offline em IndexedDB.');
-    }
-  });
-} catch (e) {
-  console.warn('[Firebase Firestore] Erro ao inicializar persistência offline:', e);
-}
+// Inicializa o banco de dados Cloud Firestore com persistência offline moderna e detecção de proxy/firewall corporativo
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  }),
+  experimentalAutoDetectLongPolling: true
+});

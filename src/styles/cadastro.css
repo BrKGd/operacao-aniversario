@@ -509,3 +509,9 @@
 .avatar-circle-option:hover i {
     transform: scale(1.1);
 }
+
+/* Esconde o botão flutuante FAB quando o drawer de avatares estiver aberto */
+.avatar-drawer.active ~ #fabAddFloating,
+body:has(.avatar-drawer.active) #fabAddFloating {
+    display: none !important;
+}

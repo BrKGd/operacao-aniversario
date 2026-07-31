@@ -2,22 +2,26 @@ import '../styles/lista.css';
 import '../styles/dashboard.css'; 
 import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
-import { Aniversario, MensagemTemplate } from '../types';
+import { Aniversario, Categoria, MensagemTemplate } from '../types';
 import { diasAteAniversario } from '../utils/dateUtils';
+import { modalAlerta } from '../utils/modalAlertas';
 import { createIcons, icons } from 'lucide';
 
-// 🧠 Tipagem do Estado Local
+// 🧠 Tipagem do Estado Local da Lista
 interface ListaState {
     busca: string;
-    filtro: string;
+    filtro: string; // 'todos' | 'proximos' | 'favoritos' | 'cat_{id}'
     contatosBase: Aniversario[];
+    categorias: Categoria[];
     tipoMensagemAtivo: string | null;
+    modoSelecao: boolean;
+    idsSelecionados: Set<string>;
 }
 
 export async function montarLista(container: HTMLElement) {
     const CACHE_KEY = 'fec_contatos_cache';
 
-    // 1. TENTATIVA DE RECUPERAÇÃO DE CACHE
+    // 1. RECUPERAÇÃO DE CACHE LOCAL
     let contatosIniciais: Aniversario[] = [];
     try {
         const cache = localStorage.getItem(CACHE_KEY);
@@ -30,29 +34,101 @@ export async function montarLista(container: HTMLElement) {
         busca: "",
         filtro: "todos",
         contatosBase: contatosIniciais,
-        tipoMensagemAtivo: null
+        categorias: [],
+        tipoMensagemAtivo: null,
+        modoSelecao: false,
+        idsSelecionados: new Set<string>()
     };
 
     let templatesGlobais: MensagemTemplate[] = [];
 
-    // --- 🛠️ FUNÇÕES DE RENDERIZAÇÃO (Declaradas no topo para evitar Erro 2304) ---
+    // --- 🛠️ FUNÇÕES DE RENDERIZAÇÃO ---
+
+    const renderFilterGroup = () => {
+        const filterGroup = document.getElementById('filterGroup');
+        if (!filterGroup) return;
+
+        let html = `
+            <button class="fec-chip ${state.filtro === 'todos' ? 'active' : ''}" data-f="todos">
+                <i data-lucide="layers"></i>
+                <span>Todos</span>
+            </button>
+            <button class="fec-chip ${state.filtro === 'proximos' ? 'active' : ''}" data-f="proximos">
+                <i data-lucide="calendar"></i>
+                <span>Próximos 30 dias</span>
+            </button>
+            <button class="fec-chip ${state.filtro === 'favoritos' ? 'active' : ''}" data-f="favoritos">
+                <i data-lucide="star" ${state.filtro === 'favoritos' ? 'style="fill:currentColor"' : ''}></i>
+                <span>Favoritos</span>
+            </button>
+        `;
+
+        state.categorias.forEach(cat => {
+            const isActive = state.filtro === `cat_${cat.id}`;
+            html += `
+                <button class="fec-chip ${isActive ? 'active' : ''}" data-f="cat_${cat.id}">
+                    <i data-lucide="${cat.icone || 'tag'}"></i>
+                    <span>${cat.nome}</span>
+                </button>
+            `;
+        });
+
+        filterGroup.innerHTML = html;
+        createIcons({ icons });
+    };
 
     const render = () => {
         const gridElement = document.getElementById('fec-grid');
+        const counterContainer = document.getElementById('fec-counter-container');
+        const multiBarContainer = document.getElementById('fec-multi-bar-container');
         if (!gridElement) return;
+
+        // Oculta/exibe o FAB (+) flutuante durante a seleção múltipla para evitar sobreposição
+        const fabBtn = document.getElementById('fabAddFloating');
+        if (fabBtn) {
+            if (state.modoSelecao) {
+                fabBtn.classList.add('fab-hidden');
+            } else {
+                fabBtn.classList.remove('fab-hidden');
+            }
+        }
 
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
 
+        // FILTRAGEM DINÂMICA
         const filtrados = state.contatosBase.filter(c => {
-            const matchBusca = c.nome.toLowerCase().includes(state.busca.toLowerCase());
-            if (state.filtro === 'favoritos') return matchBusca && c.favorito;
-            if (state.filtro === 'proximos') return matchBusca && calcularDias(c.data_nascimento) <= 30;
-            return matchBusca;
+            const matchBusca = c.nome.toLowerCase().includes(state.busca.toLowerCase()) || 
+                               (c.apelido && c.apelido.toLowerCase().includes(state.busca.toLowerCase()));
+            
+            if (!matchBusca) return false;
+
+            if (state.filtro === 'favoritos') return c.favorito;
+            if (state.filtro === 'proximos') return calcularDias(c.data_nascimento) <= 30;
+            if (state.filtro.startsWith('cat_')) {
+                const catIdTarget = state.filtro.replace('cat_', '');
+                return c.categoria_id === catIdTarget;
+            }
+
+            return true;
         });
 
         filtrados.sort((a, b) => calcularDias(a.data_nascimento) - calcularDias(b.data_nascimento));
 
+        // 1. RENDERIZAR BARRA DE CONTAGEM & BOTAO SELECAO MULTIPLA
+        if (counterContainer) {
+            counterContainer.innerHTML = `
+                <div class="fec-list-counter-bar">
+                    <span>Exibindo <strong>${filtrados.length}</strong> de <strong>${state.contatosBase.length}</strong> aniversariantes</span>
+                    <button class="btn-toggle-multi ${state.modoSelecao ? 'active' : ''}" id="btnToggleMulti">
+                        <i data-lucide="${state.modoSelecao ? 'x' : 'check-square'}"></i>
+                        <span>${state.modoSelecao ? 'Cancelar Seleção' : 'Exclusão Múltipla'}</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        // 2. RENDERIZAR GRID DE CONTATOS
         if (filtrados.length === 0) {
             gridElement.innerHTML = `
                 <div class="fec-list-empty">
@@ -65,10 +141,17 @@ export async function montarLista(container: HTMLElement) {
                 const dias = calcularDias(c.data_nascimento);
                 const jaEnviou = c.send_msg && c.ultimo_envio_ano === anoAtual;
                 const avatarUrl = c.imagem_url || `https://ui-avatars.com/api/?background=eef2ff&color=6366f1&name=${encodeURIComponent(c.nome)}`;
+                const isSelected = state.idsSelecionados.has(c.id);
 
                 return `
-                <div class="fec-contact-card" data-id="${c.id}" data-nome="${c.nome}" data-tel="${c.telefone || ''}">
-                    <div class="fec-card-main js-detalhes">
+                <div class="fec-contact-card ${isSelected ? 'selected' : ''}" data-id="${c.id}" data-nome="${c.nome}" data-tel="${c.telefone || ''}">
+                    ${state.modoSelecao ? `
+                        <div class="fec-checkbox-wrapper js-toggle-select" data-id="${c.id}">
+                            <i data-lucide="${isSelected ? 'check-square' : 'square'}" class="fec-checkbox-icon ${isSelected ? 'checked' : ''}"></i>
+                        </div>
+                    ` : ''}
+
+                    <div class="fec-card-main js-detalhes" style="flex: 1; cursor: pointer;">
                         <div class="fec-avatar-container">
                             <img src="${avatarUrl}" class="fec-avatar" alt="${c.nome}" loading="lazy">
                             ${c.favorito ? '<div class="fec-fav-indicator"><i data-lucide="star" style="width:10px; height:10px; fill:#f59e0b"></i></div>' : ''}
@@ -84,21 +167,109 @@ export async function montarLista(container: HTMLElement) {
                             </div>
                         </div>
                     </div>
-                    <div class="fec-card-actions">
-                        <button class="btn-action fav ${c.favorito ? 'active' : ''} js-toggle-fav">
-                            <i data-lucide="star" ${c.favorito ? 'style="fill:currentColor"' : ''}></i>
-                        </button>
-                        <button class="btn-action ${jaEnviou ? 'done' : ''} js-marcar-enviado">
-                            <i data-lucide="${jaEnviou ? 'check-circle' : 'circle'}"></i>
-                        </button>
-                        <button class="btn-action js-abrir-drawer">
-                            <i data-lucide="message-circle"></i>
-                        </button>
-                    </div>
+
+                    ${!state.modoSelecao ? `
+                        <div class="fec-card-actions">
+                            <button class="btn-action fav ${c.favorito ? 'active' : ''} js-toggle-fav">
+                                <i data-lucide="star" ${c.favorito ? 'style="fill:currentColor"' : ''}></i>
+                            </button>
+                            <button class="btn-action ${jaEnviou ? 'done' : ''} js-marcar-enviado">
+                                <i data-lucide="${jaEnviou ? 'check-circle' : 'circle'}"></i>
+                            </button>
+                            <button class="btn-action js-abrir-drawer">
+                                <i data-lucide="message-circle"></i>
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>`;
             }).join('');
         }
+
+        // 3. RENDERIZAR BARRA FLUTUANTE DE SELEÇÃO MÚLTIPLA
+        if (multiBarContainer) {
+            if (state.modoSelecao) {
+                const totalFiltrados = filtrados.length;
+                const selecionadosCount = state.idsSelecionados.size;
+                const todosSelecionados = totalFiltrados > 0 && selecionadosCount === totalFiltrados;
+
+                multiBarContainer.innerHTML = `
+                    <div class="fec-multi-bar">
+                        <div class="multi-bar-info">
+                            <span class="multi-bar-badge">
+                                <i data-lucide="check-square"></i>
+                                ${selecionadosCount}
+                            </span>
+                            <span class="multi-bar-label">de ${totalFiltrados} selecionados</span>
+                        </div>
+                        <div class="multi-bar-actions">
+                            <button class="btn-multi-action" id="btnSelectAll">
+                                <i data-lucide="${todosSelecionados ? 'square' : 'check-square'}"></i>
+                                <span>${todosSelecionados ? 'Desmarcar' : 'Marcar Todos'}</span>
+                            </button>
+                            <button class="btn-multi-action danger" id="btnDeleteSelected" ${selecionadosCount === 0 ? 'disabled' : ''}>
+                                <i data-lucide="trash-2"></i>
+                                <span>Excluir ${selecionadosCount > 0 ? `(${selecionadosCount})` : ''}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                multiBarContainer.innerHTML = '';
+            }
+        }
+
         createIcons({ icons });
+
+        // Event listener do botão de Seleção Múltipla
+        document.getElementById('btnToggleMulti')?.addEventListener('click', () => {
+            state.modoSelecao = !state.modoSelecao;
+            if (!state.modoSelecao) state.idsSelecionados.clear();
+            render();
+        });
+
+        // Listeners da Barra Flutuante
+        if (state.modoSelecao) {
+            document.getElementById('btnSelectAll')?.addEventListener('click', () => {
+                if (state.idsSelecionados.size === filtrados.length) {
+                    state.idsSelecionados.clear();
+                } else {
+                    filtrados.forEach(c => state.idsSelecionados.add(c.id));
+                }
+                render();
+            });
+
+            document.getElementById('btnDeleteSelected')?.addEventListener('click', async () => {
+                const count = state.idsSelecionados.size;
+                if (count === 0) return;
+
+                const confirmou = await modalAlerta.show({
+                    title: "Excluir Selecionados?",
+                    message: `Tem certeza que deseja excluir ${count} aniversariante(s)? Esta ação não pode ser desfeita.`,
+                    type: "confirm",
+                    confirmText: `Sim, Excluir (${count})`,
+                    cancelText: "Cancelar"
+                });
+
+                if (confirmou) {
+                    modalAlerta.showLoading(`Excluindo ${count} registro(s)...`);
+                    try {
+                        const idsArray = Array.from(state.idsSelecionados);
+                        await aniversarioService.excluirVarios(idsArray);
+                        
+                        state.contatosBase = state.contatosBase.filter(c => !state.idsSelecionados.has(c.id));
+                        state.idsSelecionados.clear();
+                        state.modoSelecao = false;
+
+                        modalAlerta.close();
+                        render();
+                        modalAlerta.show({ message: `${count} registro(s) excluído(s) com sucesso!`, type: "success" });
+                    } catch (err: any) {
+                        modalAlerta.close();
+                        modalAlerta.show({ message: err.message || "Erro ao excluir registros.", type: "error" });
+                    }
+                }
+            });
+        }
     };
 
     const renderDrawerContent = (tel: string) => {
@@ -141,13 +312,11 @@ export async function montarLista(container: HTMLElement) {
                         <i data-lucide="search"></i>
                         <input type="text" id="mainSearch" placeholder="Buscar amigos..." autocomplete="off">
                     </div>
-                    <div class="fec-filter-group" id="filterGroup">
-                        <button class="fec-chip active" data-f="todos">Todos</button>
-                        <button class="fec-chip" data-f="proximos">Próximos 30 dias</button>
-                        <button class="fec-chip" data-f="favoritos">⭐ Favoritos</button>
-                    </div>
+                    <div class="fec-filter-group" id="filterGroup"></div>
+                    <div id="fec-counter-container"></div>
                 </div>
                 <div id="fec-grid"></div>
+                <div id="fec-multi-bar-container"></div>
             </div>
             <div id="drawer-mensagem-lista" class="drawer-cal">
                 <div class="drawer-cal-content">
@@ -164,6 +333,7 @@ export async function montarLista(container: HTMLElement) {
                 </div>
             </div>
         `;
+        renderFilterGroup();
         adicionarListeners();
     };
 
@@ -178,6 +348,17 @@ export async function montarLista(container: HTMLElement) {
             const id = card.dataset.id!;
             const contato = state.contatosBase.find(c => c.id === id);
             if (!contato) return;
+
+            // Se o modo de seleção múltipla estiver ativo
+            if (state.modoSelecao) {
+                if (state.idsSelecionados.has(id)) {
+                    state.idsSelecionados.delete(id);
+                } else {
+                    state.idsSelecionados.add(id);
+                }
+                render();
+                return;
+            }
 
             if (target.closest('.js-detalhes')) {
                 // @ts-ignore
@@ -262,25 +443,27 @@ export async function montarLista(container: HTMLElement) {
     }
 
     try {
-        const [contatosFresh, templatesFresh] = await Promise.all([
+        const [contatosFresh, categoriasFresh, templatesFresh] = await Promise.all([
             aniversarioService.listarTodos(),
+            aniversarioService.listarCategorias(),
             aniversarioService.listarTemplates()
         ]);
 
         state.contatosBase = contatosFresh as Aniversario[];
+        state.categorias = categoriasFresh as Categoria[];
         templatesGlobais = templatesFresh;
 
-        // Salva no cache removendo possíveis Base64 pesados das imagens
+        // Salva no cache local (mantendo imagens comprimidas intactas)
         try {
-            const cacheLeve = (contatosFresh as Aniversario[]).map(({ imagem_url, ...resto }) => ({
-                ...resto,
-                imagem_url: imagem_url?.startsWith('data:') ? null : imagem_url 
-            }));
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cacheLeve));
-        } catch (e) { console.warn("QuotaExceeded: Cache não atualizado."); }
+            localStorage.setItem(CACHE_KEY, JSON.stringify(contatosFresh));
+        } catch (e) { 
+            console.warn("QuotaExceeded: Cache de contatos mantido em memória RAM."); 
+        }
 
         if (!document.getElementById('mainSearch')) {
             prepararEstrutura();
+        } else {
+            renderFilterGroup();
         }
         
         render();
