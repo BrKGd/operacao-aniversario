@@ -73,12 +73,9 @@ body[data-theme='dark'] .users-header p {
     color: #94a3b8;
 }
 
-/* --- BARRA DE PESQUISA --- */
+/* --- BARRA DE PESQUISA (LARGURA TOTAL) --- */
 .users-search-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
     margin-bottom: 14px;
 }
 
@@ -93,7 +90,7 @@ body[data-theme='dark'] .users-header p {
 }
 
 .users-search-input {
-    flex: 1;
+    width: 100%;
     padding: 14px 16px 14px 48px;
     border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -116,47 +113,7 @@ body[data-theme='dark'] .users-search-input {
     border-color: #0052FF;
 }
 
-.users-btn-refresh {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    background: #ffffff;
-    color: #0052FF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.users-btn-refresh:hover {
-    background: rgba(0, 82, 255, 0.06);
-    transform: rotate(30deg);
-}
-
-body[data-theme='dark'] .users-btn-refresh {
-    background: #131b2e;
-    border-color: #1e293b;
-    color: #38bdf8;
-}
-
-body[data-theme='dark'] .users-btn-refresh:hover {
-    background: rgba(56, 189, 248, 0.12);
-}
-
-.users-btn-refresh i.spinning {
-    animation: spinRefresh 0.8s linear infinite;
-}
-
-@keyframes spinRefresh {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* --- LINHA TOOLBAR COM FILTROS ALINHADOS À DIREITA --- */
+/* --- LINHA TOOLBAR: ESQUERDA (ÍCONE + CONTAGEM + ÍCONE REFRESH MENOR) | DIREITA (PILLS) --- */
 .users-toolbar-row {
     display: flex;
     align-items: center;
@@ -165,25 +122,71 @@ body[data-theme='dark'] .users-btn-refresh:hover {
     gap: 10px;
 }
 
-.users-count-label {
-    font-size: 0.82rem;
-    color: #64748b;
-    font-weight: 600;
+.users-count-group {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-size: 0.84rem;
+    color: #64748b;
+    font-weight: 600;
 }
 
-.users-count-label i {
-    width: 16px !important;
-    height: 16px !important;
-}
-
-body[data-theme='dark'] .users-count-label {
+body[data-theme='dark'] .users-count-group {
     color: #94a3b8;
 }
 
-/* CHIPS DE FILTRO NO CANTO SUPERIOR DIREITO */
+.users-count-icon {
+    width: 16px !important;
+    height: 16px !important;
+    color: #64748b;
+}
+
+body[data-theme='dark'] .users-count-icon {
+    color: #94a3b8;
+}
+
+.users-btn-refresh-sm {
+    background: transparent;
+    border: none;
+    color: #0052FF;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 2px;
+}
+
+.users-btn-refresh-sm i {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.users-btn-refresh-sm:hover {
+    background: rgba(0, 82, 255, 0.1);
+    transform: rotate(30deg);
+}
+
+body[data-theme='dark'] .users-btn-refresh-sm {
+    color: #38bdf8;
+}
+
+body[data-theme='dark'] .users-btn-refresh-sm:hover {
+    background: rgba(56, 189, 248, 0.15);
+}
+
+.users-btn-refresh-sm i.spinning {
+    animation: spinRefresh 0.8s linear infinite;
+}
+
+@keyframes spinRefresh {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* CHIPS DE FILTRO DE PRESENÇA (ALINHADOS À DIREITA) */
 .presence-filter-chips.align-right {
     display: flex;
     gap: 6px;
@@ -249,7 +252,7 @@ body[data-theme='dark'] .presence-chip.active {
 .presence-chip.active .dot-green { background-color: #ffffff; }
 .presence-chip.active .dot-grey { background-color: rgba(255, 255, 255, 0.7); }
 
-/* --- LISTA DE USUÁRIOS (CARDS BENTO) --- */
+/* --- LISTA DE USUÁRIOS (ESTILO CARTÃO DE IDENTIFICAÇÃO) --- */
 .users-list {
     display: flex;
     flex-direction: column;
@@ -300,19 +303,28 @@ body[data-theme='dark'] .user-card-item.card-is-blocked {
     border-color: rgba(239, 68, 68, 0.4);
 }
 
-/* AVATAR COM PONTO DE PRESENÇA */
+/* CORPO DO CARTÃO DE IDENTIFICAÇÃO: FOTO NA ESQUERDA OCUPANDO A ALTURA ATÉ A LINHA */
+.user-card-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+/* FOTO DO CRACHÁ / CARD DE IDENTIFICAÇÃO (CANTO ESQUERDO) */
 .user-avatar-box {
     position: relative;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
+    width: 72px;
+    min-width: 72px;
+    height: 72px;
+    border-radius: 20px;
     flex-shrink: 0;
 }
 
 .user-avatar-box img {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
+    border-radius: 20px;
     object-fit: cover;
     border: 2px solid #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -324,13 +336,13 @@ body[data-theme='dark'] .user-avatar-box img {
 
 .avatar-presence-dot {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 13px;
-    height: 13px;
+    bottom: -1px;
+    right: -1px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     border: 2px solid #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 body[data-theme='dark'] .avatar-presence-dot {
@@ -346,23 +358,29 @@ body[data-theme='dark'] .avatar-presence-dot {
     background-color: #94a3b8;
 }
 
+/* INFORMAÇÕES DO USUÁRIO NO LADO DIREITO COM ALINHAMENTO À ESQUERDA */
 .user-card-info {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 4px;
     flex-grow: 1;
+    text-align: left;
+    overflow: hidden;
 }
 
 .user-card-name-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    justify-content: flex-start;
 }
 
 .user-card-name {
     font-size: 1.05rem;
     font-weight: 800;
     color: #0f172a;
+    text-align: left;
 }
 
 body[data-theme='dark'] .user-card-name {
@@ -390,18 +408,23 @@ body[data-theme='dark'] .user-card-name {
     font-size: 0.82rem;
     color: #64748b;
     font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 body[data-theme='dark'] .user-card-email {
     color: #94a3b8;
 }
 
-/* BADGES DE TIPO, STATUS E PRESENÇA */
+/* BADGES DE TIPO, STATUS E PRESENÇA ALINHADOS À ESQUERDA */
 .user-badges-row {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 6px;
+    margin-top: 4px;
+    justify-content: flex-start;
 }
 
 .badge-pill {
@@ -467,12 +490,12 @@ body[data-theme='dark'] .presence-badge-offline {
     100% { opacity: 0.4; }
 }
 
-/* AÇÕES DO CARD DE USUÁRIO */
+/* LINHA HORIZONTAL E AÇÕES DO CARD */
 .user-card-actions {
     display: flex;
     gap: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding-top: 14px;
 }
 
 body[data-theme='dark'] .user-card-actions {

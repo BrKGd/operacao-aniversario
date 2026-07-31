@@ -67,20 +67,21 @@ export async function montarUsuarios(container: HTMLElement) {
                     <p>Gerencie permissões, papéis de acesso e monitore a presença online</p>
                 </div>
 
-                <!-- BARRA DE PESQUISA (DIRETAMENTE ABAIXO DA DESCRIÇÃO) -->
+                <!-- BARRA DE PESQUISA LIMPÁ E COMPLETA -->
                 <div class="users-search-wrapper">
                     <i data-lucide="search" class="users-search-icon"></i>
                     <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
-                    <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
-                        <i data-lucide="refresh-cw"></i>
-                    </button>
                 </div>
 
-                <!-- LINHA INTERMEDIÁRIA COM FILTROS DE PRESENÇA NO CANTO SUPERIOR DIREITO -->
+                <!-- LINHA TOOLBAR: ESQUERDA (ÍCONE + QTD + REFRESH MENOR) | DIREITA (PILLS) -->
                 <div class="users-toolbar-row">
-                    <span class="users-count-label">
-                        <i data-lucide="users"></i> <strong>${totalUsuarios}</strong> ${totalUsuarios === 1 ? 'usuário' : 'usuários'}
-                    </span>
+                    <div class="users-count-group">
+                        <i data-lucide="users" class="users-count-icon"></i>
+                        <span class="users-count-text"><strong>${totalUsuarios}</strong> ${totalUsuarios === 1 ? 'usuário' : 'usuários'}</span>
+                        <button class="users-btn-refresh-sm" id="btnRefreshUsers" title="Atualizar Lista">
+                            <i data-lucide="refresh-cw"></i>
+                        </button>
+                    </div>
 
                     <div class="presence-filter-chips align-right">
                         <button class="presence-chip active" data-filter="all">
@@ -95,7 +96,7 @@ export async function montarUsuarios(container: HTMLElement) {
                     </div>
                 </div>
 
-                <!-- LISTA DE USUÁRIOS (BENTO CARDS) -->
+                <!-- LISTA DE USUÁRIOS (CARDS NO ESTILO CRACHÁ / ID CARD) -->
                 <div class="users-list" id="usersListContainer">
                     ${usuarios.length === 0 ? `
                         <div class="empty-users-state">Nenhum usuário encontrado.</div>
@@ -115,7 +116,7 @@ export async function montarUsuarios(container: HTMLElement) {
             }
         });
 
-        // Evento Recarregar
+        // Evento Recarregar (Botão Menor ao lado da Contagem)
         document.getElementById('btnRefreshUsers')?.addEventListener('click', () => {
             const icon = container.querySelector('#btnRefreshUsers i');
             if (icon) icon.classList.add('spinning');
@@ -176,7 +177,7 @@ function renderUserCard(u: any): string {
     const searchStr = `${u.nome} ${u.email}`.toLowerCase();
     const presenceKey = presenca.online ? 'online' : 'offline';
 
-    // Badge de status de conta somente para bloqueados ou excluídos para remover redundância visual
+    // Badge de status especial de conta para bloqueados/excluídos
     let accountStatusBadge = '';
     if (isDeleted) {
         accountStatusBadge = `<span class="badge-pill status-blocked">EXCLUÍDO</span>`;
@@ -186,28 +187,32 @@ function renderUserCard(u: any): string {
 
     return `
         <div class="user-card-item ${isBlocked || isDeleted ? 'card-is-blocked' : ''}" data-search="${searchStr}" data-presence="${presenceKey}">
-            <div class="user-avatar-box">
-                <img src="${u.avatar}" alt="${u.nome}">
-                <span class="avatar-presence-dot ${presenca.online ? 'dot-online' : 'dot-offline'}" title="${presenca.label}"></span>
-            </div>
-            
-            <div class="user-card-info">
-                <div class="user-card-name-row">
-                    <span class="user-card-name">${u.nome}</span>
-                    ${isMaster ? `<span class="badge-master" title="Administrador Mestre"><i data-lucide="crown"></i> MESTRE</span>` : ''}
+            <!-- CORPO DO CARTÃO DE IDENTIFICAÇÃO (FOTO NA ESQUERDA ATÉ A LINHA DIVISÓRIA) -->
+            <div class="user-card-body">
+                <div class="user-avatar-box">
+                    <img src="${u.avatar}" alt="${u.nome}">
+                    <span class="avatar-presence-dot ${presenca.online ? 'dot-online' : 'dot-offline'}" title="${presenca.label}"></span>
                 </div>
-                <span class="user-card-email">${u.email}</span>
                 
-                <div class="user-badges-row">
-                    <span class="badge-pill ${roleBadgeClass}">${roleBadgeText}</span>
-                    ${accountStatusBadge}
-                    <span class="badge-pill ${presenca.online ? 'presence-badge-online' : 'presence-badge-offline'}" title="Última atividade: ${presenca.label}">
-                        <span class="badge-status-dot ${presenca.online ? 'pulse-dot' : ''}"></span>
-                        ${presenca.label}
-                    </span>
+                <div class="user-card-info">
+                    <div class="user-card-name-row">
+                        <span class="user-card-name">${u.nome}</span>
+                        ${isMaster ? `<span class="badge-master" title="Administrador Mestre"><i data-lucide="crown"></i> MESTRE</span>` : ''}
+                    </div>
+                    <span class="user-card-email">${u.email}</span>
+                    
+                    <div class="user-badges-row">
+                        <span class="badge-pill ${roleBadgeClass}">${roleBadgeText}</span>
+                        ${accountStatusBadge}
+                        <span class="badge-pill ${presenca.online ? 'presence-badge-online' : 'presence-badge-offline'}" title="Última atividade: ${presenca.label}">
+                            <span class="badge-status-dot ${presenca.online ? 'pulse-dot' : ''}"></span>
+                            ${presenca.label}
+                        </span>
+                    </div>
                 </div>
             </div>
 
+            <!-- LINHA DIVISÓRIA E AÇÕES DA CONTA -->
             ${!isMaster ? `
                 <div class="user-card-actions">
                     <button class="user-action-btn btn-toggle-role" data-email="${u.email}" data-role="${u.role}" title="${isAdmin ? 'Rebaixar a Usuário' : 'Promover a Admin'}">
