@@ -67,53 +67,24 @@ export async function montarUsuarios(container: HTMLElement) {
                     <p>Gerencie permissões, papéis de acesso e monitore a presença online</p>
                 </div>
 
-                <!-- CARDS DE RESUMO DE PRESENÇA -->
-                <div class="users-presence-summary">
-                    <div class="presence-stat-card card-stat-total">
-                        <div class="stat-icon-wrapper">
-                            <i data-lucide="users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value">${totalUsuarios}</span>
-                            <span class="stat-label">Total Cadastrados</span>
-                        </div>
-                    </div>
-
-                    <div class="presence-stat-card card-stat-online">
-                        <div class="stat-icon-wrapper">
-                            <span class="pulse-online-beacon"></span>
-                            <i data-lucide="wifi"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value text-online">${onlineCount}</span>
-                            <span class="stat-label">Online Agora</span>
-                        </div>
-                    </div>
-
-                    <div class="presence-stat-card card-stat-offline">
-                        <div class="stat-icon-wrapper">
-                            <i data-lucide="wifi-off"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value text-offline">${offlineCount}</span>
-                            <span class="stat-label">Offline</span>
-                        </div>
-                    </div>
+                <!-- BARRA DE PESQUISA (DIRETAMENTE ABAIXO DA DESCRIÇÃO) -->
+                <div class="users-search-wrapper">
+                    <i data-lucide="search" class="users-search-icon"></i>
+                    <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
+                    <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
+                        <i data-lucide="refresh-cw"></i>
+                    </button>
                 </div>
 
-                <!-- BARRA DE PESQUISA & FILTROS DE PRESENÇA -->
-                <div class="users-controls-section">
-                    <div class="users-search-wrapper">
-                        <i data-lucide="search" class="users-search-icon"></i>
-                        <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
-                        <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
-                            <i data-lucide="refresh-cw"></i>
-                        </button>
-                    </div>
+                <!-- LINHA INTERMEDIÁRIA COM FILTROS DE PRESENÇA NO CANTO SUPERIOR DIREITO -->
+                <div class="users-toolbar-row">
+                    <span class="users-count-label">
+                        <i data-lucide="users"></i> <strong>${totalUsuarios}</strong> ${totalUsuarios === 1 ? 'usuário' : 'usuários'}
+                    </span>
 
-                    <div class="presence-filter-chips">
+                    <div class="presence-filter-chips align-right">
                         <button class="presence-chip active" data-filter="all">
-                            <i data-lucide="users"></i> Todos (${totalUsuarios})
+                            Todos (${totalUsuarios})
                         </button>
                         <button class="presence-chip" data-filter="online">
                             <span class="chip-dot dot-green"></span> Online (${onlineCount})
@@ -199,14 +170,19 @@ function renderUserCard(u: any): string {
 
     const presenca = calcularStatusPresenca(u.is_online, u.last_seen);
 
-    const statusBadgeText = isDeleted ? 'EXCLUÍDO' : (isBlocked ? 'BLOQUEADO' : 'ATIVO');
-    const statusBadgeClass = isDeleted ? 'status-blocked' : (isBlocked ? 'status-blocked' : 'status-active');
-
     const roleBadgeText = isAdmin ? 'ADMINISTRADOR' : 'USUÁRIO';
     const roleBadgeClass = isAdmin ? 'role-admin' : 'role-user';
 
     const searchStr = `${u.nome} ${u.email}`.toLowerCase();
     const presenceKey = presenca.online ? 'online' : 'offline';
+
+    // Badge de status de conta somente para bloqueados ou excluídos para remover redundância visual
+    let accountStatusBadge = '';
+    if (isDeleted) {
+        accountStatusBadge = `<span class="badge-pill status-blocked">EXCLUÍDO</span>`;
+    } else if (isBlocked) {
+        accountStatusBadge = `<span class="badge-pill status-blocked">BLOQUEADO</span>`;
+    }
 
     return `
         <div class="user-card-item ${isBlocked || isDeleted ? 'card-is-blocked' : ''}" data-search="${searchStr}" data-presence="${presenceKey}">
@@ -224,7 +200,7 @@ function renderUserCard(u: any): string {
                 
                 <div class="user-badges-row">
                     <span class="badge-pill ${roleBadgeClass}">${roleBadgeText}</span>
-                    <span class="badge-pill ${statusBadgeClass}">${statusBadgeText}</span>
+                    ${accountStatusBadge}
                     <span class="badge-pill ${presenca.online ? 'presence-badge-online' : 'presence-badge-offline'}" title="Última atividade: ${presenca.label}">
                         <span class="badge-status-dot ${presenca.online ? 'pulse-dot' : ''}"></span>
                         ${presenca.label}
