@@ -1,5 +1,5 @@
 import '../styles/usuarios.css';
-import { aniversarioService } from '../services/aniversarioService';
+import { aniversarioService, calcularStatusPresenca } from '../services/aniversarioService';
 import { modalAlerta } from '../utils/modalAlertas';
 import { 
     createIcons, 
@@ -13,12 +13,19 @@ import {
     Users, 
     Lock, 
     Unlock, 
-    Crown
+    Crown,
+    Radio,
+    Activity,
+    Wifi,
+    WifiOff,
+    RefreshCw,
+    Clock
 } from 'lucide';
 
 const ICON_MAP = { 
     ShieldCheck, UserCheck, UserX, Search, ChevronLeft, 
-    Sparkles, ShieldAlert, Users, Lock, Unlock, Crown
+    Sparkles, ShieldAlert, Users, Lock, Unlock, Crown,
+    Radio, Activity, Wifi, WifiOff, RefreshCw, Clock
 };
 
 export async function montarUsuarios(container: HTMLElement) {
@@ -39,6 +46,11 @@ export async function montarUsuarios(container: HTMLElement) {
 
         const usuarios = await aniversarioService.listarTodosUsuarios();
 
+        // Cálculo de estatísticas de presença
+        const totalUsuarios = usuarios.length;
+        const onlineCount = usuarios.filter(u => calcularStatusPresenca(u.is_online, u.last_seen).online).length;
+        const offlineCount = totalUsuarios - onlineCount;
+
         container.innerHTML = `
             <div class="users-container">
                 <!-- BOTÃO VOLTAR -->
@@ -52,25 +64,78 @@ export async function montarUsuarios(container: HTMLElement) {
                         <i data-lucide="crown"></i> PAINEL DO ADMINISTRADOR
                     </div>
                     <h2>Gestão de Usuários</h2>
-                    <p>Gerencie papéis de acesso, permissões e bloqueios de contas</p>
+                    <p>Gerencie permissões, papéis de acesso e monitore a presença online</p>
                 </div>
 
-                <!-- BUSCA DE USUÁRIOS -->
-                <div class="users-search-wrapper">
-                    <i data-lucide="search" class="users-search-icon"></i>
-                    <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
+                <!-- CARDS DE RESUMO DE PRESENÇA -->
+                <div class="users-presence-summary">
+                    <div class="presence-stat-card card-stat-total">
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">${totalUsuarios}</span>
+                            <span class="stat-label">Total Cadastrados</span>
+                        </div>
+                    </div>
+
+                    <div class="presence-stat-card card-stat-online">
+                        <div class="stat-icon-wrapper">
+                            <span class="pulse-online-beacon"></span>
+                            <i data-lucide="wifi"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value text-online">${onlineCount}</span>
+                            <span class="stat-label">Online Agora</span>
+                        </div>
+                    </div>
+
+                    <div class="presence-stat-card card-stat-offline">
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="wifi-off"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value text-offline">${offlineCount}</span>
+                            <span class="stat-label">Offline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BARRA DE PESQUISA & FILTROS DE PRESENÇA -->
+                <div class="users-controls-section">
+                    <div class="users-search-wrapper">
+                        <i data-lucide="search" class="users-search-icon"></i>
+                        <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
+                        <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
+                            <i data-lucide="refresh-cw"></i>
+                        </button>
+                    </div>
+
+                    <div class="presence-filter-chips">
+                        <button class="presence-chip active" data-filter="all">
+                            <i data-lucide="users"></i> Todos (${totalUsuarios})
+                        </button>
+                        <button class="presence-chip" data-filter="online">
+                            <span class="chip-dot dot-green"></span> Online (${onlineCount})
+                        </button>
+                        <button class="presence-chip" data-filter="offline">
+                            <span class="chip-dot dot-grey"></span> Offline (${offlineCount})
+                        </button>
+                    </div>
                 </div>
 
                 <!-- LISTA DE USUÁRIOS (BENTO CARDS) -->
                 <div class="users-list" id="usersListContainer">
-                    ${usuarios.map(u => renderUserCard(u)).join('')}
+                    ${usuarios.length === 0 ? `
+                        <div class="empty-users-state">Nenhum usuário encontrado.</div>
+                    ` : usuarios.map(u => renderUserCard(u)).join('')}
                 </div>
             </div>
         `;
 
         createIcons({ icons: ICON_MAP, root: container });
 
-        // Voltar
+        // Evento Voltar
         document.getElementById('btnVoltarUsuarios')?.addEventListener('click', () => {
             if (typeof (window as any).navegar === 'function') {
                 (window as any).navegar('perfil');
@@ -79,29 +144,60 @@ export async function montarUsuarios(container: HTMLElement) {
             }
         });
 
-        // Live Search
+        // Evento Recarregar
+        document.getElementById('btnRefreshUsers')?.addEventListener('click', () => {
+            const icon = container.querySelector('#btnRefreshUsers i');
+            if (icon) icon.classList.add('spinning');
+            montarUsuarios(container);
+        });
+
+        // Lógica de Filtro e Busca Integrada
+        let currentFilter = 'all';
         const searchInput = container.querySelector('#searchUser') as HTMLInputElement;
-        searchInput?.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase().trim();
-            container.querySelectorAll('.user-card-item').forEach(card => {
+
+        const aplicarFiltros = () => {
+            const query = (searchInput?.value || '').toLowerCase().trim();
+            const cards = container.querySelectorAll('.user-card-item');
+
+            cards.forEach(card => {
                 const searchData = (card as HTMLElement).dataset.search || '';
-                const visivel = searchData.includes(query);
-                (card as HTMLElement).style.display = visivel ? 'flex' : 'none';
+                const presenceData = (card as HTMLElement).dataset.presence || 'offline';
+
+                const matchesSearch = searchData.includes(query);
+                const matchesPresence = currentFilter === 'all' || presenceData === currentFilter;
+
+                (card as HTMLElement).style.display = (matchesSearch && matchesPresence) ? 'flex' : 'none';
+            });
+        };
+
+        // Evento da caixa de pesquisa
+        searchInput?.addEventListener('input', aplicarFiltros);
+
+        // Eventos dos Chips de Filtro
+        container.querySelectorAll('.presence-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                container.querySelectorAll('.presence-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentFilter = (chip as HTMLElement).dataset.filter || 'all';
+                aplicarFiltros();
             });
         });
 
-        // Registrar handlers nos cards de usuario
+        // Registrar handlers de ações nos cards
         vincularEventosUsuarios(container, () => montarUsuarios(container));
 
     } catch (e: any) {
         container.innerHTML = `<div class="fec-center-wrapper">Erro ao carregar usuários.</div>`;
     }
 }
+
 function renderUserCard(u: any): string {
     const isMaster = u.email.toLowerCase() === 'gleidson.fig@gmail.com';
     const isAdmin = u.role === 'admin';
     const isBlocked = u.status === 'blocked';
     const isDeleted = u.status === 'deleted';
+
+    const presenca = calcularStatusPresenca(u.is_online, u.last_seen);
 
     const statusBadgeText = isDeleted ? 'EXCLUÍDO' : (isBlocked ? 'BLOQUEADO' : 'ATIVO');
     const statusBadgeClass = isDeleted ? 'status-blocked' : (isBlocked ? 'status-blocked' : 'status-active');
@@ -110,11 +206,13 @@ function renderUserCard(u: any): string {
     const roleBadgeClass = isAdmin ? 'role-admin' : 'role-user';
 
     const searchStr = `${u.nome} ${u.email}`.toLowerCase();
+    const presenceKey = presenca.online ? 'online' : 'offline';
 
     return `
-        <div class="user-card-item ${isBlocked || isDeleted ? 'card-is-blocked' : ''}" data-search="${searchStr}">
+        <div class="user-card-item ${isBlocked || isDeleted ? 'card-is-blocked' : ''}" data-search="${searchStr}" data-presence="${presenceKey}">
             <div class="user-avatar-box">
                 <img src="${u.avatar}" alt="${u.nome}">
+                <span class="avatar-presence-dot ${presenca.online ? 'dot-online' : 'dot-offline'}" title="${presenca.label}"></span>
             </div>
             
             <div class="user-card-info">
@@ -127,6 +225,10 @@ function renderUserCard(u: any): string {
                 <div class="user-badges-row">
                     <span class="badge-pill ${roleBadgeClass}">${roleBadgeText}</span>
                     <span class="badge-pill ${statusBadgeClass}">${statusBadgeText}</span>
+                    <span class="badge-pill ${presenca.online ? 'presence-badge-online' : 'presence-badge-offline'}" title="Última atividade: ${presenca.label}">
+                        <span class="badge-status-dot ${presenca.online ? 'pulse-dot' : ''}"></span>
+                        ${presenca.label}
+                    </span>
                 </div>
             </div>
 

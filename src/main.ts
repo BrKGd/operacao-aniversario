@@ -47,10 +47,12 @@ async function inicializar() {
     // Listener de Autenticação do Firebase Auth em tempo real
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
+            aniversarioService.pararHeartbeatPresenca();
             configurarLogin();
         } else {
             const perfil = await aniversarioService.getPerfilUsuario();
             if (perfil?.status === 'blocked') {
+                aniversarioService.pararHeartbeatPresenca();
                 await signOut(auth);
                 aniversarioService.invalidarCache();
                 exibirTelaUsuarioBloqueado(perfil.email || user.email || 'Usuário');
@@ -58,11 +60,15 @@ async function inicializar() {
             }
 
             if (perfil?.status === 'deleted') {
+                aniversarioService.pararHeartbeatPresenca();
                 await signOut(auth);
                 aniversarioService.invalidarCache();
                 exibirTelaUsuarioExcluido(perfil.email || user.email || 'Usuário');
                 return;
             }
+
+            // Inicia o heartbeat de presença online
+            aniversarioService.iniciarHeartbeatPresenca();
 
             // Dispara o pré-carregamento do cache em background para 0ms de latência
             Promise.all([

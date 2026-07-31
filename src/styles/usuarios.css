@@ -30,7 +30,7 @@
 .users-header {
     text-align: center;
     margin-top: 55px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .admin-badge-title {
@@ -73,10 +73,158 @@ body[data-theme='dark'] .users-header p {
     color: #94a3b8;
 }
 
-/* BUSCA DE USUÁRIOS */
+/* --- CARDS DE RESUMO DE PRESENÇA --- */
+.users-presence-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.presence-stat-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.presence-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+body[data-theme='dark'] .presence-stat-card {
+    background: #131b2e;
+    border-color: #1e293b;
+}
+
+.stat-icon-wrapper {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.stat-icon-wrapper i {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.card-stat-total .stat-icon-wrapper {
+    background: rgba(0, 82, 255, 0.1);
+    color: #0052FF;
+}
+
+body[data-theme='dark'] .card-stat-total .stat-icon-wrapper {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+}
+
+.card-stat-online .stat-icon-wrapper {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+body[data-theme='dark'] .card-stat-online .stat-icon-wrapper {
+    background: rgba(52, 211, 153, 0.18);
+    color: #34d399;
+}
+
+.card-stat-offline .stat-icon-wrapper {
+    background: rgba(100, 116, 139, 0.12);
+    color: #64748b;
+}
+
+body[data-theme='dark'] .card-stat-offline .stat-icon-wrapper {
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+}
+
+.pulse-online-beacon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulseBeacon 1.8s infinite;
+}
+
+@keyframes pulseBeacon {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.stat-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+body[data-theme='dark'] .stat-value {
+    color: #f8fafc;
+}
+
+.stat-value.text-online { color: #10b981; }
+body[data-theme='dark'] .stat-value.text-online { color: #34d399; }
+
+.stat-value.text-offline { color: #64748b; }
+body[data-theme='dark'] .stat-value.text-offline { color: #94a3b8; }
+
+.stat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+body[data-theme='dark'] .stat-label {
+    color: #94a3b8;
+}
+
+/* --- CONTROLES: BUSCA E FILTROS CHIPS --- */
+.users-controls-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
 .users-search-wrapper {
     position: relative;
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .users-search-icon {
@@ -90,7 +238,7 @@ body[data-theme='dark'] .users-header p {
 }
 
 .users-search-input {
-    width: 100%;
+    flex: 1;
     padding: 14px 16px 14px 48px;
     border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -113,11 +261,134 @@ body[data-theme='dark'] .users-search-input {
     border-color: #0052FF;
 }
 
-/* LISTA DE USUÁRIOS (CARDS BENTO) */
+.users-btn-refresh {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    color: #0052FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.users-btn-refresh:hover {
+    background: rgba(0, 82, 255, 0.06);
+    transform: rotate(30deg);
+}
+
+body[data-theme='dark'] .users-btn-refresh {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #38bdf8;
+}
+
+body[data-theme='dark'] .users-btn-refresh:hover {
+    background: rgba(56, 189, 248, 0.12);
+}
+
+.users-btn-refresh i.spinning {
+    animation: spinRefresh 0.8s linear infinite;
+}
+
+@keyframes spinRefresh {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* CHIPS DE FILTRO DE PRESENÇA */
+.presence-filter-chips {
+    display: flex;
+    gap: 8px;
+}
+
+.presence-chip {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body[data-theme='dark'] .presence-chip {
+    background: #131b2e;
+    border-color: #1e293b;
+    color: #94a3b8;
+}
+
+.presence-chip:hover {
+    background: #f8fafc;
+    border-color: rgba(0, 82, 255, 0.2);
+}
+
+body[data-theme='dark'] .presence-chip:hover {
+    background: #1c2842;
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+.presence-chip.active {
+    background: #0052FF;
+    color: #ffffff;
+    border-color: #0052FF;
+    box-shadow: 0 4px 12px rgba(0, 82, 255, 0.25);
+}
+
+body[data-theme='dark'] .presence-chip.active {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot-green { background-color: #10b981; }
+.dot-grey { background-color: #94a3b8; }
+
+.presence-chip.active .dot-green { background-color: #ffffff; }
+.presence-chip.active .dot-grey { background-color: rgba(255, 255, 255, 0.7); }
+
+/* --- LISTA DE USUÁRIOS (CARDS BENTO) --- */
 .users-list {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.empty-users-state {
+    text-align: center;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 20px;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme='dark'] .empty-users-state {
+    background: #131b2e;
+    color: #94a3b8;
+    border-color: #1e293b;
 }
 
 .user-card-item {
@@ -147,20 +418,50 @@ body[data-theme='dark'] .user-card-item.card-is-blocked {
     border-color: rgba(239, 68, 68, 0.4);
 }
 
+/* AVATAR COM PONTO DE PRESENÇA */
 .user-avatar-box {
+    position: relative;
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    overflow: hidden;
     flex-shrink: 0;
-    border: 2px solid #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .user-avatar-box img {
     width: 100%;
     height: 100%;
+    border-radius: 50%;
     object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme='dark'] .user-avatar-box img {
+    border-color: #1e293b;
+}
+
+.avatar-presence-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+body[data-theme='dark'] .avatar-presence-dot {
+    border-color: #131b2e;
+}
+
+.avatar-presence-dot.dot-online {
+    background-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+.avatar-presence-dot.dot-offline {
+    background-color: #94a3b8;
 }
 
 .user-card-info {
@@ -213,11 +514,12 @@ body[data-theme='dark'] .user-card-email {
     color: #94a3b8;
 }
 
-/* BADGES DE TIPO E STATUS */
+/* BADGES DE TIPO, STATUS E PRESENÇA */
 .user-badges-row {
     display: flex;
-    gap: 8px;
-    margin-top: 4px;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
 }
 
 .badge-pill {
@@ -226,6 +528,9 @@ body[data-theme='dark'] .user-card-email {
     font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .role-admin { background: rgba(0, 82, 255, 0.12); color: #0052FF; }
@@ -236,6 +541,49 @@ body[data-theme='dark'] .role-user { background: #1c2842; color: #94a3b8; }
 
 .status-active { background: rgba(16, 185, 129, 0.12); color: #10b981; }
 .status-blocked { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+/* BADGES DE PRESENÇA ONLINE / OFFLINE */
+.presence-badge-online {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+body[data-theme='dark'] .presence-badge-online {
+    background: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.3);
+}
+
+.presence-badge-offline {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body[data-theme='dark'] .presence-badge-offline {
+    background: #1c2842;
+    color: #94a3b8;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.badge-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    background-color: currentColor;
+}
+
+.badge-status-dot.pulse-dot {
+    animation: dotPulse 1.5s infinite;
+}
+
+@keyframes dotPulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
 
 /* AÇÕES DO CARD DE USUÁRIO */
 .user-card-actions {

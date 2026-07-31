@@ -35,6 +35,46 @@ export function gerarUUID(): string {
   });
 }
 
+let presenceTimer: any = null;
+
+/**
+ * Calcula se o usuário está online com base no flag is_online e na data da última atividade (threshold de 3 minutos)
+ */
+export function calcularStatusPresenca(isOnline?: boolean, lastSeen?: string): { online: boolean; label: string } {
+  if (!lastSeen) {
+    return { online: false, label: 'Offline' };
+  }
+  const dateSeen = new Date(lastSeen).getTime();
+  if (isNaN(dateSeen)) {
+    return { online: false, label: 'Offline' };
+  }
+  const agora = Date.now();
+  const diffMs = agora - dateSeen;
+  const diffMinutes = Math.floor(diffMs / 60000);
+
+  const estaOnline = Boolean(isOnline) && diffMs < 3 * 60 * 1000;
+
+  if (estaOnline) {
+    return { online: true, label: 'Online agora' };
+  }
+
+  if (diffMinutes < 1) {
+    return { online: false, label: 'Offline (Visto há pouco)' };
+  }
+  if (diffMinutes < 60) {
+    return { online: false, label: `Offline (Visto há ${diffMinutes} min)` };
+  }
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return { online: false, label: `Offline (Visto há ${diffHours}h)` };
+  }
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) {
+    return { online: false, label: 'Offline (Visto ontem)' };
+  }
+  return { online: false, label: `Offline (Visto há ${diffDays} dias)` };
+}
+
 // --- CACHE EM MEMÓRIA & LOCALSTORAGE PARA PERFORMANCE MÁXIMA E OTIMIZAÇÃO DE COTAS (0ms SWR) ---
 const CACHE_KEYS = {
   ANIVERSARIOS: 'leao_cache_aniversarios',
@@ -118,6 +158,9 @@ export const aniversarioService = {
     const avatar = profileRow?.avatar_url || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=0052FF&color=fff&bold=true`;
     const createdAt = profileRow?.updated_at || user.metadata.creationTime || new Date().toISOString();
 
+    const isOnline = Boolean(profileRow?.is_online);
+    const lastSeen = profileRow?.last_seen || profileRow?.updated_at || new Date().toISOString();
+
     // Executa o upsert em background sem travar o carregamento inicial da interface
     if (!profileRow && statusFinal !== 'deleted') {
       setDoc(doc(db, 'profiles', user.uid), {
@@ -127,11 +170,13 @@ export const aniversarioService = {
         avatar_url: avatar,
         status: statusFinal,
         role: roleFinal,
+        is_online: true,
+        last_seen: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, { merge: true }).catch(e => console.warn('[Firebase] Upsert background profiles ignorado:', e));
     }
 
-    this.registrarUsuarioCatalogo({ id: user.uid, email, nome, avatar, role: roleFinal, status: statusFinal, created_at: createdAt });
+    this.registrarUsuarioCatalogo({ id: user.uid, email, nome, avatar, role: roleFinal, status: statusFinal, created_at: createdAt, is_online: isOnline, last_seen: lastSeen });
 
     return {
       id: user.uid,
@@ -142,14 +187,16 @@ export const aniversarioService = {
       status: statusFinal,
       isAdmin,
       isMaster,
-      created_at: createdAt
+      created_at: createdAt,
+      is_online: isOnline,
+      last_seen: lastSeen
     };
   },
 
   /**
    * Registra a conta no catálogo local de usuários
    */
-  registrarUsuarioCatalogo(usuario: { id: string; email: string; nome: string; avatar: string; role: string; status: string; created_at: string }) {
+  registrarUsuarioCatalogo(usuario: { id: string; email: string; nome: string; avatar: string; role: string; status: string; created_at: string; is_online?: boolean; last_seen?: string }) {
     try {
       const RAW = localStorage.getItem('leao_users_registry');
       let lista: any[] = RAW ? JSON.parse(RAW) : [];
@@ -166,6 +213,91 @@ export const aniversarioService = {
     } catch (e) {
       console.warn('Erro ao salvar no catálogo local de usuários:', e);
     }
+  },
+
+  /**
+   * Atualiza a presença online / offline do usuário no Firestore e no cache local
+   */
+  async atualizarStatusPresenca(isOnline: boolean) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const agora = new Date().toISOString();
+    try {
+      const userRef = doc(db, 'profiles', user.uid);
+      await setDoc(userRef, {
+        is_online: isOnline,
+        last_seen: agora,
+        updated_at: agora
+      }, { merge: true });
+    } catch (e) {
+      console.warn('[Firebase] Erro ao atualizar presença:', e);
+    }
+
+    try {
+      const RAW = localStorage.getItem('leao_users_registry');
+      if (RAW) {
+        let lista: any[] = JSON.parse(RAW);
+        const emailNorm = (user.email || '').toLowerCase();
+        lista = lista.map(u => {
+          if (u.email?.toLowerCase() === emailNorm) {
+            return { ...u, is_online: isOnline, last_seen: agora };
+          }
+          return u;
+        });
+        localStorage.setItem('leao_users_registry', JSON.stringify(lista));
+      }
+    } catch (e) {
+      // Ignorar erros locais
+    }
+  },
+
+  _handleVisibilityChange() {
+    if (!auth.currentUser) return;
+    if (document.visibilityState === 'visible') {
+      aniversarioService.atualizarStatusPresenca(true);
+    } else {
+      aniversarioService.atualizarStatusPresenca(false);
+    }
+  },
+
+  _handleBeforeUnload() {
+    if (auth.currentUser) {
+      aniversarioService.atualizarStatusPresenca(false);
+    }
+  },
+
+  /**
+   * Inicia o timer de heartbeat e os escutadores de presença do usuário
+   */
+  iniciarHeartbeatPresenca() {
+    this.atualizarStatusPresenca(true);
+
+    if (presenceTimer) clearInterval(presenceTimer);
+    presenceTimer = setInterval(() => {
+      if (auth.currentUser && document.visibilityState === 'visible') {
+        aniversarioService.atualizarStatusPresenca(true);
+      }
+    }, 45000);
+
+    window.removeEventListener('visibilitychange', this._handleVisibilityChange);
+    window.addEventListener('visibilitychange', this._handleVisibilityChange);
+
+    window.removeEventListener('beforeunload', this._handleBeforeUnload);
+    window.addEventListener('beforeunload', this._handleBeforeUnload);
+  },
+
+  /**
+   * Encerra o heartbeat de presença
+   */
+  pararHeartbeatPresenca() {
+    if (presenceTimer) {
+      clearInterval(presenceTimer);
+      presenceTimer = null;
+    }
+    this.atualizarStatusPresenca(false);
+    window.removeEventListener('visibilitychange', this._handleVisibilityChange);
+    window.removeEventListener('beforeunload', this._handleBeforeUnload);
   },
 
   /**
@@ -195,6 +327,8 @@ export const aniversarioService = {
               avatar: p.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.email)}&background=0052FF&color=fff&bold=true`,
               role: (p.email || '').toLowerCase() === 'gleidson.fig@gmail.com' ? 'admin' : (p.role || 'user'),
               status: p.status || 'active',
+              is_online: Boolean(p.is_online),
+              last_seen: p.last_seen || p.updated_at,
               created_at: p.updated_at
             });
           }
