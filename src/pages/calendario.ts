@@ -1,6 +1,7 @@
 import '../styles/calendario.css';
 import whatsappIcon from '../assets/whatsapp.png';
 import { aniversarioService } from '../services/aniversarioService';
+import { formatarTelefoneWhatsapp } from '../utils/messages';
 import { Aniversario, Categoria, MensagemTemplate } from '../types';
 import { parseLocalDate } from '../utils/dateUtils';
 import { 
@@ -47,17 +48,18 @@ export async function montarCalendario(container: HTMLElement) {
         // --- FUNÇÃO DE ATUALIZAÇÃO PARCIAL (APENAS A LISTA) ---
         const atualizarListaTemplatesNoDrawer = (containerLista: HTMLElement, nomePessoa: string, telefonePessoa: string) => {
             const filtrados = tipoTemplateAtivo 
-                ? templates.filter(t => t.tipo === tipoTemplateAtivo)
+                ? templates.filter(t => (t.tipo || t.titulo) === tipoTemplateAtivo)
                 : templates;
 
             containerLista.innerHTML = filtrados.length > 0 ? filtrados.map((t: any) => {
-                const conteudoSeguro = t.conteudo || "";
+                const conteudoSeguro = t.conteudo || t.texto || "";
                 const msgFinal = conteudoSeguro.replace('[nome]', nomePessoa);
+                const tipoDisplay = t.tipo || t.titulo || 'Geral';
                 return `
                     <div class="card-template-premium" data-msg="${encodeURIComponent(msgFinal)}">
                         <div class="template-info">
                             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                                <span style="font-size: 0.65rem; background: rgba(99, 102, 241, 0.2); padding: 2px 6px; border-radius: 4px; color: #818cf8; font-weight: bold; text-transform: uppercase;">${t.tipo}</span>
+                                <span style="font-size: 0.65rem; background: rgba(99, 102, 241, 0.2); padding: 2px 6px; border-radius: 4px; color: #818cf8; font-weight: bold; text-transform: uppercase;">${tipoDisplay}</span>
                             </div>
                             <p style="margin:0; font-size:0.9rem; color: rgba(255,255,255,0.8);">${msgFinal}</p>
                         </div>
@@ -75,7 +77,8 @@ export async function montarCalendario(container: HTMLElement) {
             containerLista.querySelectorAll('.card-template-premium').forEach(card => {
                 card.addEventListener('click', () => {
                     const msg = decodeURIComponent((card as HTMLElement).dataset.msg || '');
-                    const link = `https://wa.me/${telefonePessoa.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+                    const telFormatado = formatarTelefoneWhatsapp(telefonePessoa);
+                    const link = `https://wa.me/${telFormatado}?text=${encodeURIComponent(msg)}`;
                     window.open(link, '_blank');
                     document.getElementById('drawer-mensagens-dinamico')?.remove();
                 });

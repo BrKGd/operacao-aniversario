@@ -214,22 +214,40 @@ export async function montarDashboard(container: HTMLElement) {
 
             if (drawer && list && pillsContainer && targetNome) {
                 targetNome.innerText = `Para ${nome.split(' ')[0]}`;
-                const tiposMensagens = [...new Set(templatesGlobais.map(t => t.tipo))].sort();
+                const tiposMensagens = [...new Set(templatesGlobais.map(t => t.tipo || t.titulo || 'Geral'))].sort();
                 let tipoAtivo: string | null = null;
 
                 const renderTemplates = (filtro: string | null) => {
-                    const filtrados = filtro ? templatesGlobais.filter(t => t.tipo === filtro) : templatesGlobais;
-                    list.innerHTML = filtrados.map(t => `
-                        <div class="template-item-cal" onclick="window.enviarZapDireto('${tel}', '${t.conteudo}')">
-                            <div class="template-info">
-                                <span class="badge-categoria-msg">${t.tipo}</span>
-                                <p class="template-texto-cal">${t.conteudo}</p>
+                    const filtrados = filtro ? templatesGlobais.filter(t => (t.tipo || t.titulo) === filtro) : templatesGlobais;
+                    list.innerHTML = filtrados.map(t => {
+                        const txt = t.conteudo || t.texto || '';
+                        const cat = t.tipo || t.titulo || 'Mensagem';
+                        return `
+                            <div class="template-item-cal js-send-zap-dash" data-msg="${encodeURIComponent(txt)}">
+                                <div class="template-info">
+                                    <span class="badge-categoria-msg">${cat}</span>
+                                    <p class="template-texto-cal"></p>
+                                </div>
+                                <div class="btn-enviar-template-cal">
+                                    <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">
+                                </div>
                             </div>
-                            <div class="btn-enviar-template-cal">
-                                <img src="${whatsappIcon}" alt="WhatsApp" style="width: 20px; height: 20px;">
-                            </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
+
+                    list.querySelectorAll('.template-texto-cal').forEach((el, index) => {
+                        const tpl = filtrados[index];
+                        if (tpl) (el as HTMLElement).textContent = tpl.conteudo || tpl.texto || '';
+                    });
+
+                    list.querySelectorAll('.js-send-zap-dash').forEach((item) => {
+                        item.addEventListener('click', () => {
+                            const msg = decodeURIComponent((item as HTMLElement).dataset.msg || '');
+                            (window as any).enviarZapDireto(tel, msg);
+                            (window as any).fecharDrawerDash();
+                        });
+                    });
+
                     createIcons({ icons: DASHBOARD_ICONS });
                 };
 

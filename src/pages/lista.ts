@@ -285,20 +285,20 @@ export async function montarLista(container: HTMLElement) {
         const pillsContainer = document.getElementById('lista-pills-container');
         if (!listContainer || !pillsContainer) return;
         
-        const tipos = [...new Set(templatesGlobais.map(t => t.tipo))].sort();
+        const tipos = [...new Set(templatesGlobais.map(t => t.tipo || t.titulo || 'Geral'))].sort();
         pillsContainer.innerHTML = `
             <button class="btn-pill-filter ${!state.tipoMensagemAtivo ? 'active' : ''}" data-tipo="all">Todos</button>
             ${tipos.map(tipo => `<button class="btn-pill-filter ${state.tipoMensagemAtivo === tipo ? 'active' : ''}" data-tipo="${tipo}">${tipo}</button>`).join('')}
         `;
     
         const filtrados = state.tipoMensagemAtivo 
-            ? templatesGlobais.filter(t => t.tipo === state.tipoMensagemAtivo) 
+            ? templatesGlobais.filter(t => (t.tipo || t.titulo) === state.tipoMensagemAtivo) 
             : templatesGlobais;
     
         listContainer.innerHTML = filtrados.map(t => `
             <div class="template-item-cal js-send-zap" data-tel="${tel}" data-msg="${encodeURIComponent(t.conteudo || t.texto || '')}">
                 <div class="template-info">
-                    <span class="badge-categoria-msg">${t.tipo || 'Mensagem'}</span>
+                    <span class="badge-categoria-msg">${t.tipo || t.titulo || 'Mensagem'}</span>
                     <p class="template-texto-cal"></p>
                 </div>
                 <div class="btn-enviar-template-cal">

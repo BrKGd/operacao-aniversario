@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { Aniversario, Categoria, MensagemTemplate, Notificacao } from '../types';
+import { MENSAGENS_TEMPLATES_SEED } from '../data/mensagensSeed';
 
 /**
  * Gerador de UUID v4 padronizado (8-4-4-4-12) para identificadores do sistema
@@ -693,32 +694,55 @@ export const aniversarioService = {
 
     const localData = lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES);
     if (localData && localData.length > 0) {
-      inMemoryTemplates = localData;
-      return localData;
+      inMemoryTemplates = localData.map(t => ({
+        ...t,
+        tipo: t.tipo || t.titulo || 'Amizade',
+        titulo: t.titulo || t.tipo || 'Amizade',
+        conteudo: t.conteudo || t.texto || '',
+        texto: t.texto || t.conteudo || ''
+      }));
+      return inMemoryTemplates;
     }
-
-    const templatesPadrao: MensagemTemplate[] = [
-      { id: '1', titulo: 'Carinhoso', texto: 'Feliz aniversário! Que seu dia seja abençoado e cheio de alegrias! 🎉🎂' },
-      { id: '2', titulo: 'Divertido', texto: 'Parabéns! Mais um ano de sabedoria (e algumas ruguinhas a mais)! Viva! 🥳🎈' },
-      { id: '3', titulo: 'Formal', texto: 'Desejo a você um feliz aniversário, muita saúde, paz e sucesso em sua jornada.' }
-    ];
 
     try {
       const snap = await getDocs(collection(db, 'mensagens_templates'));
       if (!snap.empty) {
         const lista: MensagemTemplate[] = [];
-        snap.forEach(d => lista.push({ id: d.id, ...d.data() } as MensagemTemplate));
+        snap.forEach(d => {
+          const data = d.data();
+          lista.push({
+            id: d.id,
+            tipo: data.tipo || data.titulo || 'Amizade',
+            titulo: data.titulo || data.tipo || 'Amizade',
+            conteudo: data.conteudo || data.texto || '',
+            texto: data.texto || data.conteudo || '',
+            created_at: data.created_at
+          });
+        });
         inMemoryTemplates = lista;
         salvarCacheLocal(CACHE_KEYS.TEMPLATES, lista);
         return lista;
+      } else {
+        // Se a coleção estiver vazia no Firestore, popula em lote com os 85 templates migrados
+        try {
+          for (const tpl of MENSAGENS_TEMPLATES_SEED) {
+            await setDoc(doc(db, 'mensagens_templates', tpl.id), {
+              tipo: tpl.tipo,
+              conteudo: tpl.conteudo,
+              created_at: tpl.created_at || new Date().toISOString()
+            });
+          }
+        } catch (errPop) {
+          console.warn('[Firebase] Não foi possível criar os templates iniciais no Firestore:', errPop);
+        }
       }
     } catch (e) {
-      console.warn('[Firebase] Usando templates padrão:', e);
+      console.warn('[Firebase] Usando templates de seed:', e);
     }
 
-    inMemoryTemplates = templatesPadrao;
-    salvarCacheLocal(CACHE_KEYS.TEMPLATES, templatesPadrao);
-    return templatesPadrao;
+    inMemoryTemplates = MENSAGENS_TEMPLATES_SEED;
+    salvarCacheLocal(CACHE_KEYS.TEMPLATES, MENSAGENS_TEMPLATES_SEED);
+    return MENSAGENS_TEMPLATES_SEED;
   },
 
   /**
@@ -726,8 +750,17 @@ export const aniversarioService = {
    */
   async salvarTemplate(template: Omit<MensagemTemplate, 'id'> & { id?: string }): Promise<MensagemTemplate> {
     const docRef = template.id ? doc(db, 'mensagens_templates', template.id) : doc(collection(db, 'mensagens_templates'));
-    const tpl: MensagemTemplate = { id: docRef.id, titulo: template.titulo, texto: template.texto };
-    await setDoc(docRef, tpl);
+    const tipo = template.tipo || template.titulo || 'Amizade';
+    const conteudo = template.conteudo || template.texto || '';
+    const tpl: MensagemTemplate = { 
+      id: docRef.id, 
+      tipo, 
+      titulo: tipo, 
+      conteudo, 
+      texto: conteudo,
+      created_at: new Date().toISOString() 
+    };
+    await setDoc(docRef, { tipo, conteudo, created_at: tpl.created_at });
     this.invalidarCache();
     return tpl;
   },
