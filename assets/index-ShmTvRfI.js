@@ -13337,53 +13337,24 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     <p>Gerencie permissões, papéis de acesso e monitore a presença online</p>
                 </div>
 
-                <!-- CARDS DE RESUMO DE PRESENÇA -->
-                <div class="users-presence-summary">
-                    <div class="presence-stat-card card-stat-total">
-                        <div class="stat-icon-wrapper">
-                            <i data-lucide="users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value">${i}</span>
-                            <span class="stat-label">Total Cadastrados</span>
-                        </div>
-                    </div>
-
-                    <div class="presence-stat-card card-stat-online">
-                        <div class="stat-icon-wrapper">
-                            <span class="pulse-online-beacon"></span>
-                            <i data-lucide="wifi"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value text-online">${s}</span>
-                            <span class="stat-label">Online Agora</span>
-                        </div>
-                    </div>
-
-                    <div class="presence-stat-card card-stat-offline">
-                        <div class="stat-icon-wrapper">
-                            <i data-lucide="wifi-off"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-value text-offline">${o}</span>
-                            <span class="stat-label">Offline</span>
-                        </div>
-                    </div>
+                <!-- BARRA DE PESQUISA (DIRETAMENTE ABAIXO DA DESCRIÇÃO) -->
+                <div class="users-search-wrapper">
+                    <i data-lucide="search" class="users-search-icon"></i>
+                    <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
+                    <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
+                        <i data-lucide="refresh-cw"></i>
+                    </button>
                 </div>
 
-                <!-- BARRA DE PESQUISA & FILTROS DE PRESENÇA -->
-                <div class="users-controls-section">
-                    <div class="users-search-wrapper">
-                        <i data-lucide="search" class="users-search-icon"></i>
-                        <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
-                        <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
-                            <i data-lucide="refresh-cw"></i>
-                        </button>
-                    </div>
+                <!-- LINHA INTERMEDIÁRIA COM FILTROS DE PRESENÇA NO CANTO SUPERIOR DIREITO -->
+                <div class="users-toolbar-row">
+                    <span class="users-count-label">
+                        <i data-lucide="users"></i> <strong>${i}</strong> ${i===1?"usuário":"usuários"}
+                    </span>
 
-                    <div class="presence-filter-chips">
+                    <div class="presence-filter-chips align-right">
                         <button class="presence-chip active" data-filter="all">
-                            <i data-lucide="users"></i> Todos (${i})
+                            Todos (${i})
                         </button>
                         <button class="presence-chip" data-filter="online">
                             <span class="chip-dot dot-green"></span> Online (${s})
@@ -13401,8 +13372,8 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     `:n.map(d=>Fpe(d)).join("")}
                 </div>
             </div>
-        `,Mt({icons:Lpe,root:a}),(e=document.getElementById("btnVoltarUsuarios"))==null||e.addEventListener("click",()=>{typeof window.navegar=="function"?window.navegar("perfil"):window.location.hash="#perfil"}),(t=document.getElementById("btnRefreshUsers"))==null||t.addEventListener("click",()=>{const d=a.querySelector("#btnRefreshUsers i");d&&d.classList.add("spinning"),Yd(a)});let c="all";const h=a.querySelector("#searchUser"),l=()=>{const d=((h==null?void 0:h.value)||"").toLowerCase().trim();a.querySelectorAll(".user-card-item").forEach(p=>{const g=p.dataset.search||"",m=p.dataset.presence||"offline",_=g.includes(d),T=c==="all"||m===c;p.style.display=_&&T?"flex":"none"})};h==null||h.addEventListener("input",l),a.querySelectorAll(".presence-chip").forEach(d=>{d.addEventListener("click",()=>{a.querySelectorAll(".presence-chip").forEach(f=>f.classList.remove("active")),d.classList.add("active"),c=d.dataset.filter||"all",l()})}),Vpe(a,()=>Yd(a))}catch{a.innerHTML='<div class="fec-center-wrapper">Erro ao carregar usuários.</div>'}}function Fpe(a){const e=a.email.toLowerCase()==="gleidson.fig@gmail.com",t=a.role==="admin",r=a.status==="blocked",n=a.status==="deleted",i=vy(a.is_online,a.last_seen),s=n?"EXCLUÍDO":r?"BLOQUEADO":"ATIVO",o=n||r?"status-blocked":"status-active",c=t?"ADMINISTRADOR":"USUÁRIO",h=t?"role-admin":"role-user",l=`${a.nome} ${a.email}`.toLowerCase(),d=i.online?"online":"offline";return`
-        <div class="user-card-item ${r||n?"card-is-blocked":""}" data-search="${l}" data-presence="${d}">
+        `,Mt({icons:Lpe,root:a}),(e=document.getElementById("btnVoltarUsuarios"))==null||e.addEventListener("click",()=>{typeof window.navegar=="function"?window.navegar("perfil"):window.location.hash="#perfil"}),(t=document.getElementById("btnRefreshUsers"))==null||t.addEventListener("click",()=>{const d=a.querySelector("#btnRefreshUsers i");d&&d.classList.add("spinning"),Yd(a)});let c="all";const h=a.querySelector("#searchUser"),l=()=>{const d=((h==null?void 0:h.value)||"").toLowerCase().trim();a.querySelectorAll(".user-card-item").forEach(p=>{const g=p.dataset.search||"",m=p.dataset.presence||"offline",_=g.includes(d),T=c==="all"||m===c;p.style.display=_&&T?"flex":"none"})};h==null||h.addEventListener("input",l),a.querySelectorAll(".presence-chip").forEach(d=>{d.addEventListener("click",()=>{a.querySelectorAll(".presence-chip").forEach(f=>f.classList.remove("active")),d.classList.add("active"),c=d.dataset.filter||"all",l()})}),Vpe(a,()=>Yd(a))}catch{a.innerHTML='<div class="fec-center-wrapper">Erro ao carregar usuários.</div>'}}function Fpe(a){const e=a.email.toLowerCase()==="gleidson.fig@gmail.com",t=a.role==="admin",r=a.status==="blocked",n=a.status==="deleted",i=vy(a.is_online,a.last_seen),s=t?"ADMINISTRADOR":"USUÁRIO",o=t?"role-admin":"role-user",c=`${a.nome} ${a.email}`.toLowerCase(),h=i.online?"online":"offline";let l="";return n?l='<span class="badge-pill status-blocked">EXCLUÍDO</span>':r&&(l='<span class="badge-pill status-blocked">BLOQUEADO</span>'),`
+        <div class="user-card-item ${r||n?"card-is-blocked":""}" data-search="${c}" data-presence="${h}">
             <div class="user-avatar-box">
                 <img src="${a.avatar}" alt="${a.nome}">
                 <span class="avatar-presence-dot ${i.online?"dot-online":"dot-offline"}" title="${i.label}"></span>
@@ -13416,8 +13387,8 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 <span class="user-card-email">${a.email}</span>
                 
                 <div class="user-badges-row">
-                    <span class="badge-pill ${h}">${c}</span>
                     <span class="badge-pill ${o}">${s}</span>
+                    ${l}
                     <span class="badge-pill ${i.online?"presence-badge-online":"presence-badge-offline"}" title="Última atividade: ${i.label}">
                         <span class="badge-status-dot ${i.online?"pulse-dot":""}"></span>
                         ${i.label}
