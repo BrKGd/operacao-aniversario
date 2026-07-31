@@ -37,7 +37,19 @@ export async function montarCategorias(container: HTMLElement) {
 
     salvarOrigem();
 
-    container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando categorias...</div></div>`;
+    container.innerHTML = `
+        <div class="cat-container skeleton-loading-wrapper" style="padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+            <div class="skeleton-box" style="width: 200px; height: 30px; margin-top: 40px; border-radius: 10px;"></div>
+            <div class="skeleton-box" style="width: 260px; height: 16px; margin-bottom: 10px; border-radius: 6px;"></div>
+            <div class="skeleton-box" style="height: 48px; border-radius: 16px;"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                <div class="skeleton-box" style="height: 110px; border-radius: 22px;"></div>
+                <div class="skeleton-box" style="height: 110px; border-radius: 22px;"></div>
+                <div class="skeleton-box" style="height: 110px; border-radius: 22px;"></div>
+                <div class="skeleton-box" style="height: 110px; border-radius: 22px;"></div>
+            </div>
+        </div>
+    `;
 
     try {
         const [categorias, todos] = await Promise.all([

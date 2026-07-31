@@ -29,7 +29,20 @@ const ICON_MAP = {
 };
 
 export async function montarPerfil(container: HTMLElement) {
-    container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando perfil...</div></div>`;
+    container.innerHTML = `
+        <div class="perfil-container skeleton-loading-wrapper" style="padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+            <div style="text-align: center; margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                <div class="skeleton-box" style="width: 90px; height: 90px; border-radius: 50%;"></div>
+                <div class="skeleton-box" style="width: 180px; height: 26px; border-radius: 8px;"></div>
+                <div class="skeleton-box" style="width: 220px; height: 16px; border-radius: 6px;"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                <div class="skeleton-box" style="height: 90px; border-radius: 20px;"></div>
+                <div class="skeleton-box" style="height: 90px; border-radius: 20px;"></div>
+            </div>
+            <div class="skeleton-box" style="height: 200px; border-radius: 24px; margin-top: 10px;"></div>
+        </div>
+    `;
 
     try {
         const perfil = await aniversarioService.getPerfilUsuario();

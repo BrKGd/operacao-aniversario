@@ -44,8 +44,15 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLower
 
 export async function montarDashboard(container: HTMLElement) {
     container.innerHTML = `
-        <div class="dash-loader-container">
-            <div class="fec-loader-minimal">A carregar painel...</div>
+        <div class="dash-container skeleton-loading-wrapper" style="padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+            <div class="skeleton-box" style="height: 140px; border-radius: 28px;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="skeleton-box" style="width: 160px; height: 24px; border-radius: 8px;"></div>
+                <div class="skeleton-box" style="width: 60px; height: 20px; border-radius: 8px;"></div>
+            </div>
+            <div class="skeleton-box" style="height: 90px; border-radius: 22px;"></div>
+            <div class="skeleton-box" style="height: 90px; border-radius: 22px;"></div>
+            <div class="skeleton-box" style="height: 90px; border-radius: 22px;"></div>
         </div>
     `;
 

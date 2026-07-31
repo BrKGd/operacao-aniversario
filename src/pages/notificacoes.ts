@@ -60,7 +60,14 @@ export async function montarNotificacoes(container: HTMLElement) {
     // --- TELA 1: PRINCIPAL ---
     const renderPrincipal = async () => {
         if (alertasConfigurados.length === 0) {
-            container.innerHTML = `<div class="fec-loader-minimal">Carregando...</div>`;
+            container.innerHTML = `
+                <div class="notif-container skeleton-loading-wrapper" style="padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+                    <div class="skeleton-box" style="width: 160px; height: 30px; margin-top: 40px; border-radius: 10px;"></div>
+                    <div class="skeleton-box" style="height: 85px; border-radius: 20px;"></div>
+                    <div class="skeleton-box" style="height: 85px; border-radius: 20px;"></div>
+                    <div class="skeleton-box" style="height: 85px; border-radius: 20px;"></div>
+                </div>
+            `;
             await atualizarDadosEmBackground();
         }
         

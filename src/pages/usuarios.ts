@@ -29,7 +29,25 @@ const ICON_MAP = {
 };
 
 export async function montarUsuarios(container: HTMLElement) {
-    container.innerHTML = `<div class="fec-center-wrapper"><div class="fec-loader-minimal">Carregando painel de usuários...</div></div>`;
+    container.innerHTML = `
+        <div class="users-container skeleton-loading-wrapper" style="padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+            <div class="skeleton-box" style="width: 140px; height: 28px; margin: 55px auto 8px auto; border-radius: 20px;"></div>
+            <div class="skeleton-box" style="width: 220px; height: 32px; margin: 0 auto 8px auto; border-radius: 10px;"></div>
+            <div class="skeleton-box" style="width: 280px; height: 16px; margin: 0 auto 16px auto; border-radius: 6px;"></div>
+            <div class="skeleton-box" style="height: 48px; border-radius: 16px; margin-bottom: 8px;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div class="skeleton-box" style="width: 90px; height: 18px; border-radius: 6px;"></div>
+                <div style="display: flex; gap: 6px;">
+                    <div class="skeleton-box" style="width: 70px; height: 28px; border-radius: 20px;"></div>
+                    <div class="skeleton-box" style="width: 70px; height: 28px; border-radius: 20px;"></div>
+                    <div class="skeleton-box" style="width: 70px; height: 28px; border-radius: 20px;"></div>
+                </div>
+            </div>
+            <div class="skeleton-box" style="height: 140px; border-radius: 24px;"></div>
+            <div class="skeleton-box" style="height: 140px; border-radius: 24px;"></div>
+            <div class="skeleton-box" style="height: 140px; border-radius: 24px;"></div>
+        </div>
+    `;
 
     try {
         const perfil = await aniversarioService.getPerfilUsuario();

@@ -21,7 +21,15 @@ import {
 } from 'lucide';
 
 export async function montarCalendario(container: HTMLElement) {
-    container.innerHTML = `<div class="fec-loader-minimal">Carregando calendário...</div>`;
+    container.innerHTML = `
+        <div class="cal-container skeleton-loading-wrapper" style="padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+            <div class="skeleton-box" style="width: 180px; height: 32px; margin: 40px auto 10px auto; border-radius: 10px;"></div>
+            <div class="skeleton-box" style="height: 320px; border-radius: 24px;"></div>
+            <div class="skeleton-box" style="width: 140px; height: 22px; margin-top: 10px; border-radius: 6px;"></div>
+            <div class="skeleton-box" style="height: 80px; border-radius: 18px;"></div>
+            <div class="skeleton-box" style="height: 80px; border-radius: 18px;"></div>
+        </div>
+    `;
 
     try {
         const hoje = new Date();
