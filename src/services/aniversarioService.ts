@@ -687,13 +687,17 @@ export const aniversarioService = {
   },
 
   /**
-   * Busca a lista de templates de mensagem no Firestore ou fallback local
+   * Busca a lista de templates de mensagem no Firestore ou fallback local (garantindo pelo menos 110+ modelos)
    */
   async listarTemplates(): Promise<MensagemTemplate[]> {
-    if (inMemoryTemplates && inMemoryTemplates.length > 0) return inMemoryTemplates;
+    const minEsperado = MENSAGENS_TEMPLATES_SEED.length;
+
+    if (inMemoryTemplates && inMemoryTemplates.length >= minEsperado) {
+      return inMemoryTemplates;
+    }
 
     const localData = lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES);
-    if (localData && localData.length > 0) {
+    if (localData && localData.length >= minEsperado) {
       inMemoryTemplates = localData.map(t => ({
         ...t,
         tipo: t.tipo || t.titulo || 'Amizade',
@@ -704,9 +708,14 @@ export const aniversarioService = {
       return inMemoryTemplates;
     }
 
+    // Se o cache local continha o conjunto pequeno antigo (ex: 3 itens), limpa
+    try {
+      localStorage.removeItem(CACHE_KEYS.TEMPLATES);
+    } catch (_) {}
+
     try {
       const snap = await getDocs(collection(db, 'mensagens_templates'));
-      if (!snap.empty) {
+      if (!snap.empty && snap.size >= minEsperado) {
         const lista: MensagemTemplate[] = [];
         snap.forEach(d => {
           const data = d.data();
@@ -723,7 +732,7 @@ export const aniversarioService = {
         salvarCacheLocal(CACHE_KEYS.TEMPLATES, lista);
         return lista;
       } else {
-        // Se a coleção estiver vazia no Firestore, popula em lote com os 85 templates migrados
+        // Se a coleção estiver vazia ou com menos itens, popula/sincroniza com os 110 templates
         try {
           for (const tpl of MENSAGENS_TEMPLATES_SEED) {
             await setDoc(doc(db, 'mensagens_templates', tpl.id), {
@@ -733,7 +742,7 @@ export const aniversarioService = {
             });
           }
         } catch (errPop) {
-          console.warn('[Firebase] Não foi possível criar os templates iniciais no Firestore:', errPop);
+          console.warn('[Firebase] Erro ao sincronizar templates no Firestore:', errPop);
         }
       }
     } catch (e) {

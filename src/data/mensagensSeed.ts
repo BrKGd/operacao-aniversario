@@ -800,5 +800,211 @@ export const MENSAGENS_TEMPLATES_SEED: MensagemTemplate[] = [
     conteudo: "Te amo demais.",
     texto: "Te amo demais.",
     created_at: "2026-03-30 11:39:07.888174+00"
+  },
+
+  // --- TRABALHO ---
+  {
+    id: "trab-001",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Feliz aniversário! Que este novo ciclo traga muito sucesso, conquistas profissionais e grandes alegrias.",
+    texto: "Feliz aniversário! Que este novo ciclo traga muito sucesso, conquistas profissionais e grandes alegrias.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-002",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Parabéns! É um grande prazer trabalhar com você. Que seu dia seja excelente e repleto de comemorações!",
+    texto: "Parabéns! É um grande prazer trabalhar com você. Que seu dia seja excelente e repleto de comemorações!",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-003",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Desejo um feliz aniversário com muita paz, saúde e prosperidade em sua jornada profissional e pessoal.",
+    texto: "Desejo um feliz aniversário com muita paz, saúde e prosperidade em sua jornada profissional e pessoal.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-004",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Parabéns pelo seu dia! Que continue inspirando todos da equipe com sua dedicação e alto astral.",
+    texto: "Parabéns pelo seu dia! Que continue inspirando todos da equipe com sua dedicação e alto astral.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-005",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Feliz aniversário! Muito sucesso nos novos projetos e muitos anos de vida com saúde e alegria!",
+    texto: "Feliz aniversário! Muito sucesso nos novos projetos e muitos anos de vida com saúde e alegria!",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-006",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Um dia muito especial de aniversário! Obrigado por toda a parceria e excelente trabalho em equipe.",
+    texto: "Um dia muito especial de aniversário! Obrigado por toda a parceria e excelente trabalho em equipe.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-007",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Parabéns! Que este novo ano seja repleto de metas alcançadas, realizações e muita felicidade.",
+    texto: "Parabéns! Que este novo ano seja repleto de metas alcançadas, realizações e muita felicidade.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-008",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Desejo a você um feliz aniversário e um ano profissional fantástico cheio de vitórias!",
+    texto: "Desejo a você um feliz aniversário e um ano profissional fantástico cheio de vitórias!",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-009",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Feliz aniversário! Muita saúde, paz e que seu caminhar seja sempre iluminado por grandes conquistas.",
+    texto: "Feliz aniversário! Muita saúde, paz e que seu caminhar seja sempre iluminado por grandes conquistas.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "trab-010",
+    tipo: "Trabalho",
+    titulo: "Trabalho",
+    conteudo: "Parabéns pelo seu aniversário! É um privilégio ter uma pessoa tão competente e parceira na nossa equipe.",
+    texto: "Parabéns pelo seu aniversário! É um privilégio ter uma pessoa tão competente e parceira na nossa equipe.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+
+  // --- FAMÍLIA ---
+  {
+    id: "fam-001",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Feliz aniversário! Ter você na família é um presente precioso que agradeço a Deus todos os dias.",
+    texto: "Feliz aniversário! Ter você na família é um presente precioso que agradeço a Deus todos os dias.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-002",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Parabéns pelo seu dia! Que a nossa família continue sempre unida com muito amor e momentos felizes.",
+    texto: "Parabéns pelo seu dia! Que a nossa família continue sempre unida com muito amor e momentos felizes.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-003",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Você é a luz e o coração da nossa família! Desejo um aniversário abençoado com muita saúde e paz.",
+    texto: "Você é a luz e o coração da nossa família! Desejo um aniversário abençoado com muita saúde e paz.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-004",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Feliz aniversário! Que seu dia seja tão doce e especial quanto todo o amor que você transmite para nós.",
+    texto: "Feliz aniversário! Que seu dia seja tão doce e especial quanto todo o amor que você transmite para nós.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-005",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Parabéns! Que este novo ano de vida traga ainda mais sorrisos, bênçãos e alegrias para a nossa família.",
+    texto: "Parabéns! Que este novo ano de vida traga ainda mais sorrisos, bênçãos e alegrias para a nossa família.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-006",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Ter você por perto torna qualquer reunião de família mais alegre e cheia de amor. Feliz aniversário!",
+    texto: "Ter você por perto torna qualquer reunião de família mais alegre e cheia de amor. Feliz aniversário!",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-007",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Feliz aniversário! Que Deus abençoe seus passos com muita saúde, harmonia e felicidades.",
+    texto: "Feliz aniversário! Que Deus abençoe seus passos com muita saúde, harmonia e felicidades.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-008",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Parabéns pelo seu dia! Obrigado por ser um exemplo de carinho e dedicação em nossa família.",
+    texto: "Parabéns pelo seu dia! Obrigado por ser um exemplo de carinho e dedicação em nossa família.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-009",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Desejo um aniversário maravilhoso para quem sempre enche a nossa casa de alegria e carinho!",
+    texto: "Desejo um aniversário maravilhoso para quem sempre enche a nossa casa de alegria e carinho!",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "fam-010",
+    tipo: "Família",
+    titulo: "Família",
+    conteudo: "Feliz aniversário! Que os laços que nos unem se fortalecam cada dia mais com muito amor.",
+    texto: "Feliz aniversário! Que os laços que nos unem se fortalecam cada dia mais com muito amor.",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+
+  // --- DIVERTIDO ---
+  {
+    id: "div-001",
+    tipo: "Divertido",
+    titulo: "Divertido",
+    conteudo: "Parabéns! Mais um ano de sabedoria, juventude acumulada e absolutamente nenhuma ruga visualizada! 🥳🎉",
+    texto: "Parabéns! Mais um ano de sabedoria, juventude acumulada e absolutamente nenhuma ruga visualizada! 🥳🎉",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "div-002",
+    tipo: "Divertido",
+    titulo: "Divertido",
+    conteudo: "Feliz aniversário! Que a idade traga juízo, porque o resto a gente resolve na festa! 🎈🎂",
+    texto: "Feliz aniversário! Que a idade traga juízo, porque o resto a gente resolve na festa! 🎈🎂",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "div-003",
+    tipo: "Divertido",
+    titulo: "Divertido",
+    conteudo: "Parabéns! Você não está ficando mais velho, apenas se tornando um clássico valioso! 🎁✨",
+    texto: "Parabéns! Você não está ficando mais velho, apenas se tornando um clássico valioso! 🎁✨",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "div-004",
+    tipo: "Divertido",
+    titulo: "Divertido",
+    conteudo: "Feliz aniversário! Que seu dia tenha mais bolo, menos boletos e muita diversão! 🥂🎉",
+    texto: "Feliz aniversário! Que seu dia tenha mais bolo, menos boletos e muita diversão! 🥂🎉",
+    created_at: "2026-03-30 11:39:07.888174+00"
+  },
+  {
+    id: "div-005",
+    tipo: "Divertido",
+    titulo: "Divertido",
+    conteudo: "Hoje é o seu dia! Parabéns por sobreviver a mais um ano com muito estilo e bom humor! 🥳🎈",
+    texto: "Hoje é o seu dia! Parabéns por sobreviver a mais um ano com muito estilo e bom humor! 🥳🎈",
+    created_at: "2026-03-30 11:39:07.888174+00"
   }
 ];
