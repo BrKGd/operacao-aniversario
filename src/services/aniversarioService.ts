@@ -687,39 +687,24 @@ export const aniversarioService = {
   },
 
   /**
-   * Busca a lista de templates de mensagem no Firestore ou fallback local (garantindo pelo menos 110+ modelos)
+   * Busca a lista de templates de mensagem (Instantâneo com fallback local e mesclagem de Firestore)
    */
   async listarTemplates(): Promise<MensagemTemplate[]> {
-    const minEsperado = MENSAGENS_TEMPLATES_SEED.length;
-
-    if (inMemoryTemplates && inMemoryTemplates.length >= minEsperado) {
+    if (inMemoryTemplates && inMemoryTemplates.length >= MENSAGENS_TEMPLATES_SEED.length) {
       return inMemoryTemplates;
     }
 
-    const localData = lerCacheLocal<MensagemTemplate[]>(CACHE_KEYS.TEMPLATES);
-    if (localData && localData.length >= minEsperado) {
-      inMemoryTemplates = localData.map(t => ({
-        ...t,
-        tipo: t.tipo || t.titulo || 'Amizade',
-        titulo: t.titulo || t.tipo || 'Amizade',
-        conteudo: t.conteudo || t.texto || '',
-        texto: t.texto || t.conteudo || ''
-      }));
-      return inMemoryTemplates;
-    }
-
-    // Se o cache local continha o conjunto pequeno antigo (ex: 3 itens), limpa
-    try {
-      localStorage.removeItem(CACHE_KEYS.TEMPLATES);
-    } catch (_) {}
+    // Inicializa imediatamente com os 110 modelos pré-carregados (super rápido)
+    const seedMap = new Map<string, MensagemTemplate>();
+    MENSAGENS_TEMPLATES_SEED.forEach(t => seedMap.set(t.id, t));
 
     try {
+      // Tenta buscar no Firestore sem bloquear se houver falha
       const snap = await getDocs(collection(db, 'mensagens_templates'));
-      if (!snap.empty && snap.size >= minEsperado) {
-        const lista: MensagemTemplate[] = [];
+      if (!snap.empty) {
         snap.forEach(d => {
           const data = d.data();
-          lista.push({
+          seedMap.set(d.id, {
             id: d.id,
             tipo: data.tipo || data.titulo || 'Amizade',
             titulo: data.titulo || data.tipo || 'Amizade',
@@ -728,30 +713,15 @@ export const aniversarioService = {
             created_at: data.created_at
           });
         });
-        inMemoryTemplates = lista;
-        salvarCacheLocal(CACHE_KEYS.TEMPLATES, lista);
-        return lista;
-      } else {
-        // Se a coleção estiver vazia ou com menos itens, popula/sincroniza com os 110 templates
-        try {
-          for (const tpl of MENSAGENS_TEMPLATES_SEED) {
-            await setDoc(doc(db, 'mensagens_templates', tpl.id), {
-              tipo: tpl.tipo,
-              conteudo: tpl.conteudo,
-              created_at: tpl.created_at || new Date().toISOString()
-            });
-          }
-        } catch (errPop) {
-          console.warn('[Firebase] Erro ao sincronizar templates no Firestore:', errPop);
-        }
       }
     } catch (e) {
-      console.warn('[Firebase] Usando templates de seed:', e);
+      console.warn('[Firebase] Usando templates locais pré-carregados:', e);
     }
 
-    inMemoryTemplates = MENSAGENS_TEMPLATES_SEED;
-    salvarCacheLocal(CACHE_KEYS.TEMPLATES, MENSAGENS_TEMPLATES_SEED);
-    return MENSAGENS_TEMPLATES_SEED;
+    const resultado = Array.from(seedMap.values());
+    inMemoryTemplates = resultado;
+    salvarCacheLocal(CACHE_KEYS.TEMPLATES, resultado);
+    return resultado;
   },
 
   /**
