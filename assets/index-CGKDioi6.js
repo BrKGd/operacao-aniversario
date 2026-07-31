@@ -13337,20 +13337,21 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     <p>Gerencie permissões, papéis de acesso e monitore a presença online</p>
                 </div>
 
-                <!-- BARRA DE PESQUISA (DIRETAMENTE ABAIXO DA DESCRIÇÃO) -->
+                <!-- BARRA DE PESQUISA LIMPÁ E COMPLETA -->
                 <div class="users-search-wrapper">
                     <i data-lucide="search" class="users-search-icon"></i>
                     <input type="text" class="users-search-input" id="searchUser" placeholder="Buscar usuário por e-mail ou nome...">
-                    <button class="users-btn-refresh" id="btnRefreshUsers" title="Atualizar Lista">
-                        <i data-lucide="refresh-cw"></i>
-                    </button>
                 </div>
 
-                <!-- LINHA INTERMEDIÁRIA COM FILTROS DE PRESENÇA NO CANTO SUPERIOR DIREITO -->
+                <!-- LINHA TOOLBAR: ESQUERDA (ÍCONE + QTD + REFRESH MENOR) | DIREITA (PILLS) -->
                 <div class="users-toolbar-row">
-                    <span class="users-count-label">
-                        <i data-lucide="users"></i> <strong>${i}</strong> ${i===1?"usuário":"usuários"}
-                    </span>
+                    <div class="users-count-group">
+                        <i data-lucide="users" class="users-count-icon"></i>
+                        <span class="users-count-text"><strong>${i}</strong> ${i===1?"usuário":"usuários"}</span>
+                        <button class="users-btn-refresh-sm" id="btnRefreshUsers" title="Atualizar Lista">
+                            <i data-lucide="refresh-cw"></i>
+                        </button>
+                    </div>
 
                     <div class="presence-filter-chips align-right">
                         <button class="presence-chip active" data-filter="all">
@@ -13365,7 +13366,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     </div>
                 </div>
 
-                <!-- LISTA DE USUÁRIOS (BENTO CARDS) -->
+                <!-- LISTA DE USUÁRIOS (CARDS NO ESTILO CRACHÁ / ID CARD) -->
                 <div class="users-list" id="usersListContainer">
                     ${n.length===0?`
                         <div class="empty-users-state">Nenhum usuário encontrado.</div>
@@ -13374,28 +13375,32 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
             </div>
         `,Mt({icons:Lpe,root:a}),(e=document.getElementById("btnVoltarUsuarios"))==null||e.addEventListener("click",()=>{typeof window.navegar=="function"?window.navegar("perfil"):window.location.hash="#perfil"}),(t=document.getElementById("btnRefreshUsers"))==null||t.addEventListener("click",()=>{const d=a.querySelector("#btnRefreshUsers i");d&&d.classList.add("spinning"),Yd(a)});let c="all";const h=a.querySelector("#searchUser"),l=()=>{const d=((h==null?void 0:h.value)||"").toLowerCase().trim();a.querySelectorAll(".user-card-item").forEach(p=>{const g=p.dataset.search||"",m=p.dataset.presence||"offline",_=g.includes(d),T=c==="all"||m===c;p.style.display=_&&T?"flex":"none"})};h==null||h.addEventListener("input",l),a.querySelectorAll(".presence-chip").forEach(d=>{d.addEventListener("click",()=>{a.querySelectorAll(".presence-chip").forEach(f=>f.classList.remove("active")),d.classList.add("active"),c=d.dataset.filter||"all",l()})}),Vpe(a,()=>Yd(a))}catch{a.innerHTML='<div class="fec-center-wrapper">Erro ao carregar usuários.</div>'}}function Fpe(a){const e=a.email.toLowerCase()==="gleidson.fig@gmail.com",t=a.role==="admin",r=a.status==="blocked",n=a.status==="deleted",i=vy(a.is_online,a.last_seen),s=t?"ADMINISTRADOR":"USUÁRIO",o=t?"role-admin":"role-user",c=`${a.nome} ${a.email}`.toLowerCase(),h=i.online?"online":"offline";let l="";return n?l='<span class="badge-pill status-blocked">EXCLUÍDO</span>':r&&(l='<span class="badge-pill status-blocked">BLOQUEADO</span>'),`
         <div class="user-card-item ${r||n?"card-is-blocked":""}" data-search="${c}" data-presence="${h}">
-            <div class="user-avatar-box">
-                <img src="${a.avatar}" alt="${a.nome}">
-                <span class="avatar-presence-dot ${i.online?"dot-online":"dot-offline"}" title="${i.label}"></span>
-            </div>
-            
-            <div class="user-card-info">
-                <div class="user-card-name-row">
-                    <span class="user-card-name">${a.nome}</span>
-                    ${e?'<span class="badge-master" title="Administrador Mestre"><i data-lucide="crown"></i> MESTRE</span>':""}
+            <!-- CORPO DO CARTÃO DE IDENTIFICAÇÃO (FOTO NA ESQUERDA ATÉ A LINHA DIVISÓRIA) -->
+            <div class="user-card-body">
+                <div class="user-avatar-box">
+                    <img src="${a.avatar}" alt="${a.nome}">
+                    <span class="avatar-presence-dot ${i.online?"dot-online":"dot-offline"}" title="${i.label}"></span>
                 </div>
-                <span class="user-card-email">${a.email}</span>
                 
-                <div class="user-badges-row">
-                    <span class="badge-pill ${o}">${s}</span>
-                    ${l}
-                    <span class="badge-pill ${i.online?"presence-badge-online":"presence-badge-offline"}" title="Última atividade: ${i.label}">
-                        <span class="badge-status-dot ${i.online?"pulse-dot":""}"></span>
-                        ${i.label}
-                    </span>
+                <div class="user-card-info">
+                    <div class="user-card-name-row">
+                        <span class="user-card-name">${a.nome}</span>
+                        ${e?'<span class="badge-master" title="Administrador Mestre"><i data-lucide="crown"></i> MESTRE</span>':""}
+                    </div>
+                    <span class="user-card-email">${a.email}</span>
+                    
+                    <div class="user-badges-row">
+                        <span class="badge-pill ${o}">${s}</span>
+                        ${l}
+                        <span class="badge-pill ${i.online?"presence-badge-online":"presence-badge-offline"}" title="Última atividade: ${i.label}">
+                            <span class="badge-status-dot ${i.online?"pulse-dot":""}"></span>
+                            ${i.label}
+                        </span>
+                    </div>
                 </div>
             </div>
 
+            <!-- LINHA DIVISÓRIA E AÇÕES DA CONTA -->
             ${e?`
                 <div class="user-card-actions">
                     <span class="text-protected"><i data-lucide="shield-check"></i> Conta Protegida</span>
