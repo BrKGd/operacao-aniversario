@@ -12505,7 +12505,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
 
       <div class="fec-cropper-footer">
         <div class="fec-cropper-preview-box">
-          <canvas id="cropperPreviewCanvas" width="66" height="44"></canvas>
+          <canvas id="cropperPreviewCanvas" width="44" height="66"></canvas>
           <span class="fec-cropper-preview-label">Prévia</span>
         </div>
         <div class="fec-cropper-footer-actions">
