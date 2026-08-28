@@ -12345,12 +12345,12 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                 <i data-lucide="star" ${r.filtro==="favoritos"?'style="fill:currentColor"':""}></i>
                 <span>Favoritos</span>
             </button>
-        `;r.categorias.forEach(f=>{const p=r.filtro===`cat_${f.id}`;u+=`
-                <button class="fec-chip ${p?"active":""}" data-f="cat_${f.id}">
-                    <i data-lucide="${f.icone||"tag"}"></i>
+        `;r.categorias.forEach(f=>{const p=r.filtro===`cat_${f.id}`,g=f.cor||"#0052FF",m=p?`background-color: ${g}; border-color: ${g}; color: #ffffff; box-shadow: 0 3px 10px ${g}40;`:`border-color: ${g}; background: ${g}10;`,_=p?"color: #ffffff;":`color: ${g};`;u+=`
+                <button class="fec-chip ${p?"active":""}" data-f="cat_${f.id}" style="${m}">
+                    <i data-lucide="${f.icone||"tag"}" style="${_}"></i>
                     <span>${f.nome}</span>
                 </button>
-            `}),l.innerHTML=u,yt({icons:Pa})},s=()=>{var _,T,S,E;const l=document.getElementById("fec-grid"),u=document.getElementById("fec-counter-container"),f=document.getElementById("fec-multi-bar-container");if(!l)return;const p=document.getElementById("fabAddFloating");p&&(r.modoSelecao?p.classList.add("fab-hidden"):p.classList.remove("fab-hidden"));const g=new Date;g.setHours(0,0,0,0);const m=r.contatosBase.filter(F=>{if(!(F.nome.toLowerCase().includes(r.busca.toLowerCase())||F.apelido&&F.apelido.toLowerCase().includes(r.busca.toLowerCase())))return!1;if(r.filtro==="favoritos")return F.favorito;if(r.filtro==="proximos")return R2(F.data_nascimento)<=30;if(r.filtro.startsWith("cat_")){const P=r.filtro.replace("cat_","");return F.categoria_id===P}return!0});if(m.sort((F,V)=>R2(F.data_nascimento)-R2(V.data_nascimento)),u){const F=m.length,V=r.idsSelecionados.size,P=F>0&&V===F;r.modoSelecao?u.innerHTML=`
+            `}),l.innerHTML=u,yt({icons:Pa})},s=()=>{var _,T,S,E;i();const l=document.getElementById("fec-grid"),u=document.getElementById("fec-counter-container"),f=document.getElementById("fec-multi-bar-container");if(!l)return;const p=document.getElementById("fabAddFloating");p&&(r.modoSelecao?p.classList.add("fab-hidden"):p.classList.remove("fab-hidden"));const g=new Date;g.setHours(0,0,0,0);const m=r.contatosBase.filter(F=>{if(!(F.nome.toLowerCase().includes(r.busca.toLowerCase())||F.apelido&&F.apelido.toLowerCase().includes(r.busca.toLowerCase())))return!1;if(r.filtro==="favoritos")return F.favorito;if(r.filtro==="proximos")return R2(F.data_nascimento)<=30;if(r.filtro.startsWith("cat_")){const P=r.filtro.replace("cat_","");return F.categoria_id===P}return!0});if(m.sort((F,V)=>R2(F.data_nascimento)-R2(V.data_nascimento)),u){const F=m.length,V=r.idsSelecionados.size,P=F>0&&V===F;r.modoSelecao?u.innerHTML=`
                     <div class="fec-list-counter-bar">
                         <span>Exibindo <strong>${m.length}</strong> de <strong>${r.contatosBase.length}</strong> aniversariantes</span>
                         <div class="fec-multi-actions-group">
