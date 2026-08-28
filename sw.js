@@ -1,9 +1,8 @@
-const CACHE_NAME = 'operacao-aniversario-v6';
+const CACHE_NAME = 'operacao-aniversario-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './favicon.ico',
   './favicon.svg'
 ];
 
@@ -120,8 +119,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: './favicon.ico',
-    badge: './favicon.ico',
+    icon: './favicon.svg',
+    badge: './favicon.svg',
     vibrate: [100, 50, 100],
     data: { url: './' }
   };
