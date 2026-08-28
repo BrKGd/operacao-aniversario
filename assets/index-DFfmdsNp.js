@@ -12958,10 +12958,10 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                         <div class="bento-card categories-bento">
                             <span class="card-label" style="display: block; margin-bottom: 14px;">Grupos & Categorias</span>
                             <div class="stat-grid-premium">
-                                ${l.map(P=>{const x=h.filter(y=>y.categoria_id===P.id).length;return`
-                                        <div class="card-2x3" style="--cat-color: ${P.cor||"#4361ee"}">
-                                            <div class="cat-icon-large-wrapper">
-                                                <i data-lucide="${P.icone||"tag"}" class="cat-icon-large"></i>
+                                ${l.map(P=>{const x=h.filter(w=>w.categoria_id===P.id).length,y=P.cor||"#4361ee";return`
+                                        <div class="card-2x3" style="--cat-color: ${y}; border-color: ${y};">
+                                            <div class="cat-icon-large-wrapper" style="background: ${y}40; border-color: ${y}50;">
+                                                <i data-lucide="${P.icone||"tag"}" class="cat-icon-large" style="color: ${y}; stroke: ${y};"></i>
                                             </div>
                                             <span class="cat-name">${P.nome}</span>
                                             <span class="badge-membros-gold">${x} ${x===1?"Membro":"Membros"}</span>
