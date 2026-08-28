@@ -1,9 +1,12 @@
-const CACHE_NAME = 'operacao-aniversario-v7';
+const CACHE_NAME = 'operacao-aniversario-v10';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './favicon.svg'
+  './favicon.svg',
+  './pwa-192x192.png',
+  './pwa-512x512.png',
+  './apple-touch-icon.png'
 ];
 
 // 1. Instalação do Service Worker com skipWaiting imediato
