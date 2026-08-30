@@ -12285,10 +12285,10 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                     </div>
                     
                     <div class="proximos-list">
-                        ${n.length>0?n.map(s=>{var o;return`
+                        ${n.length>0?n.map(s=>{var h;const o=s.diffDays===1?"1 dia":`${s.diffDays} dias`,c=s.idadeNova===1?"1 ano":`${s.idadeNova} anos`;return`
                             <div class="card-atleta-modern" onclick="window.navegar('detalhes', '${s.id}')">
                                 <div class="atleta-card-3x4">
-                                    ${s.imagem_url?`<img src="${s.imagem_url}" alt="Foto" class="cat-thumb">`:`<span class="cat-placeholder">${((o=s.nome)==null?void 0:o.substring(0,2).toUpperCase())||"AN"}</span>`}
+                                    ${s.imagem_url?`<img src="${s.imagem_url}" alt="Foto" class="cat-thumb">`:`<span class="cat-placeholder">${((h=s.nome)==null?void 0:h.substring(0,2).toUpperCase())||"AN"}</span>`}
                                     <div class="date-overlay">
                                         <span class="mes">
                                             ${s.dataObj.getDate()} de ${v9(s.dataObj.toLocaleString("pt-BR",{month:"long"}))}
@@ -12298,7 +12298,7 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                                 <div class="atleta-info-main">
                                     <span class="atleta-nome">${s.nome||"Contato"}</span>
                                     <span class="atleta-status">
-                                        Em ${s.diffDays} ${s.diffDays===1?"dia":"dias"}, faz ${s.idadeNova} anos
+                                        Em ${o}, faz ${c}
                                     </span>
                                 </div>
                                 <div class="atleta-action">
