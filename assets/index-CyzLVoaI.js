@@ -13735,11 +13735,10 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
                         </div>
                     </div>
                     <div class="header-actions-group">
-                        <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-top-action perfil">
+                        <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-top-icon-only perfil">
                             <i data-lucide="user"></i>
-                            <span class="btn-top-label">Perfil</span>
                         </button>
-                        <button id="btnLogoutTop" title="Sair do aplicativo" class="btn-top-action logout">
+                        <button id="btnLogoutTop" title="Sair do aplicativo" class="btn-top-icon-only logout">
                             <i data-lucide="log-out"></i>
                         </button>
                     </div>
