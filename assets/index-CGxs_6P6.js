@@ -13726,14 +13726,20 @@ lucide.createIcons({icons});\``);if(typeof r>"u")throw new Error("`createIcons()
             <header id="app-header">
                 <div class="header-content">
                     <div class="header-branding" onclick="window.navegar('dash')" style="cursor: pointer;">
-                        <i data-lucide="sparkles" class="header-icon-gold"></i>
-                        <span class="app-title-header">leão festivo</span>
+                        <div class="header-logo-badge">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div class="header-title-wrapper">
+                            <span class="app-title-header">Leão Festivo</span>
+                            <span class="header-subtitle-tag">Celebrações</span>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 6px; align-items: center;">
-                        <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-logout-minimal">
+                    <div class="header-actions-group">
+                        <button id="btnPerfilTop" title="Perfil do Usuário" class="btn-top-action perfil">
                             <i data-lucide="user"></i>
+                            <span class="btn-top-label">Perfil</span>
                         </button>
-                        <button id="btnLogoutTop" title="Sair" class="btn-logout-minimal">
+                        <button id="btnLogoutTop" title="Sair do aplicativo" class="btn-top-action logout">
                             <i data-lucide="log-out"></i>
                         </button>
                     </div>
