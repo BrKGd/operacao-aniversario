@@ -477,8 +477,8 @@ import{i as oa,g as sa,a as ra,p as na,b as ca,d as K,c as N,e as j,s as Q,f as 
           <button type="button" class="btn-modal btn-modal-cancel" id="btnCancelCrop" title="Cancelar">
             <i data-lucide="undo-2"></i> Cancelar
           </button>
-          <button type="button" class="btn-modal btn-modal-save" id="btnApplyCrop" title="Salvar Foto">
-            <i data-lucide="save"></i> Salvar Foto
+          <button type="button" class="btn-modal btn-modal-save" id="btnApplyCrop" title="Salvar">
+            <i data-lucide="save"></i> Salvar
           </button>
         </div>
       </div>
@@ -1248,8 +1248,8 @@ import{i as oa,g as sa,a as ra,p as na,b as ca,d as K,c as N,e as j,s as Q,f as 
                 <button class="btn-modal btn-modal-cancel" id="btnCancelAvatar" title="Cancelar">
                     <i data-lucide="undo-2"></i> Cancelar
                 </button>
-                <button class="btn-modal btn-modal-save" id="btnConfirmAvatar" title="Salvar Foto">
-                    <i data-lucide="save"></i> Salvar Foto
+                <button class="btn-modal btn-modal-save" id="btnConfirmAvatar" title="Salvar">
+                    <i data-lucide="save"></i> Salvar
                 </button>
             </div>
         </div>
