@@ -1089,17 +1089,16 @@ import{i as oa,g as sa,a as ra,p as na,b as ca,d as K,c as M,e as j,s as Q,f as 
                     <div class="perfil-user-details">
                         <h2 class="perfil-nome" id="textNomePerfil">${s.nome}</h2>
                         
-                        <div class="perfil-badges-group">
+                        <div class="perfil-info-stack">
+                            <span class="perfil-badge-membro">
+                                <i data-lucide="shield-check"></i> Membro desde ${d}
+                            </span>
                             <span class="perfil-role-badge ${s.isAdmin?"admin":"user"}">
                                 <i data-lucide="${s.isAdmin?"crown":"sparkles"}"></i> 
                                 ${s.isAdmin?"Administrador":"Comum"}
                             </span>
-                            <span class="perfil-badge-membro">
-                                <i data-lucide="shield-check"></i> Membro desde ${d}
-                            </span>
+                            <span class="perfil-email"><i data-lucide="mail"></i> ${s.email}</span>
                         </div>
-
-                        <span class="perfil-email"><i data-lucide="mail"></i> ${s.email}</span>
                     </div>
                 </div>
 
@@ -1293,11 +1292,14 @@ import{i as oa,g as sa,a as ra,p as na,b as ca,d as K,c as M,e as j,s as Q,f as 
 
                 <!-- HEADER DO PAINEL ADMIN -->
                 <div class="users-header-card">
-                    <div class="admin-badge-title">
-                        <i data-lucide="crown"></i> PAINEL DO ADMINISTRADOR
+                    <div class="users-banner-bg"></div>
+                    <div class="users-header-content">
+                        <div class="admin-badge-title">
+                            <i data-lucide="crown"></i> PAINEL DO ADMINISTRADOR
+                        </div>
+                        <h2>Gestão de Usuários</h2>
+                        <p>Controle de permissões, perfis de acesso e monitoramento em tempo real</p>
                     </div>
-                    <h2>Gestão de Usuários</h2>
-                    <p>Controle de permissões, perfis de acesso e monitoramento em tempo real</p>
                 </div>
 
                 <!-- BENTO GRID DE MÉTRICAS ADMIN -->
