@@ -59,8 +59,9 @@
       padding: 0;
       width: 100%;
       min-height: 100vh;
-      background-color: #0052FF;
+      background-color: #090f1f;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
     }
     #initial-splash-loader {
       position: fixed;
@@ -68,7 +69,10 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: linear-gradient(135deg, #0052FF 0%, #0036b3 100%);
+      height: 100dvh;
+      background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.25) 0%, transparent 65%),
+                  radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.35) 0%, transparent 55%),
+                  linear-gradient(135deg, #090f1f 0%, #003db3 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -76,31 +80,120 @@
       color: #ffffff;
       z-index: 99999;
       text-align: center;
-      padding: 20px;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .splash-brand-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes splashFadeIn {
+      from { opacity: 0; transform: scale(0.94) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .splash-icon-badge {
+      width: 72px;
+      height: 72px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+    .splash-icon-badge svg {
+      width: 38px;
+      height: 38px;
+      color: #f59e0b;
+      filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.5));
+      animation: pulseSplashIcon 3s infinite ease-in-out;
+    }
+    @keyframes pulseSplashIcon {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .splash-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      margin: 0 0 4px 0;
+      letter-spacing: -0.8px;
+      color: #ffffff;
+    }
+    .splash-tagline {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      font-weight: 500;
+      margin-bottom: 28px;
+    }
+    /* SPINNER MODERNO COM DUPLA BORDA & GLOW */
+    .splash-spinner-wrapper {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
     }
     .splash-spinner {
-      width: 46px;
-      height: 46px;
-      border: 4px solid rgba(255, 255, 255, 0.2);
-      border-top-color: #FFCC00;
+      width: 48px;
+      height: 48px;
+      border: 3.5px solid rgba(255, 255, 255, 0.12);
+      border-top-color: #38bdf8;
+      border-right-color: #f59e0b;
       border-radius: 50%;
-      animation: spinSplash 0.8s linear infinite;
-      margin-bottom: 22px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      animation: spinSplash 0.9s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+    }
+    .splash-spinner-core {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f59e0b;
+      box-shadow: 0 0 10px #f59e0b;
+      animation: pulseCore 1.5s ease-in-out infinite alternate;
     }
     @keyframes spinSplash {
       to { transform: rotate(360deg); }
     }
-    .splash-title {
-      font-size: 2rem;
-      font-weight: 900;
-      margin: 0 0 6px 0;
-      letter-spacing: -1px;
+    @keyframes pulseCore {
+      from { transform: scale(0.7); opacity: 0.6; }
+      to { transform: scale(1.2); opacity: 1; }
     }
-    .splash-sub {
-      font-size: 0.95rem;
-      opacity: 0.85;
-      margin: 0;
+    .splash-badge-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      letter-spacing: 0.2px;
+    }
+    .splash-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+      animation: blinkDot 1.2s infinite ease-in-out;
+    }
+    @keyframes blinkDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
     }
   </style>
   <script type="module" crossorigin src="./assets/index-HTaURk_S.js"></script>
@@ -114,9 +207,29 @@
 <body>
   <!-- Tela Splash de carregamento rápido enquanto o JavaScript inicializa -->
   <div id="initial-splash-loader">
-    <div class="splash-spinner"></div>
-    <div class="splash-title">Leão Festivo</div>
-    <div class="splash-sub">Carregando celebrações...</div>
+    <div class="splash-brand-card">
+      <div class="splash-icon-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          <path d="M5 3v4"/>
+          <path d="M19 17v4"/>
+          <path d="M3 5h4"/>
+          <path d="M17 19h4"/>
+        </svg>
+      </div>
+      <div class="splash-title">Leão Festivo</div>
+      <div class="splash-tagline">Sua curadoria de momentos especiais</div>
+
+      <div class="splash-spinner-wrapper">
+        <div class="splash-spinner"></div>
+        <div class="splash-spinner-core"></div>
+      </div>
+
+      <div class="splash-badge-loading">
+        <span class="splash-badge-dot"></span>
+        <span>Carregando celebrações...</span>
+      </div>
+    </div>
   </div>
 
 </body>
