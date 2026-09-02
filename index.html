@@ -52,6 +52,16 @@
     }, true);
   </script>
 
+  <!-- Detecção de tema no carregamento para evitar FOUC -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('fec_theme') || localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Estilos inline do Splash Screen Inicial para 0ms de FOUC -->
   <style>
     body, html {
@@ -59,10 +69,10 @@
       padding: 0;
       width: 100%;
       min-height: 100vh;
-      background-color: #090f1f;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
     }
+
     #initial-splash-loader {
       position: fixed;
       top: 0;
@@ -70,42 +80,94 @@
       width: 100vw;
       height: 100vh;
       height: 100dvh;
-      background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.25) 0%, transparent 65%),
-                  radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.35) 0%, transparent 55%),
-                  linear-gradient(135deg, #090f1f 0%, #003db3 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
       z-index: 99999;
       text-align: center;
       padding: 24px;
       box-sizing: border-box;
+      transition: background 0.35s ease, color 0.35s ease;
     }
+
+    /* TEMA CLARO (LIGHT MODE) */
+    [data-theme='light'] body,
+    [data-theme='light'] #initial-splash-loader {
+      background: radial-gradient(circle at 50% 15%, rgba(0, 82, 255, 0.12) 0%, transparent 60%),
+                  radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.18) 0%, transparent 55%),
+                  linear-gradient(135deg, #eef2ff 0%, #dbeafe 100%);
+      color: #0f172a;
+    }
+    [data-theme='light'] .splash-title { color: #0f172a; }
+    [data-theme='light'] .splash-tagline { color: #475569; }
+    [data-theme='light'] .splash-badge-loading {
+      background: rgba(255, 255, 255, 0.85);
+      color: #0f172a;
+      border-color: rgba(0, 82, 255, 0.15);
+    }
+    [data-theme='light'] .splash-icon-badge {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 82, 255, 0.2);
+    }
+    [data-theme='light'] .watermark-item {
+      color: rgba(0, 82, 255, 0.08);
+    }
+
+    /* TEMA ESCURO (DARK MODE) */
+    [data-theme='dark'] body,
+    [data-theme='dark'] #initial-splash-loader,
+    :root:not([data-theme='light']) body,
+    :root:not([data-theme='light']) #initial-splash-loader {
+      background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.25) 0%, transparent 65%),
+                  radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.35) 0%, transparent 55%),
+                  linear-gradient(135deg, #090f1f 0%, #003db3 100%);
+      color: #ffffff;
+    }
+    [data-theme='dark'] .splash-title,
+    :root:not([data-theme='light']) .splash-title { color: #ffffff; }
+    [data-theme='dark'] .splash-tagline,
+    :root:not([data-theme='light']) .splash-tagline { color: #94a3b8; }
+    [data-theme='dark'] .splash-badge-loading,
+    :root:not([data-theme='light']) .splash-badge-loading {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    [data-theme='dark'] .splash-icon-badge,
+    :root:not([data-theme='light']) .splash-icon-badge {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    [data-theme='dark'] .watermark-item,
+    :root:not([data-theme='light']) .watermark-item {
+      color: rgba(255, 255, 255, 0.05);
+    }
+
     .splash-brand-card {
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+      z-index: 5;
       animation: splashFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @keyframes splashFadeIn {
       from { opacity: 0; transform: scale(0.94) translateY(12px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
+
     .splash-icon-badge {
       width: 72px;
       height: 72px;
       border-radius: 24px;
-      background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1.5px solid rgba(255, 255, 255, 0.22);
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 18px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
       position: relative;
     }
     .splash-icon-badge svg {
@@ -119,19 +181,19 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.08); }
     }
+
     .splash-title {
       font-size: 2.2rem;
       font-weight: 900;
       margin: 0 0 4px 0;
       letter-spacing: -0.8px;
-      color: #ffffff;
     }
     .splash-tagline {
       font-size: 0.9rem;
-      color: #94a3b8;
       font-weight: 500;
       margin-bottom: 28px;
     }
+
     /* SPINNER MODERNO COM DUPLA BORDA & GLOW */
     .splash-spinner-wrapper {
       position: relative;
@@ -168,19 +230,17 @@
       from { transform: scale(0.7); opacity: 0.6; }
       to { transform: scale(1.2); opacity: 1; }
     }
+
     .splash-badge-loading {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       padding: 8px 18px;
       border-radius: 20px;
       font-size: 0.84rem;
       font-weight: 700;
-      color: #e2e8f0;
-      border: 1px solid rgba(255, 255, 255, 0.15);
       letter-spacing: 0.2px;
     }
     .splash-badge-dot {
@@ -195,8 +255,49 @@
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.7); }
     }
+
+    /* MARCA D'ÁGUA FESTIVA COM SVGS INLINE (CAKE, BALLOON, HANDSHAKE, GIFT) */
+    .auth-watermark-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .watermark-item {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.35s ease;
+      animation: floatWatermark 12s infinite alternate ease-in-out;
+    }
+    .watermark-item svg {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .watermark-item.w-1  { top: 5%; left: 3%; width: 95px; height: 95px; transform: rotate(-18deg); animation-delay: 0s; }
+    .watermark-item.w-2  { top: 10%; right: 4%; width: 135px; height: 135px; transform: rotate(22deg); animation-delay: 1.5s; }
+    .watermark-item.w-3  { top: 38%; left: 2%; width: 80px; height: 80px; transform: rotate(12deg); animation-delay: 3s; }
+    .watermark-item.w-4  { top: 46%; right: 3%; width: 115px; height: 115px; transform: rotate(-25deg); animation-delay: 4.5s; }
+    .watermark-item.w-5  { top: 72%; left: 4%; width: 125px; height: 125px; transform: rotate(15deg); animation-delay: 2s; }
+    .watermark-item.w-6  { top: 80%; right: 5%; width: 90px; height: 90px; transform: rotate(-14deg); animation-delay: 5s; }
+    .watermark-item.w-7  { top: 24%; left: 88%; width: 72px; height: 72px; transform: rotate(30deg); animation-delay: 1s; }
+    .watermark-item.w-8  { top: 62%; left: 86%; width: 100px; height: 100px; transform: rotate(-10deg); animation-delay: 3.5s; }
+    .watermark-item.w-9  { top: 20%; left: 12%; width: 60px; height: 60px; transform: rotate(-8deg); animation-delay: 2.5s; }
+    .watermark-item.w-10 { top: 88%; left: 42%; width: 110px; height: 110px; transform: rotate(24deg); animation-delay: 4s; }
+    .watermark-item.w-11 { top: 3%; left: 45%; width: 75px; height: 75px; transform: rotate(-20deg); animation-delay: 0.8s; }
+    .watermark-item.w-12 { top: 58%; left: 14%; width: 85px; height: 85px; transform: rotate(18deg); animation-delay: 3.8s; }
+
+    @keyframes floatWatermark {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-16px); }
+    }
   </style>
-  <script type="module" crossorigin src="./assets/index-DDeVi-sO.js"></script>
+  <script type="module" crossorigin src="./assets/index-D0biPcVn.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/vendor-core-BURj0p3m.js">
   <link rel="modulepreload" crossorigin href="./assets/vendor-firebase-CXk5bnCX.js">
   <link rel="modulepreload" crossorigin href="./assets/vendor-lucide-Dy6W0Vop.js">
@@ -207,6 +308,22 @@
 <body>
   <!-- Tela Splash de carregamento rápido enquanto o JavaScript inicializa -->
   <div id="initial-splash-loader">
+    <!-- MARCA D'ÁGUA DE ÍCONES FESTIVOS (CAKE, BALLOON, HANDSHAKE, GIFT) -->
+    <div class="auth-watermark-layer" aria-hidden="true">
+      <div class="watermark-item w-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></svg></div>
+      <div class="watermark-item w-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 11 7 11s7-5.8 7-11a7 7 0 0 0-7-7z"/><path d="M12 20v3"/><path d="M10 23h4"/><path d="M9 7a3 3 0 0 1 3-3"/></svg></div>
+      <div class="watermark-item w-3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l4.3-4.3a1 1 0 0 0 0-1.4L15 9.5"/><path d="M18 11.5 20.5 9a2 2 0 0 0 0-2.8l-2.7-2.7a2 2 0 0 0-2.8 0L12 6.5"/><path d="M11 9.5 8.5 7a2 2 0 0 0-2.8 0L3 9.7a2 2 0 0 0 0 2.8l7 7a2 2 0 0 0 2.8 0l1.7-1.7"/><path d="M7 11.5 12 16.5"/></svg></div>
+      <div class="watermark-item w-4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 4.8 0 0 1 12 8a4.8 4.8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg></div>
+      <div class="watermark-item w-5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></svg></div>
+      <div class="watermark-item w-6"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 11 7 11s7-5.8 7-11a7 7 0 0 0-7-7z"/><path d="M12 20v3"/><path d="M10 23h4"/><path d="M9 7a3 3 0 0 1 3-3"/></svg></div>
+      <div class="watermark-item w-7"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l4.3-4.3a1 1 0 0 0 0-1.4L15 9.5"/><path d="M18 11.5 20.5 9a2 2 0 0 0 0-2.8l-2.7-2.7a2 2 0 0 0-2.8 0L12 6.5"/><path d="M11 9.5 8.5 7a2 2 0 0 0-2.8 0L3 9.7a2 2 0 0 0 0 2.8l7 7a2 2 0 0 0 2.8 0l1.7-1.7"/><path d="M7 11.5 12 16.5"/></svg></div>
+      <div class="watermark-item w-8"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 4.8 0 0 1 12 8a4.8 4.8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg></div>
+      <div class="watermark-item w-9"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></svg></div>
+      <div class="watermark-item w-10"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 11 7 11s7-5.8 7-11a7 7 0 0 0-7-7z"/><path d="M12 20v3"/><path d="M10 23h4"/><path d="M9 7a3 3 0 0 1 3-3"/></svg></div>
+      <div class="watermark-item w-11"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 0 0 1.4 0l4.3-4.3a1 1 0 0 0 0-1.4L15 9.5"/><path d="M18 11.5 20.5 9a2 2 0 0 0 0-2.8l-2.7-2.7a2 2 0 0 0-2.8 0L12 6.5"/><path d="M11 9.5 8.5 7a2 2 0 0 0-2.8 0L3 9.7a2 2 0 0 0 0 2.8l7 7a2 2 0 0 0 2.8 0l1.7-1.7"/><path d="M7 11.5 12 16.5"/></svg></div>
+      <div class="watermark-item w-12"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 4.8 0 0 1 12 8a4.8 4.8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg></div>
+    </div>
+
     <div class="splash-brand-card">
       <div class="splash-icon-badge">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
