@@ -1490,7 +1490,7 @@ import{i as sa,g as ra,a as na,p as ca,b as da,d as K,c as N,e as j,s as Q,f as 
                         </button>
                     </div>
 
-                    <div class="auth-forgot-row" style="width: 75%; margin: 2px auto 20px auto; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                    <div class="auth-forgot-row" style="width: 90%; margin: 2px auto 20px auto; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
                         <span style="opacity: 0.75; color: #94a3b8;">Esqueceu sua senha?</span>
                         <a href="#" id="linkEsqueciSenha" style="color: #38bdf8; font-weight: 700; text-decoration: none; border-bottom: 1.5px solid rgba(56, 189, 248, 0.4); cursor: pointer;">Recuperar Acesso</a>
                     </div>
